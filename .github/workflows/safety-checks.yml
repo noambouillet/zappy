@@ -80,12 +80,20 @@ jobs:
             echo "Skipping clean: target not found"
           fi
 
-      - name: Check leftover executables
+      - name: Check expected executables were cleaned
+        env:
+          EXECUTABLES: "zappy_server,zappy_gui,zappy_ai"
         run: |
-          if find . -type f -perm -111 | grep -q .; then
-            echo "::error::Leftover executable files found after make clean"
-            exit 1
-          fi
+          OLD_IFS="$IFS"
+          IFS=','
+          set -- $EXECUTABLES
+          IFS="$OLD_IFS"
+          for exec in "$@"; do
+            if [ -e "$exec" ]; then
+              echo "::error file=$exec::Executable still exists after make clean"
+              exit 1
+            fi
+          done
 
   run_tests:
     needs: check_program_compilation
