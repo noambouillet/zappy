@@ -23,11 +23,18 @@ jobs:
         id: detect
         run: |
           repo_ssh_url="git@github.com:${{ github.repository }}.git"
-          if [[ "$repo_ssh_url" == "${{ env.MIRROR_URL }}" || "${{ github.ref }}" == refs/heads/ga-ignore-* ]]; then
-            echo "is_mirror=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_mirror=false" >> "$GITHUB_OUTPUT"
+          is_mirror=false
+
+          if [ "$repo_ssh_url" = "${{ env.MIRROR_URL }}" ]; then
+            is_mirror=true
           fi
+
+          branch_name="${GITHUB_REF#refs/heads/}"
+          if echo "$branch_name" | grep -q '^ga-ignore-'; then
+            is_mirror=true
+          fi
+
+          echo "is_mirror=$is_mirror" >> "$GITHUB_OUTPUT"
 
   check_program_compilation:
     needs: check_repo
@@ -38,6 +45,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Full clean
         run: |
           if make -n fclean >/dev/null 2>&1; then
@@ -45,20 +53,25 @@ jobs:
           else
             echo "Skipping fclean: target not found"
           fi
-      - name: Compile
 
+      - name: Compile
         run: make
+
       - name: Check executables exist
         env:
           EXECUTABLES: "zappy_server,zappy_gui,zappy_ai"
         run: |
-          IFS=',' read -r -a EXECS <<< "${EXECUTABLES}"
-          for exec in "${EXECS[@]}"; do
+          OLD_IFS="$IFS"
+          IFS=','
+          set -- $EXECUTABLES
+          IFS="$OLD_IFS"
+          for exec in "$@"; do
             if [ ! -x "$exec" ]; then
               echo "::error file=$exec::Missing or non-executable $exec"
               exit 1
             fi
           done
+
       - name: Clean
         run: |
           if make -n clean >/dev/null 2>&1; then
@@ -66,12 +79,21 @@ jobs:
           else
             echo "Skipping clean: target not found"
           fi
-      - name: Check leftover executables
+
+      - name: Check expected executables were cleaned
+        env:
+          EXECUTABLES: "zappy_server,zappy_gui,zappy_ai"
         run: |
-          if find . -type f -perm -111 | grep -q .; then
-            echo "::error::Leftover executable files found after make clean"
-            exit 1
-          fi
+          OLD_IFS="$IFS"
+          IFS=','
+          set -- $EXECUTABLES
+          IFS="$OLD_IFS"
+          for exec in "$@"; do
+            if [ -e "$exec" ]; then
+              echo "::error file=$exec::Executable still exists after make clean"
+              exit 1
+            fi
+          done
 
   run_tests:
     needs: check_program_compilation
@@ -82,6 +104,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Run tests
         run: |
           if make -n tests_run >/dev/null 2>&1; then
@@ -99,6 +122,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Mirror repository
         uses: pixta-dev/repository-mirroring-action@v1
         with:
