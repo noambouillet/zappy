@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2026
 ## Zappy
 ## File description:
-## Makefile
+## Main Makefile
 ##
 
 RESET   =   \033[0m
@@ -13,35 +13,40 @@ BLUE    =   \033[38;2;90;170;255m
 PURPLE  =   \033[38;2;190;120;255m
 CYAN    =   \033[38;2;90;220;220m
 
+SERVER_DIR = server
+GUI_DIR    = gui
+AI_DIR     = ai
+
 BIN_SERVER = zappy_server
 BIN_GUI    = zappy_gui
 BIN_AI     = zappy_ai
 
-all: $(BIN_SERVER) $(BIN_GUI) $(BIN_AI)
+all: zappy_server zappy_gui zappy_ai
 
-$(BIN_SERVER):
-	@printf '#!/bin/sh\nexit 0\n' > $(BIN_SERVER)
-	@chmod +x $(BIN_SERVER)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) Server compilation done"
+zappy_server:
+	@$(MAKE) --no-print-directory -C $(SERVER_DIR)
 
-$(BIN_GUI):
-	@printf '#!/bin/sh\nexit 0\n' > $(BIN_GUI)
-	@chmod +x $(BIN_GUI)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) GUI compilation done"
+zappy_gui:
+	@$(MAKE) --no-print-directory -C $(GUI_DIR)
 
-$(BIN_AI):
-	@printf '#!/bin/sh\nexit 0\n' > $(BIN_AI)
-	@chmod +x $(BIN_AI)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) AI compilation done"
+zappy_ai:
+	@$(MAKE) --no-print-directory -C $(AI_DIR)
 
 clean:
-	@rm -f $(BIN_SERVER) $(BIN_GUI) $(BIN_AI)
+	@$(MAKE) --no-print-directory -C $(SERVER_DIR) clean
+	@$(MAKE) --no-print-directory -C $(GUI_DIR) clean
+	@$(MAKE) --no-print-directory -C $(AI_DIR) clean
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) Cleaning done"
 
-fclean: clean
+fclean:
+	@$(MAKE) --no-print-directory -C $(SERVER_DIR) fclean
+	@$(MAKE) --no-print-directory -C $(GUI_DIR) fclean
+	@$(MAKE) --no-print-directory -C $(AI_DIR) fclean
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) Full cleaning done."
 
 re: fclean all
 
 tests_run:
 	@echo "No tests"
+  
+.PHONY: all zappy_server zappy_gui zappy_ai clean fclean re tests_run
