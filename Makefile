@@ -21,8 +21,6 @@ BIN_SERVER = zappy_server
 BIN_GUI    = zappy_gui
 BIN_AI     = zappy_ai
 
-.PHONY: all zappy_server zappy_gui zappy_ai clean fclean re tests_run
-
 all: zappy_server zappy_gui zappy_ai
 
 zappy_server:
@@ -50,3 +48,5 @@ re: fclean all
 
 tests_run:
 	@echo "No tests"
+  
+.PHONY: all zappy_server zappy_gui zappy_ai clean fclean re tests_run
