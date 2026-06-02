@@ -5,24 +5,36 @@
 ## Server Makefile
 ##
 
+CC      = clang++
+CFLAGS  = -Wall -Wextra -Werror -I src
+
 RESET   =   \033[0m
+BLUE    =   \033[38;2;80;160;255m
 GREEN   =   \033[38;2;80;220;120m
 
-BIN = ../zappy_server
+SRC     = main.cpp \
+          src/ServerData.cpp
+OBJ     = $(SRC:.cpp=.o)
 
-.PHONY: all clean fclean re
+NAME    = zappy_server
 
-all: $(BIN)
+all: $(NAME)
 
-$(BIN):
-	@printf '#!/bin/sh\nexit 0\n' > $(BIN)
-	@chmod +x $(BIN)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) Server compilation done"
+zappy_server: $(OBJ)
+	@printf '%b\n' "$(BLUE)[LD]$(RESET) $@"
+	@$(CC) $(CFLAGS) $(OBJ) -o $@
+
+%.o:            %.cpp
+	@printf '%b\n' "$(BLUE)[CC]$(RESET) $< -> $@"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(BIN)
+	@rm -f $(OBJ)
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) Server cleaning done"
 
 fclean: clean
+	@rm -f $(NAME)
 
 re: fclean all
+
+.PHONY: all clean fclean re
