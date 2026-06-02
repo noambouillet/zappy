@@ -16,11 +16,11 @@ SRC     = main.cpp \
           src/ServerData.cpp
 OBJ     = $(SRC:.cpp=.o)
 
-NAME    = zappy_server
+NAME    = ../zappy_server
 
 all: $(NAME)
 
-zappy_server: $(OBJ)
+$(NAME): $(OBJ)
 	@printf '%b\n' "$(BLUE)[LD]$(RESET) $@"
 	@$(CC) $(CFLAGS) $(OBJ) -o $@
 
