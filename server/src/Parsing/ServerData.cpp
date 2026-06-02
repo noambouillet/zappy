@@ -6,6 +6,7 @@
 */
 
 #include "ServerData.hpp"
+#include "GameLoop/Server.hpp"
 #include "ServerExceptions.hpp"
 #include <cstdlib>
 #include <array>
@@ -128,7 +129,9 @@ ServerData::ServerData() : _port(0), _width(0), _height(0), _clientsNb(0), _freq
 
 void ServerData::run() const
 {
-    // on appelle GameLoop
+    Server server(_port);
+
+    server.run();
 }
 
 unsigned int ServerData::getPort() const

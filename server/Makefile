@@ -14,7 +14,9 @@ GREEN   =   \033[38;2;80;220;120m
 
 SRC     = main.cpp \
           src/Parsing/ServerData.cpp \
-          src/Encapsulations/Poll.cpp
+          src/Encapsulations/Poll.cpp \
+          src/Encapsulations/Socket.cpp \
+          src/GameLoop/Server.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 
