@@ -6,14 +6,14 @@
 ##
 
 CC      = clang++
-CFLAGS  = -Wall -Wextra -Werror -I src/ -I src/Encapsulations/
+CFLAGS  = -Wall -Wextra -Werror -I src/ -I src/Parsing -I src/Encapsulations/
 
 RESET   =   \033[0m
 BLUE    =   \033[38;2;80;160;255m
 GREEN   =   \033[38;2;80;220;120m
 
 SRC     = main.cpp \
-          src/ServerData.cpp \
+          src/Parsing/ServerData.cpp \
           src/Encapsulations/Poll.cpp
 
 OBJ     = $(SRC:.cpp=.o)
