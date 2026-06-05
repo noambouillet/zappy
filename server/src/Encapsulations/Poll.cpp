@@ -8,6 +8,7 @@
 #include "Poll.hpp"
 #include "ServerExceptions.hpp"
 #include <string>
+#include <cerrno>
 
 std::vector<struct pollfd>::iterator Poll::findFd(int fd)
 {
@@ -53,9 +54,9 @@ void Poll::setEvents(int fd, short events)
 
 int Poll::wait(int timeout)
 {
-    const int result = poll(_fds.data(), _fds.size(), timeout);
+    const int result = poll(_fds.data(), static_cast<nfds_t>(_fds.size()), timeout);
 
-    if (result < 0)
+    if (result < 0 && errno != EINTR)
         throw ServerException("poll failed.");
     return result;
 }

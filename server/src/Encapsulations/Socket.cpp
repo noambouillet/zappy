@@ -81,10 +81,22 @@ int Socket::acceptClient()
 
 void Socket::sendMessage(int fd, const char *buffer, std::size_t size)
 {
-    ssize_t sentBytes = send(fd, buffer, size, 0);
+    std::size_t totalSent = 0;
 
-    if (sentBytes < 0 || static_cast<std::size_t>(sentBytes) != size)
-        throw ServerException("send failed.");
+    while (totalSent < size) {
+        ssize_t sentBytes = send(fd, buffer + totalSent, size - totalSent, 0);
+        if (sentBytes < 0)
+            throw ServerException("send failed.");
+        totalSent += static_cast<std::size_t>(sentBytes);
+    }
+}
+
+ssize_t Socket::receiveMessage(int fd, char *buffer, std::size_t size)
+{
+    ssize_t receivedBytes = recv(fd, buffer, size, 0);
+    if (receivedBytes < 0)
+        throw ServerException("recv failed.");
+    return receivedBytes;
 }
 
 void Socket::closeSocket()

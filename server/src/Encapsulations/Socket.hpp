@@ -9,6 +9,7 @@
 #define SOCKET_HPP_
 
 #include <cstddef>
+#include <sys/socket.h>
 
 class Socket {
     private:
@@ -27,6 +28,7 @@ class Socket {
         void startListening(int backlog);
         int acceptClient();
         void sendMessage(int fd, const char *buffer, std::size_t size);
+        ssize_t receiveMessage(int fd, char *buffer, std::size_t size);
         void closeSocket();
         int getFd();
 };
