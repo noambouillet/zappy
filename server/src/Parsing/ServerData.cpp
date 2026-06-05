@@ -129,8 +129,7 @@ ServerData::ServerData() : _port(0), _width(0), _height(0), _clientsNb(0), _freq
 
 void ServerData::run() const
 {
-    Server server(_port);
-
+    Server server(_port, _width, _height, _clientsNb, _freq, _teamNames);
     server.run();
 }
 
