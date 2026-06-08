@@ -15,6 +15,8 @@
 #include <vector>
 #include <string>
 
+namespace ZappyServer {
+
 class Server {
     private:
         unsigned int _port;
@@ -31,17 +33,22 @@ class Server {
         void setup();
         void acceptClient();
         void readClient(Client &client);
-        void handleHandshake(Client &client, std::string &line);
+        void handleHandshake(Client &client, const std::string &line);
         void handleGuiHandshake(Client &client);
-        void handleAiHandshake(Client &client, std::string &requestedTeamName);
+        void handleAiHandshake(Client &client, const std::string &requestedTeamName);
         void closeClients();
         void disconnectClient(Client &client);
-        bool isValidTeam(std::string &name) const;
+        bool isValidTeam(const std::string &name) const;
+        void acceptPendingClients(const std::vector<pollfd> &fds);
+        void readClients(const std::vector<pollfd> &fds);
+        void removeDeadClients();
     public:
         Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb,
             unsigned int freq, const std::vector<std::string> &teamNames);
         ~Server();
         void run();
 };
+
+}
 
 #endif /* !SERVER_HPP_ */
