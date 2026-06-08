@@ -12,7 +12,7 @@
 int main(int argc, char **argv)
 {
     try {
-        ServerData server;
+        ZappyServer::ServerData server;
 
         server.parse(argc, argv);
         server.run();

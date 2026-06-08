@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+namespace ZappyServer {
+
 class ServerData {
     private:
         unsigned int _port;
@@ -34,5 +36,7 @@ class ServerData {
         unsigned int getFreq() const;
         const std::vector<std::string> &getTeamNames() const;
 };
+
+}
 
 #endif /* !SERVER_DATA_HPP_ */

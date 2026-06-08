@@ -12,6 +12,8 @@
 #include <array>
 #include <iostream>
 
+namespace ZappyServer {
+
 static unsigned int parsePositiveInt(const std::string &value, const std::string &label)
 {
     char *end = nullptr;
@@ -161,4 +163,6 @@ unsigned int ServerData::getFreq() const
 const std::vector<std::string> &ServerData::getTeamNames() const
 {
     return _teamNames;
+}
+
 }

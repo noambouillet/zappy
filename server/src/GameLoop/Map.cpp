@@ -48,7 +48,7 @@ void Map::spawnResources()
             unsigned int x = rand() % _width;
             unsigned int y = rand() % _height;
             Tile &tile = getTile(x, y);
-            tile.resources[resourceIndex]++;
+            tile.resources[ressourceIndex]++;
         }
     }
 }
