@@ -1,22 +1,51 @@
 #!/bin/python3
 
-from parsing import connect_to_server, parse_args, communication_server_client, logger
+from parsing import connect_to_server, parse_args, communication_server_client, logger, sys
+from enum import Enum
 
-def send_recv_command(socket_connection, info_client):
+class Direction(Enum):
+    Forward = 0
+    Right = 1
+    Left = 2
+    Motionless = 3
+    
+requirement_for_progress = [
+    {"nb_players" : 1, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 2, "linemate" : 1, "deraumere" : 1, "sibur" : 1, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 2, "linemate" : 2, "deraumere" : 0, "sibur" : 1, "mendiane" : 2, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 4, "linemate" : 1, "deraumere" : 1, "sibur" : 2, "mendiane" : 1, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 4, "linemate" : 1, "deraumere" : 2, "sibur" : 1, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 6, "linemate" : 1, "deraumere" : 2, "sibur" : 3, "mendiane" : 1, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 6, "linemate" : 2, "deraumere" : 2, "sibur" : 2, "mendiane" : 2, "phiras" : 0, "thystame" : 0}
+]
+
+
+class Agent:
+    def __init__(self):
+        self.alive = True
+        self.inventory = {"food" : 5, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
+        self.list_command = []
+        self.level = 1
+        self.direction = Direction.Motionless
+    
+    def get_level(self):
+        return self.level
+
+
+def send_recv_command(socket_connection, info_client, agent):
     """_summary_
-
     Args:
         socket_connection (_type_): _description_
         info_client (_type_): _description_
     """
     tab_command = []
-    # while (True):
-    #     msg = socket_connection.recv(2048).decode('utf-8')
-    #     if (msg == "dead"):
-    #         print("The connection between the server and the AI ​​has been lost because the AI ​​has therefore died in the game.")
-    #         sys.exit(0)
-    #     print(msg)
-    #     break
+    #print(Level_need[agent.level - 1]["nb_players"])
+    while (True):
+        msg = socket_connection.recv(2048).decode('utf-8')
+        if (msg == "dead"):
+            print("The connection between the server and the AI ​​has been lost because the AI ​​has therefore died in the game.")
+            sys.exit(0)
+        print(msg)
     return
 
 def main():
@@ -25,7 +54,8 @@ def main():
     port, team_name, machine_name = parse_args()
     socket_connection = connect_to_server(port, machine_name)
     info_client = communication_server_client(socket_connection, team_name)
-    send_recv_command(socket_connection, info_client)
+    agent = Agent()
+    send_recv_command(socket_connection, info_client, agent)
     logger.info("The program has just ended")
 
 if __name__ == '__main__':
