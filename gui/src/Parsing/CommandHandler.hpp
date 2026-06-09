@@ -12,17 +12,20 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include "Sfml.hpp"
+#include "../Data/World.hpp"
 
 class CommandHandler {
     public:
-        CommandHandler(Sfml &gui);
+        CommandHandler(World &world);
         ~CommandHandler() = default;
         void handle(const std::string &line);
     private:
         std::unordered_map<std::string, void (CommandHandler::*)(std::stringstream &)> _commands;
-        Sfml &_gui;
+        World &_world;
         void handle_msz(std::stringstream &ss);
         void handle_bct(std::stringstream &ss);
         void handle_sgt(std::stringstream &ss);
+        void handle_tna(std::stringstream &ss);
+        void handle_enw(std::stringstream &ss);
+        void handle_pnw(std::stringstream &ss);
 };

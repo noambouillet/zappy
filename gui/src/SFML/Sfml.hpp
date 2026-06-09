@@ -11,12 +11,13 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include "../Data/World.hpp"
 
 constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
 class Sfml {
     public:
-        Sfml();
+        Sfml(const World &world);
         ~Sfml();
         sf::RenderWindow &getWindow();
         void handleEvent();
@@ -25,15 +26,24 @@ class Sfml {
         void setMapSize(size_t width, size_t height);
         void setTile(int x, int y, std::vector<int> ressources);
         void drawRessources();
+        void drawEggs();
         void setTimeUnit(int TimeUnit);
+        void addTeam(std::string teamName);
+        void addEggs(std::vector<int> egg);
+        void drawTrantorians();
+
     private:
         sf::RenderWindow  _window;
-        std::pair<size_t, size_t> _mapSize;
-        std::vector<std::vector<std::vector<int>>> _map;
-        int _TimeUnit;
+        const World &_world;
 
         sf::Texture _foodTexture;
-        sf::Sprite  _foodSprite;
+        sf::Sprite _foodSprite;
+
+        sf::Texture _eggTexture;
+        sf::Sprite _eggSprite;
+
+        sf::Texture _trantorianTexture;
+        sf::Sprite _trantorianSprite;
 
         void updateDimensions();
         float _tileSize = 0.0f;

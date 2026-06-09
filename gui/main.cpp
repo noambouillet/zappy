@@ -16,30 +16,30 @@ int main(int ac, char **av)
 {
     Parsing_gui parse;
     std::string server_buffer;
-    Sfml gui;
-    CommandHandler handler(gui);
+    World world;
+    Sfml gui(world);
+    CommandHandler handler(world);
 
     try {
         if (parse.parse_args(ac, av))
             return 0;
-        std::cout << "coucou" << std::endl;
         int fd = parse.connect_to_server();
         server_buffer = parse.read_from_server(fd);
         if (server_buffer == "WELCOME\n")
             parse.send_command(fd, "GRAPHIC\n");
         else
             return 84;
-        std::cout << server_buffer;
         server_buffer.clear(); 
         struct pollfd poll_fd[1];
         poll_fd[0] = {fd, POLLIN, 0};
+        world.addPlayer({1, 0, 0, 1, 1, "moi"}); //test des trantoriens
         while (gui.getWindow().isOpen()) {
             gui.handleEvent();
             if (poll(poll_fd, 1, 0) < 0)
                 throw std::runtime_error("poll failed");
                 
             if (poll_fd[0].revents & (POLLHUP | POLLERR | POLLNVAL)) {
-                std::cout << "Serveur disconnected." << std::endl;
+                std::cout << "Server disconnected." << std::endl;
                 break;
             }
             if (poll_fd[0].revents & POLLIN) {
