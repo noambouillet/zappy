@@ -80,7 +80,9 @@ def communication_server_client(socket_connection, team_name):
     """
     socket_connection.sendall((team_name + "\n").encode('utf-8'))
     logger.info(f"Send the team name information for the server, {team_name}")
-    msg = socket_connection.recv(1024).decode('utf-8')
+    msg = ""
+    while msg.count("\n") < 2:
+        msg += socket_connection.recv(2048).decode('utf-8')
     tab = msg.split('\n')
     if (len(tab) < 2):
         logger.critical("Sentence incomplete missing the number of slot or the value for the map (Server info incorrect)")

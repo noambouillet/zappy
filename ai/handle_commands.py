@@ -101,7 +101,7 @@ def send_recv_command(socket_connection, info_client, agent):
         try:
             msg = socket_connection.recv(2048).decode('utf-8')
         except (socket.error, ConnectionError):
-            logger.critical("The connection between the server and the AI ​​has been lost because the AI ​​has therefore died in the game.")
+            logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
             sys.exit(84)
         str_list_command += msg
         str_list_command = handle_commands(agent, str_list_command)
