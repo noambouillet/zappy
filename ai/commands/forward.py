@@ -5,12 +5,18 @@
 ## forward
 ##
 
-def do_forward(agent, result_command):
-    """_summary_
+from parsing import logger
 
+def do_forward(agent, result_command):
+    """This function is to advance the character
     Args:
-        agent (_type_): _description_
-        result_command (_type_): _description_
+        agent (class): the agent IA
+        result_command (str): the message send by the server for the response
     """
-    print("Forward")
+    if (result_command == "ok"):
+        logger.info("The Forward command was successful (direction: " + agent.direction.name + ")")
+        print("Our agent managed to advance one space in the direction:", agent.direction.name)
+    else:
+        logger.error("The response message from the server is not suitable for this command. (Left)")
+        print("The response message from the server is not suitable for this command. (Forward)")
     return

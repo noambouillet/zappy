@@ -2,26 +2,7 @@
 
 from parsing import connect_to_server, parse_args, communication_server_client, logger
 from handle_commands import send_recv_command
-from enum import Enum
-
-MIN_FOOD = 5
-
-class Direction(Enum):
-    North = 0
-    South = 1
-    East = 2
-    West = 3
-    
-requirement_for_progress = [
-    {"nb_players" : 1, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 2, "linemate" : 1, "deraumere" : 1, "sibur" : 1, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 2, "linemate" : 2, "deraumere" : 0, "sibur" : 1, "mendiane" : 2, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 4, "linemate" : 1, "deraumere" : 1, "sibur" : 2, "mendiane" : 1, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 4, "linemate" : 1, "deraumere" : 2, "sibur" : 1, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 6, "linemate" : 1, "deraumere" : 2, "sibur" : 3, "mendiane" : 1, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 6, "linemate" : 2, "deraumere" : 2, "sibur" : 2, "mendiane" : 2, "phiras" : 0, "thystame" : 0}
-]
-
+from constant import Direction
 
 class Agent:
     def __init__(self):
@@ -41,6 +22,7 @@ def main():
     socket_connection = connect_to_server(port, machine_name)
     info_client = communication_server_client(socket_connection, team_name)
     agent = Agent()
+    agent.unused_slots = info_client["client_num"]
     send_recv_command(socket_connection, info_client, agent)
     logger.info("The program has just ended")
 

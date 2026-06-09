@@ -8,8 +8,13 @@
 from parsing import logger
 
 def do_look(agent, result_command):
-    print("Function Look is call")
+    """This function is to get and change the vision of the agent with info from the server
+    Args:
+        agent (class): agent IA
+        result_command (str): Response from the serv
+    """
+    old_vision = agent.vision
     agent.vision = result_command
-    print("Vision de l'agent:", agent.vision)
-    logger.info("The look order has been received and completed")
+    print("La vision de l'agent à évoluer passant de", old_vision, "to", agent.vision)
+    logger.info("The Look command was successful (received and completed).")
     return
