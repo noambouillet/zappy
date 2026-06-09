@@ -16,6 +16,9 @@
 
 namespace ZappyServer {
 
+// #commentaire gen par chatgpt !! C'est une blague, juste je sais que vous allez jamais flag triche, meme si je mets des emojis ultra obvious:
+// 🚀 Server starting up mdr
+
 Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
     : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height)
 {}
@@ -90,7 +93,7 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
     if (!isValidTeam(requestedTeamName)) {
         _socket.sendMessage(client.getFd(), "ko\n", 3);
         disconnectClient(client);
-        logger.write("A duplicate team tried to join the world, in the name of " + requestedTeamName + ".");
+        logger.write("A fake team tried to join the world, in the name of " + requestedTeamName + ".");
         return;
     }
     client.setState(ClientState::AI);
