@@ -6,41 +6,18 @@
 ##
 
 from parsing import sys, logger, socket
-
-
-def do_inventory(agent, result_command):
-    print("Function Inventory is call")
-    info_inventory = result_command.split(' ')
-    for i in range(1, len(info_inventory) - 1, 2):
-        ressource = info_inventory[i]
-        number_str = info_inventory[i + 1].replace(',', '')
-        key_exist = agent.inventory.get(ressource)
-        if (key_exist is not None):
-            agent.inventory[ressource] = (int)(number_str)
-    print("The inventory change for the agent:", agent.inventory)
-    logger.info("The inventory order has been received and completed.")
-    agent.list_commands.pop(0)
-    return
-
-def do_look(agent, result_command):
-    print("Function Look is call")
-    agent.vision = result_command
-    print("Vision de l'agent:", agent.vision)
-    logger.info("The look order has been received and completed")
-    agent.list_commands.pop(0)
-    return
-
-def do_eject(agent, resul_command):
-    return
-
-def do_message(agent, result_command):
-    return
-
-def do_connection(agent, value_command):
-    value = (int)(value_command)
-    print("Number of team unused slots", value)
-    agent.list_commands.pop(0)
-    
+from commands.forward import do_forward
+from commands.left import do_left
+from commands.right import do_right
+from commands.look import do_look
+from commands.inventory import do_inventory
+from commands.connect import do_connection
+from commands.broadcast import do_broadcast
+from commands.fork import do_fork
+from commands.eject import do_eject
+from commands.take import do_take
+from commands.set import do_set
+from commands.incantation import do_incantation
     
 def handle_recv_basic(agent, command, result_command):
     """_summary_
@@ -50,12 +27,29 @@ def handle_recv_basic(agent, command, result_command):
         command (_type_): _description_
         result_command (_type_): _description_
     """
-    if (command == "Inventory\n"):
-        do_inventory(agent, result_command)
-    elif (command == "Look\n"):
-        do_look(agent, result_command)
-    elif (command.isdigit()):
-        do_connection(agent, command)
+    dict_commands = {
+        "Forward\n" : do_forward,
+        "Left\n" : do_left,
+        "Right\n" : do_right,
+        "Look\n" : do_look,
+        "Inventory\n" : do_inventory,
+        "Connect_nbr\n" : do_connection,
+        "Fork\n" : do_fork,
+        "Eject" : do_eject,
+        "Incantation" : do_incantation
+    }
+    if command in dict_commands: 
+        dict_commands[command](agent, result_command)
+    elif (command.startswith("Broadcast")):
+        do_broadcast(agent, result_command)
+    elif (command.startswith("Take")):
+        do_take(agent, result_command)
+    elif (command.startswith("Set")):
+        do_set(agent, result_command)
+    else:
+        print("Command uknown\n")
+
+
     
 def handle_commands(agent, str_list_command):
     """_summary_
@@ -68,16 +62,22 @@ def handle_commands(agent, str_list_command):
     """
     while '\n' in str_list_command:
         result_command, str_list_command = str_list_command.split('\n', 1)
-        command = agent.list_commands[0]
+        if (len(agent.list_commands) > 0):
+            command = agent.list_commands[0]
+        #print(command, result_command)
         if (result_command.startswith("dead")):
+            print("Player is dead")
             sys.exit(0)
         elif (result_command.startswith("eject:")):
-            do_eject(agent, result_command)
+            #receive_eject(agent, result_command)
+            continue
         elif (result_command.startswith("message")):
-            do_message(agent, result_command)
+            #receive_message(agent, result_command)
+            continue
         else:
-            handle_recv_basic(agent, command, str_list_command)
-        print(agent.list_commands)                
+            handle_recv_basic(agent, command, result_command)
+            agent.list_commands.pop(0)
+        #print(agent.list_commands)                
     return str_list_command
 
 
