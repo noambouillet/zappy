@@ -30,52 +30,54 @@ def do_look(agent, result_command):
     agent.list_commands.pop(0)
     return
 
+def do_eject(agent, resul_command):
+    return
+
+def do_message(agent, result_command):
+    return
+
 def do_connection(agent, value_command):
     value = (int)(value_command)
     print("Number of team unused slots", value)
     agent.list_commands.pop(0)
-
-def do_basic_commands(agent, result_command):
-    print("Basic command", result_command)
-    command = agent.list_commands.pop(0)
-    if (command == "Forward"):
-        return
-    elif (command == "Right"):
-        return
-    elif (command == "Left"):
-        return
-    elif (command == "Broadcast"):
-        return
     
-def handle_commands(agent, str_list_command):
+    
+def handle_recv_basic(agent, command, result_command):
     """_summary_
 
     Args:
         agent (_type_): _description_
-        str_list_command (_type_): _description_ [ food 9, ...]\nOK\n
+        command (_type_): _description_
+        result_command (_type_): _description_
     """
-    print("Toutes les commandes en attente :", str_list_command)
+    if (command == "Inventory\n"):
+        do_inventory(agent, result_command)
+    elif (command == "Look\n"):
+        do_look(agent, result_command)
+    elif (command.isdigit()):
+        do_connection(agent, command)
+    
+def handle_commands(agent, str_list_command):
+    """_summary_
+    Args:
+        agent (_type_): _description_
+        str_list_command (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     while '\n' in str_list_command:
-        result_command, str_list_command = str_list_command.split('\n', 1) #Ici, en gros on découpe la chaine une seule fois, c'est a dire on recupere la commande qu'on veut check mais aussi le reste de la commande sans cette element
-        print("Resultat du serveur :", result_command)
-        split_command = result_command.split(' ')
-        if (split_command[0] == "dead"):
-            print("The player is dead")
-            logger.info("The connection between the server and the AI ​​has been lost because the AI ​​has therefore died in the game.")
+        result_command, str_list_command = str_list_command.split('\n', 1)
+        command = agent.list_commands[0]
+        if (result_command.startswith("dead")):
             sys.exit(0)
-        elif (split_command[0] == "ok"):
-            do_basic_commands(agent, result_command)
-        elif (split_command[0] == "["):
-            if (split_command[1] == "food"):
-                do_inventory(agent, result_command)
-            elif (split_command[1] == "player"):
-                do_look(agent, result_command)
-        elif (split_command[0].isdigit() == True):
-            do_connection(agent, split_command[0])
-        elif (split_command[0] == "ko"):
-            logger.info("The server's response resulted in a KO, so the command could not be executed.")
-            agent.list_commands.pop(0)
-            print("The command result with ko")
+        elif (result_command.startswith("eject:")):
+            do_eject(agent, result_command)
+        elif (result_command.startswith("message")):
+            do_message(agent, result_command)
+        else:
+            handle_recv_basic(agent, command, str_list_command)
+        print(agent.list_commands)                
     return str_list_command
 
 

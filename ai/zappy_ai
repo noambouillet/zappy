@@ -7,10 +7,10 @@ from enum import Enum
 MIN_FOOD = 5
 
 class Direction(Enum):
-    Forward = 0
-    Right = 1
-    Left = 2
-    Motionless = 3
+    North = 0
+    South = 1
+    East = 2
+    West = 3
     
 requirement_for_progress = [
     {"nb_players" : 1, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
@@ -29,8 +29,9 @@ class Agent:
         self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
         self.list_commands = []
         self.level = 1
-        self.direction = Direction.Motionless
+        self.direction = Direction.North
         self.vision = []
+        self.unused_slots = 0
 
 
 def main():
