@@ -47,6 +47,14 @@ class Server {
             unsigned int freq, const std::vector<std::string> &teamNames);
         ~Server();
         void run();
+        Socket &getSocket();
+        unsigned int getWidth() const;
+        unsigned int getHeight() const;
+        Map &getMap();
+        const std::vector<std::string> &getTeamNames() const;
+        unsigned int getFreq() const;
+        void setFreq(unsigned int t);
+        std::vector<Client> &getClients();
 };
 
 }

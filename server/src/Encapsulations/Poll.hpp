@@ -11,6 +11,8 @@
 #include <poll.h>
 #include <vector>
 
+namespace ZappyServer {
+
 class Poll {
     private:
         std::vector<struct pollfd> _fds;
@@ -23,5 +25,7 @@ class Poll {
         void clear();
         const std::vector<struct pollfd> &getFds() const;
 };
+
+}
 
 #endif /* !POLL_HPP_ */

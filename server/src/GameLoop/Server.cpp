@@ -8,6 +8,8 @@
 #include "Server.hpp"
 #include "Tile.hpp"
 #include "Logger.hpp"
+#include "GuiCommands.hpp"
+#include "AiCommands.hpp"
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
@@ -21,6 +23,10 @@ Server::Server(unsigned int port, unsigned int width, unsigned int height, unsig
 Server::~Server()
 {
     closeClients();
+}
+
+Socket &Server::getSocket() {
+    return _socket;
 }
 
 void Server::setup()
@@ -127,6 +133,10 @@ void Server::readClient(Client &client)
             continue;
         if (client.getState() == ClientState::WAITING_TEAM)
             handleHandshake(client, completeLine);
+        else if (client.getState() == ClientState::GUI)
+            GuiCommands::dispatch(client, *this, completeLine);
+        else if (client.getState() == ClientState::AI)
+            AiCommands::dispatch(client, *this, completeLine);
     }
 }
 
@@ -181,6 +191,41 @@ void Server::run()
         readClients(fds);
         removeDeadClients();
     }
+}
+
+unsigned int Server::getWidth() const
+{
+    return _width;
+}
+
+unsigned int Server::getHeight() const
+{
+    return _height;
+}
+
+Map &Server::getMap()
+{
+    return _map;
+}
+
+const std::vector<std::string> &Server::getTeamNames() const
+{
+    return _teamNames;
+}
+
+unsigned int Server::getFreq() const
+{
+    return _freq;
+}
+
+void Server::setFreq(unsigned int t)
+{
+    _freq = t;
+}
+
+std::vector<Client> &Server::getClients()
+{
+    return _clients;
 }
 
 }

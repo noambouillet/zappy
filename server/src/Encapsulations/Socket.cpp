@@ -13,6 +13,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+namespace ZappyServer {
+
 Socket::Socket() : _fd(-1)
 {
 }
@@ -110,4 +112,6 @@ void Socket::closeSocket()
 int Socket::getFd()
 {
     return _fd;
+}
+
 }

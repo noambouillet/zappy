@@ -11,6 +11,8 @@
 #include <exception>
 #include <string>
 
+namespace ZappyServer {
+
 class ServerException : public std::exception {
     private:
         std::string _message;
@@ -22,5 +24,7 @@ class ServerException : public std::exception {
             return _message.c_str();
         }
 };
+
+}
 
 #endif /* !SERVER_EXCEPTIONS_HPP_ */

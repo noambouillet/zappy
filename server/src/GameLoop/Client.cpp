@@ -7,6 +7,8 @@
 
 #include "Client.hpp"
 
+namespace ZappyServer {
+
 Client::Client(int fd) : _fd(fd), _state(ClientState::WAITING_TEAM)
 {
 }
@@ -49,4 +51,6 @@ void Client::invalidate()
 bool Client::isDead() const
 {
     return _fd == -1;
+}
+
 }

@@ -8,8 +8,12 @@
 #ifndef TILE_HPP_
 #define TILE_HPP_
 
+namespace ZappyServer {
+
 struct Tile {
     unsigned int resources[7] = {0};
 };
+
+}
 
 #endif /* !TILE_HPP_ */

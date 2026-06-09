@@ -10,6 +10,8 @@
 #include <string>
 #include <cerrno>
 
+namespace ZappyServer {
+
 std::vector<struct pollfd>::iterator Poll::findFd(int fd)
 {
     std::vector<struct pollfd>::iterator index = _fds.begin();
@@ -69,4 +71,6 @@ void Poll::clear()
 const std::vector<struct pollfd> &Poll::getFds() const
 {
     return _fds;
+}
+
 }

@@ -11,6 +11,8 @@
 #include <cstddef>
 #include <sys/socket.h>
 
+namespace ZappyServer {
+
 class Socket {
     private:
         int _fd;
@@ -32,5 +34,7 @@ class Socket {
         void closeSocket();
         int getFd();
 };
+
+}
 
 #endif /* !SOCKET_HPP_ */

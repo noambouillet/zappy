@@ -10,6 +10,8 @@
 
 #include <string>
 
+namespace ZappyServer {
+
 struct ClientState {
     static const int WAITING_TEAM = 0;
     static const int AI = 1;
@@ -34,5 +36,7 @@ class Client {
         void invalidate();
         bool isDead() const;
 };
+
+}
 
 #endif /* !CLIENT_HPP_ */

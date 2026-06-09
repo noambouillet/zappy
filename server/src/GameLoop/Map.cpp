@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <algorithm>
 
+namespace ZappyServer {
+
 static const double DENSITIES[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
 
 Map::Map(unsigned int width, unsigned int height) : _width(width), _height(height), _tiles(width * height)
@@ -51,4 +53,6 @@ void Map::spawnResources()
             tile.resources[ressourceIndex]++;
         }
     }
+}
+
 }

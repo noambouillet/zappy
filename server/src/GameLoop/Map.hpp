@@ -11,6 +11,8 @@
 #include "Tile.hpp"
 #include <vector>
 
+namespace ZappyServer {
+
 class Map {
     private:
         unsigned int _width;
@@ -24,5 +26,7 @@ class Map {
         unsigned int getHeight() const;
         void spawnResources();
 };
+
+}
 
 #endif /* !MAP_HPP_ */
