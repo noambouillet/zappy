@@ -16,7 +16,8 @@ SRC     = main.cpp \
 		  src/Parsing/Parsing_gui.cpp \
 		  src/SFML/Sfml.cpp \
 		  src/Parsing/CommandHandler.cpp \
-		  src/Data/World.cpp
+		  src/Data/World.cpp \
+		  src/SFML/EventHandler.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 

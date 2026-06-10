@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include "../Data/World.hpp"
+#include "World.hpp"
 
 class CommandHandler {
     public:

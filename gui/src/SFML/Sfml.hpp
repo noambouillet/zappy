@@ -11,7 +11,11 @@
 #include <utility>
 #include <string>
 #include <vector>
-#include "../Data/World.hpp"
+#include "World.hpp"
+#include <filesystem>
+#include <iostream>
+#include <unordered_map>
+#include "EventHandler.hpp"
 
 constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
@@ -35,17 +39,15 @@ class Sfml {
     private:
         sf::RenderWindow  _window;
         const World &_world;
+        sf::View _camera;
+        EventHandler _eventHandler;
 
-        sf::Texture _foodTexture;
-        sf::Sprite _foodSprite;
-
-        sf::Texture _eggTexture;
-        sf::Sprite _eggSprite;
-
-        sf::Texture _trantorianTexture;
-        sf::Sprite _trantorianSprite;
+        std::unordered_map<std::string, sf::Texture> _textures;
+        std::unordered_map<std::string, sf::Sprite> _sprites;
 
         void updateDimensions();
+        int loadTexture();
+        float _limitWindowWidth = 0.0f;
         float _tileSize = 0.0f;
         float _offsetX = 0.0f;
         float _offsetY = 0.0f;

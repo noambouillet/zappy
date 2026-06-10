@@ -6,17 +6,12 @@
 */
 
 #include "Sfml.hpp"
+#include <algorithm>
 
-Sfml::Sfml(const World &world): _window(sf::VideoMode::getDesktopMode(), "trantor", sf::Style::Titlebar | sf::Style::Close), _world(world)
+Sfml::Sfml(const World &world): _window(sf::VideoMode::getDesktopMode(), "trantor", sf::Style::Titlebar | sf::Style::Close), _world(world), _eventHandler(_window, _camera)
 {
     _window.setFramerateLimit(60);
-
-    if (!_foodTexture.loadFromFile("gui/assets/images/donut.png") || !_eggTexture.loadFromFile("gui/assets/images/egg.jpg") || !_trantorianTexture.loadFromFile("gui/assets/images/benoit.png")) {
-        // throw une erreur: texture donut not found
-    }
-    _foodSprite.setTexture(_foodTexture);
-    _eggSprite.setTexture(_eggTexture);
-    _trantorianSprite.setTexture(_trantorianTexture);
+    loadTexture();
 }
 
 Sfml::~Sfml()
@@ -28,13 +23,10 @@ sf::RenderWindow &Sfml::getWindow()
     return _window;
 }
 
+
 void Sfml::handleEvent()
 {
-    sf::Event event;
-    while (_window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
-            _window.close();
-        }
+    _eventHandler.update(_limitWindowWidth);
 }
 
 void Sfml::drawMap() 
@@ -54,14 +46,19 @@ void Sfml::drawMap()
 
 void Sfml::drawRessources()
 {
-    float originX = _foodTexture.getSize().x / 2.0f;
-    float originY = _foodTexture.getSize().y / 2.0f;
-    _foodSprite.setOrigin(originX, originY);
+    auto tex = _textures.find("food");
+    if (tex == _textures.end() || _world.getTrantorians().empty())
+        return;
+
+    const sf::Texture &texture = tex->second;
+    float originX = texture.getSize().x / 2.0f;
+    float originY = texture.getSize().y / 2.0f;
+    _sprites["food"].setOrigin(originX, originY);
 
     float desiredFoodSize = _tileSize * 0.40f; 
-    float scaleX = desiredFoodSize / _foodTexture.getSize().x;
-    float scaleY = desiredFoodSize / _foodTexture.getSize().y;
-    _foodSprite.setScale(scaleX, scaleY);
+    float scaleX = desiredFoodSize / texture.getSize().x;
+    float scaleY = desiredFoodSize / texture.getSize().y;
+    _sprites["food"].setScale(scaleX, scaleY);
 
     for (size_t y = 0; y < _world.getMapSize().second; ++y) {
         for (size_t x = 0; x < _world.getMapSize().first; ++x) {
@@ -70,8 +67,8 @@ void Sfml::drawRessources()
                 float tileY = _offsetY + (y * _tileSize);
                 float centerX = tileX + (_tileSize / 2.0f);
                 float centerY = tileY + (_tileSize / 2.0f);
-                _foodSprite.setPosition(centerX, centerY);
-                _window.draw(_foodSprite);
+                _sprites["food"].setPosition(centerX, centerY);
+                _window.draw(_sprites["food"]);
             }
         }
     }
@@ -79,17 +76,19 @@ void Sfml::drawRessources()
 
 void Sfml::drawEggs()
 {
-    if (_eggTexture.getSize().x == 0 || _world.getEggs().empty())
+    auto tex = _textures.find("egg");
+    if (tex == _textures.end() || _world.getTrantorians().empty())
         return;
 
-    float originX = _eggTexture.getSize().x / 2.0f;
-    float originY = _eggTexture.getSize().y / 2.0f;
-    _eggSprite.setOrigin(originX, originY);
+    const sf::Texture &texture = tex->second;
+    float originX = texture.getSize().x / 2.0f;
+    float originY = texture.getSize().y / 2.0f;
+    _sprites["egg"].setOrigin(originX, originY);
 
     float desiredeggSize = _tileSize * 0.40f; 
-    float scaleX = desiredeggSize / _eggTexture.getSize().x;
-    float scaleY = desiredeggSize / _eggTexture.getSize().y;
-    _eggSprite.setScale(scaleX, scaleY);
+    float scaleX = desiredeggSize / texture.getSize().x;
+    float scaleY = desiredeggSize / texture.getSize().y;
+    _sprites["egg"].setScale(scaleX, scaleY);
 
     for (const auto &egg : _world.getEggs()) {
         if (egg.size() < 4)
@@ -101,24 +100,26 @@ void Sfml::drawEggs()
         float centerX = tileX + (_tileSize / 2.0f);
         float centerY = tileY + (_tileSize / 2.0f);
 
-        _eggSprite.setPosition(centerX, centerY);
-        _window.draw(_eggSprite);
+        _sprites["egg"].setPosition(centerX, centerY);
+        _window.draw(_sprites["egg"]);
     }
 }
 
 void Sfml::drawTrantorians()
 {
-    if (_trantorianTexture.getSize().x == 0 || _world.getTrantorians().empty())
+    auto tex = _textures.find("benoit");
+    if (tex == _textures.end() || _world.getTrantorians().empty())
         return;
 
-    float originX = _trantorianTexture.getSize().x / 2.0f;
-    float originY = _trantorianTexture.getSize().y / 2.0f;
-    _trantorianSprite.setOrigin(originX, originY);
+    const sf::Texture &texture = tex->second;
+    float originX = texture.getSize().x / 2.0f;
+    float originY = texture.getSize().y / 2.0f;
+    _sprites["benoit"].setOrigin(originX, originY);
 
     float desiredtrantorianSize = _tileSize * 0.95f; 
-    float scaleX = desiredtrantorianSize / _trantorianTexture.getSize().x;
-    float scaleY = desiredtrantorianSize / _trantorianTexture.getSize().y;
-    _trantorianSprite.setScale(scaleX, scaleY);
+    float scaleX = desiredtrantorianSize / texture.getSize().x;
+    float scaleY = desiredtrantorianSize / texture.getSize().y;
+    _sprites["benoit"].setScale(scaleX, scaleY);
 
     for (const auto &trantorian : _world.getTrantorians()) {
         int x = trantorian.second.x;
@@ -128,8 +129,8 @@ void Sfml::drawTrantorians()
         float centerX = tileX + (_tileSize / 2.0f);
         float centerY = tileY + (_tileSize / 2.0f);
 
-        _trantorianSprite.setPosition(centerX, centerY);
-        _window.draw(_trantorianSprite);
+        _sprites["benoit"].setPosition(centerX, centerY);
+        _window.draw(_sprites["benoit"]);
     }
 }
 
@@ -138,10 +139,13 @@ void Sfml::displayWindow()
     if (_tileSize == 0.0f && _world.getMapSize().first != 0)
         updateDimensions();
     _window.clear(sf::Color::Black);
+    _window.setView(_camera); //c'est pour afficher les éléments
     drawMap();
     drawRessources();
     drawEggs();
     drawTrantorians();
+
+    //_window.setView(_window.getDefaultView()); // et ça c'est pour le UI
     _window.display();
 }
 
@@ -158,4 +162,34 @@ void Sfml::updateDimensions()
     float finalMapWidth = _tileSize * _world.getMapSize().first;
     _offsetY = (currentWindowHeight - mapAreaHeight) / 2.0f;
     _offsetX = (currentWindowWidth - finalMapWidth) / 2.0f;
+
+    _limitWindowWidth = currentWindowWidth;
+    _camera.setSize(currentWindowWidth, currentWindowHeight);
+    _camera.setCenter(currentWindowWidth / 2.0f, currentWindowHeight / 2.0f);
+}
+
+int Sfml::loadTexture()
+{
+    std::string path = "gui/assets/images";
+
+    if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
+        for (const auto& entry : std::filesystem::directory_iterator(path)) {
+            if (!entry.is_regular_file())
+                continue;
+            sf::Texture texture;
+            sf::Sprite sprite;
+            if (!texture.loadFromFile(entry.path().string())) {
+                std::cerr << "fail to load " << entry.path().string() << std::endl;
+                continue;
+            }
+            _textures[entry.path().stem().string()] = std::move(texture);
+            sprite.setTexture(_textures[entry.path().stem().string()]);
+            _sprites[entry.path().stem().string()] = std::move(sprite);
+            std::cout << "texture loaded : " << entry.path().stem().string() << std::endl;
+        }
+    } else {
+        //throw une erreur lors de l'ouverture du fichier assets
+        return 84;
+    }
+    return 0;
 }
