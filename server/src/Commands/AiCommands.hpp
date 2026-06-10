@@ -8,10 +8,9 @@
 #ifndef AICOMMANDS_HPP_
 #define AICOMMANDS_HPP_
 
-#define __UNUSED____ __attribute__((unused))
-
 #include <string>
 #include <functional>
+#include <string_view>
 
 namespace ZappyServer {
 
@@ -19,10 +18,32 @@ static constexpr unsigned int AI_COMMANDS_NUMBER = 12;
 class Server;
 class Client;
 
-struct AiCommandEntry {
-    std::string_view name;
-    std::function<void(Client &, Server &, const std::string &)> handler;
+enum class ResourceType {
+    FOOD = 0,
+    LINEMATE,
+    DERAUMERE,
+    SIBUR,
+    MENDIANE,
+    PHIRAS,
+    THYSTAME,
+    MAX
 };
+
+enum class Direction { 
+    NONE = 0,
+    NORTH = 1,
+    EAST = 2,
+    SOUTH = 3,
+    WEST = 4,
+    MAX = 5
+};
+
+struct Vector2D {
+    int x;
+    int y;
+};
+
+using AiCommandHandler = std::function<void(Client &, Server &, const std::string &)>;
 
 namespace AiCommands {
     void dispatch(Client &client, Server &server, const std::string &line);
