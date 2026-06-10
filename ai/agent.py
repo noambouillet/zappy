@@ -5,7 +5,7 @@
 ## agent
 ##
 
-from constant import Direction, MIN_FOOD
+from constant import Direction, MIN_FOOD, requirement_for_progress
 from abc import ABC, abstractmethod
 
 class Behavior(ABC):
@@ -45,9 +45,20 @@ class Explore(Behavior):
             agent (class): Agent IA
         Returns:
             str: command for the agent
-        """
-        return super().execute(agent)
-
+        """ 
+        info_level_up = requirement_for_progress[agent.level - 1]
+        print(info_level_up)
+        name_stone = ""
+        for cle, valeur in requirement_for_progress.items():
+            if (cle != "nb_players" and agent.inventory[cle] < valeur):
+                name_stone = cle
+                break
+        if (name_stone and name_stone in agent.vision[0]):
+            return f"Take {name_stone}\n"
+        elif (name_stone and name_stone not in agent.vision[0]):
+            return ["Forward\n", "Look\n"]
+        
+        
 class Evolution(Behavior):
     def execute(self, agent):
         """This function is to execute evolution class
@@ -72,12 +83,29 @@ class Agent:
         self.elevation = False
         self.status = Survive()
     
+    def check_all_ressources(self):
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
+        info_level_up = requirement_for_progress[self.level - 1]
+        level_up_ok = True
+        for cle, valeur in info_level_up.items():
+            if (cle != "nb_players" and self.inventory[cle] < valeur):
+                level_up_ok = False
+                break
+        if (level_up_ok == False):
+            return False
+        else:
+            return True
+    
     def change_status_client(self):
         """_summary_
         """
         if (self.inventory["food"] < MIN_FOOD):
             self.status = Survive()
-        elif ():#il a pas toutes les ressoucres necessaire):
+        elif (self.check_all_ressources() == False):
             self.status = Explore()
         else:
             self.status = Evolution()
