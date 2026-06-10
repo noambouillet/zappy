@@ -14,7 +14,7 @@ def do_connection(agent, result_command):
         result_command (str): Response from the server
     """
     if (result_command.isdigit() == False):
-        logger.error("The response message from the server is not suitable for this command, not a number. (Connect_nbr)")
+        logger.error("The response message from the server is not suitable for this command. result_command != int (Connect_nbr)")
         print("The value of the reponse from the server is not a number")
         return
     else:

@@ -19,6 +19,6 @@ def do_left(agent, result_command):
         logger.info("The Left command was successful (direction: " + agent.direction.name + ")")
         print("The officer turned his position to the left, he was looking in the direction :", agent.direction.name)
     else:
-        logger.error("The response message from the server is not suitable for this command. (Left)")
+        logger.error("The response message from the server is not suitable for this command. result_command != ok (Left)")
         print("The response message from the server is not suitable for this command. (Left)")
     return

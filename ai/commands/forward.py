@@ -17,6 +17,6 @@ def do_forward(agent, result_command):
         logger.info("The Forward command was successful (direction: " + agent.direction.name + ")")
         print("Our agent managed to advance one space in the direction:", agent.direction.name)
     else:
-        logger.error("The response message from the server is not suitable for this command. (Left)")
+        logger.error("The response message from the server is not suitable for this command. result_command != ok (Left)")
         print("The response message from the server is not suitable for this command. (Forward)")
     return

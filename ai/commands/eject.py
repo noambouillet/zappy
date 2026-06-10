@@ -5,6 +5,21 @@
 ## eject
 ##
 
+from parsing import logger
 
-def do_eject(agent, resul_command):
+def do_eject(agent, result_command):
+    """This function is to know if an egg or a player was eject from the tile 
+    Args:
+        agent (class): the agent IA
+        result_command (str): the message send by the server for the response
+    """
+    if (result_command == "ok"):
+        logger.info("The Eject command was successful (received and completed).")
+        print("The eject command worked correctly, expelling everything that was on the box.")
+    elif (result_command == "ko"):
+        logger.info("The Eject command did not result in the expulsion of anything from the square.")
+        print("The eject command did not work; there was no noticeable change to the tile.")        
+    else:
+        logger.error("The response message from the server is not suitable for this command, result_command != ok or ko. (Eject)")
+        print("The response message from the server is not suitable for this command. (Eject)")
     return
