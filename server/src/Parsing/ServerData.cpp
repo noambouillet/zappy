@@ -19,8 +19,9 @@ static unsigned int parsePositiveInt(const std::string &value, const std::string
     char *end = nullptr;
     const long parsed = std::strtol(value.c_str(), &end, 10);
 
-    if (value.empty() || end == nullptr || *end != '\0' || parsed <= 0)
+    if (value.empty() || end == nullptr || *end != '\0' || parsed <= 0) {
         throw ServerException("Invalid " + label + ": '" + value + "'.");
+    }
     return static_cast<unsigned int>(parsed);
 }
 
@@ -28,8 +29,9 @@ static unsigned int parseBoundedInt(const std::string &value, const std::string 
 {
     const unsigned int parsed = parsePositiveInt(value, label);
 
-    if (parsed < min || parsed > max)
+    if (parsed < min || parsed > max) {
         throw ServerException("Invalid " + label + ": must be between " + std::to_string(min) + " and " + std::to_string(max) + ".");
+    }
     return parsed;
 }
 
@@ -38,16 +40,18 @@ static bool isKnownOption(const std::string &value)
     std::array<std::string, 7> options = {"-p", "-x", "-y", "-n", "-c", "-f", "--help"};
 
     for (std::string &option : options) {
-        if (option == value)
+        if (option == value) {
             return true;
+        }
     }
     return false;
 }
 
 static std::string requireValue(int argc, char **argv, int &index, const std::string &option)
 {
-    if (index + 1 >= argc)
+    if (index + 1 >= argc) {
         throw ServerException("Unknown or incomplete argument: " + option + ".");
+    }
     index++;
     return argv[index];
 }
@@ -60,18 +64,21 @@ static void parseTeamNames(std::vector<std::string> &teamNames, int argc, char *
     while (index < argc && !isKnownOption(argv[index])) {
         const std::string teamName = argv[index];
 
-        if (teamName == "GRAPHIC")
+        if (teamName == "GRAPHIC") {
             throw ServerException("Team name GRAPHIC is reserved.");
+        }
         for (const std::string &existingName : teamNames) {
-            if (existingName == teamName)
+            if (existingName == teamName) {
                 throw ServerException("Duplicate team name: " + teamName + ".");
+            }
         }
         teamNames.push_back(teamName);
         index++;
     }
     index--;
-    if (teamNames.size() == initialCount)
+    if (teamNames.size() == initialCount) {
         throw ServerException("Missing team names after -n.");
+    }
 }
 
 void ServerData::parseArgs(char **argv, int argc, int &index)
@@ -111,10 +118,12 @@ void ServerData::parse(int argc, char **argv)
         printHelp(argv[0]);
         std::exit(0);
     }
-    for (int index = 1; index < argc; index++)
+    for (int index = 1; index < argc; index++) {
         parseArgs(argv, argc, index);
-    if (_port == 0 || _width == 0 || _height == 0 || _clientsNb == 0 || _teamNames.empty())
+    }
+    if (_port == 0 || _width == 0 || _height == 0 || _clientsNb == 0 || _teamNames.empty()) {
         throw ServerException("Missing required arguments. Use --help for usage.");
+    }
 }
 
 void ServerData::printHelp(const std::string &binaryName) const
