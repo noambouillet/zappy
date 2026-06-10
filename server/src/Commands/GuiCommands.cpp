@@ -10,6 +10,7 @@
 #include "Client.hpp"
 #include <array>
 #include <string_view>
+#include <optional>
 
 namespace ZappyServer {
 
@@ -59,9 +60,11 @@ void GuiCommands::bct(Client &client, Server &server, const std::string &args)
 
 void GuiCommands::mct(Client &client, Server &server, const std::string &)
 {
-    for (unsigned int y = 0; y < server.getHeight(); y++)
-        for (unsigned int x = 0; x < server.getWidth(); x++)
-            GuiCommands::bct(client, server, "");
+    for (unsigned int y = 0; y < server.getHeight(); y++) {
+        for (unsigned int x = 0; x < server.getWidth(); x++) {
+            GuiCommands::bct(client, server, std::to_string(x) + " " + std::to_string(y));
+        }
+    }
 }
 
 void GuiCommands::tna(Client &client, Server &server, const std::string &)
@@ -106,110 +109,145 @@ void GuiCommands::smg(Client &client, Server &server, const std::string &msg)
     server.getSocket().sendMessage(client.getFd(), out.c_str(), out.size());
 }
 
+namespace {
+    void broadcastToGui(Server &server, const std::string &msg) {
+        for (Client &client : server.getClients()) {
+            if (!client.isDead() && client.getState() == ClientState::GUI) {
+                server.getSocket().sendMessage(client.getFd(), msg.c_str(), msg.size());
+            }
+        }
+    }
+
+    std::optional<std::reference_wrapper<Client>> getClientById(Server &server, int id) {
+        for (Client &client : server.getClients()) {
+            if (client.getFd() == id) {
+                return client;
+            }
+        }
+        return std::nullopt;
+    }
+}
+
 void GuiCommands::pnw(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    auto clientOpt = getClientById(server, playerId);
+    if (!clientOpt.has_value())
+        return;
+    Client &client = clientOpt.value().get();
+    std::string msg = "pnw " + std::to_string(playerId) + " " + std::to_string(client.getX()) + " " + std::to_string(client.getY()) + " " + std::to_string(client.getDirection()) + " " + std::to_string(client.getLevel()) + " " + client.getTeamName() + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::ppo(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    auto clientOpt = getClientById(server, playerId);
+    if (!clientOpt.has_value())
+        return;
+    Client &client = clientOpt.value().get();
+    std::string msg = "ppo " + std::to_string(playerId) + " " + std::to_string(client.getX()) + " " + std::to_string(client.getY()) + " " + std::to_string(client.getDirection()) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::plv(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    auto clientOpt = getClientById(server, playerId);
+    if (!clientOpt.has_value())
+        return;
+    Client &client = clientOpt.value().get();
+    std::string msg = "plv " + std::to_string(playerId) + " " + std::to_string(client.getLevel()) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pin(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    auto clientOpt = getClientById(server, playerId);
+    if (!clientOpt.has_value())
+        return;
+    Client &client = clientOpt.value().get();
+    std::string msg = "pin " + std::to_string(playerId) + " " + std::to_string(client.getX()) + " " + std::to_string(client.getY());
+    for (int i = 0; i < 7; i++) {
+        msg += " " + std::to_string(client.getInventory(i));
+    }
+    msg += "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pex(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    std::string msg = "pex " + std::to_string(playerId) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pbc(Server &server, int playerId, const std::string &msg)
 {
-    (void)server;
-    (void)playerId;
-    (void)msg;
+    std::string out = "pbc " + std::to_string(playerId) + " " + msg + "\n";
+    broadcastToGui(server, out);
 }
 
 void GuiCommands::pic(Server &server, unsigned int x, unsigned int y, int level)
 {
-    (void)server;
-    (void)x;
-    (void)y;
-    (void)level;
+    std::string msg = "pic " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(level);
+    for (Client &c : server.getClients()) {
+        if (!c.isDead() && c.getState() == ClientState::AI && c.getX() == x && c.getY() == y && c.getLevel() == (unsigned int)level) {
+            msg += " " + std::to_string(c.getFd());
+        }
+    }
+    msg += "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pie(Server &server, unsigned int x, unsigned int y, bool result)
 {
-    (void)server;
-    (void)x;
-    (void)y;
-    (void)result;
+    std::string msg = "pie " + std::to_string(x) + " " + std::to_string(y) + " " + (result ? "1" : "0") + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pfk(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    std::string msg = "pfk " + std::to_string(playerId) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pdr(Server &server, int playerId, int resource)
 {
-    (void)server;
-    (void)playerId;
-    (void)resource;
+    std::string msg = "pdr " + std::to_string(playerId) + " " + std::to_string(resource) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pgt(Server &server, int playerId, int resource)
 {
-    (void)server;
-    (void)playerId;
-    (void)resource;
+    std::string msg = "pgt " + std::to_string(playerId) + " " + std::to_string(resource) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::pdi(Server &server, int playerId)
 {
-    (void)server;
-    (void)playerId;
+    std::string msg = "pdi " + std::to_string(playerId) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::enw(Server &server, int eggId, int playerId, unsigned int x, unsigned int y)
 {
-    (void)server;
-    (void)eggId;
-    (void)playerId;
-    (void)x;
-    (void)y;
+    std::string msg = "enw " + std::to_string(eggId) + " " + std::to_string(playerId) + " " + std::to_string(x) + " " + std::to_string(y) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::ebo(Server &server, int eggId)
 {
-    (void)server;
-    (void)eggId;
+    std::string msg = "ebo " + std::to_string(eggId) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::edi(Server &server, int eggId)
 {
-    (void)server;
-    (void)eggId;
+    std::string msg = "edi " + std::to_string(eggId) + "\n";
+    broadcastToGui(server, msg);
 }
 
 void GuiCommands::seg(Server &server, const std::string &teamName)
 {
-    (void)server;
-    (void)teamName;
+    std::string msg = "seg " + teamName + "\n";
+    broadcastToGui(server, msg);
 }
 
 }
