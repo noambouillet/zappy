@@ -63,6 +63,7 @@ def handle_commands(agent, str_list_command):
     """
     while '\n' in str_list_command:
         result_command, str_list_command = str_list_command.split('\n', 1)
+        print("Result command receive by the server ", result_command)
         if (len(agent.list_commands) > 0):
             command = agent.list_commands[0]
         #print(command, result_command)

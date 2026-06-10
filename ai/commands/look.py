@@ -14,7 +14,16 @@ def do_look(agent, result_command):
         result_command (str): Response from the serv
     """
     old_vision = agent.vision
-    agent.vision = result_command
+    remove_bracket = result_command.strip()[1:-1]
+    vision_split = remove_bracket.split(',')
+    tab_vision = []
+    for i in vision_split:
+        elem_tab = i.strip()
+        if (elem_tab):
+            tab_vision.append(elem_tab.split())
+        else:
+            tab_vision.append([])
+    agent.vision = tab_vision
     print("La vision de l'agent à évoluer passant de", old_vision, "to", agent.vision)
     logger.info("The Look command was successful (received and completed).")
     return
