@@ -9,10 +9,11 @@
 
 namespace ZappyServer {
 
-Client::Client(int fd) : _fd(fd), _state(ClientState::WAITING_TEAM), _x(0), _y(0), _direction(1), _level(1)
+Client::Client(int fd) : _fd(fd), _state(ClientState::WAITING_TEAM), _x(0), _y(0), _direction(1), _level(1), _foodTicks(126)
 {
-    for (int i = 0; i < 7; i++)
-        _inventory[i] = 0;
+    for (int index = 0; index < 7; index++) {
+        _inventory[index] = 0;
+    }
 }
 
 int Client::getFd() const
@@ -87,15 +88,27 @@ unsigned int Client::getLevel() const
 
 unsigned int Client::getInventory(unsigned int index) const
 {
-    if (index >= 7)
+    if (index >= 7) {
         return 0;
+    }
     return _inventory[index];
 }
 
 void Client::setInventory(unsigned int index, unsigned int value)
 {
-    if (index < 7)
+    if (index < 7) {
         _inventory[index] = value;
+    }
+}
+
+unsigned int Client::getFoodTicks() const
+{
+    return _foodTicks;
+}
+
+void Client::setFoodTicks(unsigned int value)
+{
+    _foodTicks = value;
 }
 
 std::queue<QueuedCommand> &Client::getCommandQueue()

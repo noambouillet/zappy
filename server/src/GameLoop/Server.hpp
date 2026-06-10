@@ -12,6 +12,7 @@
 #include "Socket.hpp"
 #include "Client.hpp"
 #include "Map.hpp"
+#include "Egg.hpp"
 #include <vector>
 #include <string>
 #include <chrono>
@@ -30,6 +31,8 @@ class Server {
         Poll _poll;
         std::vector<Client> _clients;
         Map _map;
+        std::vector<Egg> _eggs;
+        unsigned int _nextEggId;
         std::chrono::time_point<std::chrono::steady_clock> _lastTick;
 
         void setup();
@@ -59,6 +62,9 @@ class Server {
         void setFreq(unsigned int t);
         std::vector<Client> &getClients();
         unsigned int getClientsNb() const;
+        const std::vector<Egg> &getEggs() const;
+        unsigned int addEgg(const std::string &teamName, unsigned int x, unsigned int y);
+        void destroyEggsOnTile(unsigned int x, unsigned int y);
 };
 
 }

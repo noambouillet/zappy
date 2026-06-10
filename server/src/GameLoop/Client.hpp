@@ -35,6 +35,7 @@ class Client {
         unsigned int _direction;
         unsigned int _level;
         unsigned int _inventory[7];
+        unsigned int _foodTicks;
         std::queue<QueuedCommand> _commandQueue;
     public:
         explicit Client(int fd);
@@ -55,6 +56,8 @@ class Client {
         unsigned int getLevel() const;
         unsigned int getInventory(unsigned int index) const;
         void setInventory(unsigned int index, unsigned int value);
+        unsigned int getFoodTicks() const;
+        void setFoodTicks(unsigned int value);
         std::queue<QueuedCommand> &getCommandQueue();
         void queueCommand(const std::string &cmd, unsigned int ticks);
         void invalidate();

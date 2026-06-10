@@ -20,7 +20,7 @@ namespace ZappyServer {
 // 🚀 Server starting up mdr
 
 Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
-    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height)
+    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height), _nextEggId(0)
 {}
 
 Server::~Server()
@@ -96,17 +96,53 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
         logger.write("A fake team tried to join the world, in the name of " + requestedTeamName + ".");
         return;
     }
+
+    unsigned int aliveCount = 0;
+    for (const Client &otherClient : _clients) {
+        if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getTeamName() == requestedTeamName) {
+            aliveCount++;
+        }
+    }
+
+    if (aliveCount >= _clientsNb) {
+        auto eggIt = std::find_if(_eggs.begin(), _eggs.end(),
+            [&requestedTeamName](const Egg &e) { return e.teamName == requestedTeamName; });
+        if (eggIt == _eggs.end()) {
+            _socket.sendMessage(client.getFd(), "ko\n", 3);
+            disconnectClient(client);
+            return;
+        }
+        GuiCommands::ebo(*this, eggIt->id);
+        client.setX(eggIt->x);
+        client.setY(eggIt->y);
+        _eggs.erase(eggIt);
+    } else {
+        client.setX(rand() % _width);
+        client.setY(rand() % _height);
+    }
+
     client.setState(ClientState::AI);
     client.setTeamName(requestedTeamName);
-    client.setX(rand() % _width);
-    client.setY(rand() % _height);
     client.setDirection((rand() % 4) + 1);
     client.setLevel(1);
     client.setInventory(0, 10);
-    std::string availableSlots  = std::to_string(_clientsNb) + "\n";
+    
+    unsigned int totalSlots = _clientsNb;
+    for (const Egg &egg : _eggs) {
+        if (egg.teamName == requestedTeamName) {
+            totalSlots++;
+        }
+    }
+    int remaining = static_cast<int>(totalSlots) - static_cast<int>(aliveCount) - 1;
+    if (remaining < 0) {
+        remaining = 0;
+    }
+
+    std::string availableSlots  = std::to_string(remaining) + "\n";
     std::string worldDimensions = std::to_string(_width) + " " + std::to_string(_height) + "\n";
     _socket.sendMessage(client.getFd(), availableSlots.c_str(), availableSlots.size());
     _socket.sendMessage(client.getFd(), worldDimensions.c_str(), worldDimensions.size());
+    GuiCommands::pnw(*this, client.getFd());
     logger.write("The wanderer team " + requestedTeamName + " has entered the world.");
 }
 
@@ -135,26 +171,29 @@ void Server::readClient(Client &client)
     while ((newlinePos = readBuffer.find('\n')) != std::string::npos) {
         std::string completeLine = readBuffer.substr(0, newlinePos);
         readBuffer.erase(0, newlinePos + 1);
-        if (!completeLine.empty() && completeLine.back() == '\r')
+        if (!completeLine.empty() && completeLine.back() == '\r') {
             completeLine.pop_back();
-        if (completeLine.empty())
+        }
+        if (completeLine.empty()) {
             continue;
-        if (client.getState() == ClientState::WAITING_TEAM)
+        }
+        if (client.getState() == ClientState::WAITING_TEAM) {
             handleHandshake(client, completeLine);
-        else if (client.getState() == ClientState::GUI)
+        } else if (client.getState() == ClientState::GUI) {
             GuiCommands::dispatch(client, *this, completeLine);
-        else if (client.getState() == ClientState::AI) {
+        } else if (client.getState() == ClientState::AI) {
             unsigned int ticks = 7;
             std::size_t spacePos = completeLine.find(' ');
             std::string cmdName = completeLine.substr(0, spacePos);
-            if (cmdName == "Inventory")
+            if (cmdName == "Inventory") {
                 ticks = 1;
-            else if (cmdName == "Connect_nbr")
+            } else if (cmdName == "Connect_nbr") {
                 ticks = 0;
-            else if (cmdName == "Fork")
+            } else if (cmdName == "Fork") {
                 ticks = 42;
-            else if (cmdName == "Incantation")
+            } else if (cmdName == "Incantation") {
                 ticks = 300;
+            }
             client.queueCommand(completeLine, ticks);
         }
     }
@@ -173,11 +212,13 @@ void Server::closeClients()
 void Server::readClients(const std::vector<pollfd> &fds)
 {
     for (const pollfd &entry : fds) {
-        if (!(entry.revents & POLLIN))
+        if (!(entry.revents & POLLIN)) {
             continue;
+        }
         for (Client &client : _clients) {
-            if (!client.isDead() && client.getFd() == entry.fd)
+            if (!client.isDead() && client.getFd() == entry.fd) {
                 readClient(client);
+            }
         }
     }
 }
@@ -195,18 +236,37 @@ void Server::removeDeadClients()
 void Server::acceptPendingClients(const std::vector<pollfd> &fds)
 {
     for (const pollfd &entry : fds) {
-        if (entry.fd == _socket.getFd() && (entry.revents & POLLIN))
+        if (entry.fd == _socket.getFd() && (entry.revents & POLLIN)) {
             acceptClient();
+        }
     }
 }
 
 void Server::processTicks(int ticks)
 {
     for (Client &client : _clients) {
-        if (client.isDead() || client.getState() != ClientState::AI)
+        if (client.isDead() || client.getState() != ClientState::AI) {
             continue;
-        for (int i = 0; i < ticks; i++) {
-            if (!client.getCommandQueue().empty()) {
+        }
+        for (int index = 0; index < ticks; index++) {
+            if (client.getFoodTicks() > 0) {
+                client.setFoodTicks(client.getFoodTicks() - 1);
+            }
+            
+            if (client.getFoodTicks() == 0) {
+                if (client.getInventory(0) > 0) {
+                    client.setInventory(0, client.getInventory(0) - 1);
+                    client.setFoodTicks(126);
+                } else {
+                    GuiCommands::pdi(*this, client.getFd());
+                    _socket.sendMessage(client.getFd(), "dead\n", 5);
+                    logger.write("A wanderer starved to death...");
+                    disconnectClient(client);
+                    break;
+                }
+            }
+
+            if (!client.isDead() && !client.getCommandQueue().empty()) {
                 QueuedCommand &cmd = client.getCommandQueue().front();
                 if (cmd.remainingTicks > 0)
                     cmd.remainingTicks--;
@@ -235,10 +295,12 @@ void Server::run()
             elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
         }
         int timeout = tickDurationMs - elapsedMs;
-        if (timeout < 0)
+        if (timeout < 0) {
             timeout = 0;
-        if (_poll.wait(timeout) <= 0)
+        }
+        if (_poll.wait(timeout) <= 0) {
             continue;
+        }
         const std::vector<pollfd> &fds = _poll.getFds();
         acceptPendingClients(fds);
         readClients(fds);
@@ -284,6 +346,31 @@ std::vector<Client> &Server::getClients()
 unsigned int Server::getClientsNb() const
 {
     return _clientsNb;
+}
+
+const std::vector<Egg> &Server::getEggs() const
+{
+    return _eggs;
+}
+
+unsigned int Server::addEgg(const std::string &teamName, unsigned int x, unsigned int y)
+{
+    unsigned int id = _nextEggId++;
+    _eggs.push_back({id, teamName, x, y});
+    return id;
+}
+
+void Server::destroyEggsOnTile(unsigned int x, unsigned int y)
+{
+    auto it = std::remove_if(_eggs.begin(), _eggs.end(),
+        [this, x, y](const Egg &egg) {
+            if (egg.x == x && egg.y == y) {
+                GuiCommands::edi(*this, egg.id);
+                return true;
+            }
+            return false;
+        });
+    _eggs.erase(it, _eggs.end());
 }
 
 }
