@@ -14,6 +14,7 @@
 #include "Map.hpp"
 #include <vector>
 #include <string>
+#include <chrono>
 
 namespace ZappyServer {
 
@@ -29,8 +30,10 @@ class Server {
         Poll _poll;
         std::vector<Client> _clients;
         Map _map;
+        std::chrono::time_point<std::chrono::steady_clock> _lastTick;
 
         void setup();
+        void processTicks(int ticks);
         void acceptClient();
         void readClient(Client &client);
         void handleHandshake(Client &client, const std::string &line);
@@ -55,6 +58,7 @@ class Server {
         unsigned int getFreq() const;
         void setFreq(unsigned int t);
         std::vector<Client> &getClients();
+        unsigned int getClientsNb() const;
 };
 
 }

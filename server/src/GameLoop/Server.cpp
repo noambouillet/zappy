@@ -40,6 +40,7 @@ void Server::setup()
     logger.write("The world has opened on port " + std::to_string(_port) + ".");
     _socket.startListening(128);
     _poll.addFd(_socket.getFd(), POLLIN);
+    _lastTick = std::chrono::steady_clock::now();
 }
 
 void Server::acceptClient()
@@ -66,7 +67,6 @@ void Server::handleGuiHandshake(Client &client)
 {
     client.setState(ClientState::GUI);
     client.setTeamName("GRAPHIC");
-    // actuellement j'envoie les commandes mais on les mettra dans une map de commandes.
     std::string mapSize = "msz " + std::to_string(_width) + " " + std::to_string(_height) + "\n";
     std::string timeUnit = "sgt " + std::to_string(_freq) + "\n";
     _socket.sendMessage(client.getFd(), mapSize.c_str(), mapSize.size());
@@ -98,6 +98,11 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
     }
     client.setState(ClientState::AI);
     client.setTeamName(requestedTeamName);
+    client.setX(rand() % _width);
+    client.setY(rand() % _height);
+    client.setDirection((rand() % 4) + 1);
+    client.setLevel(1);
+    client.setInventory(0, 10);
     std::string availableSlots  = std::to_string(_clientsNb) + "\n";
     std::string worldDimensions = std::to_string(_width) + " " + std::to_string(_height) + "\n";
     _socket.sendMessage(client.getFd(), availableSlots.c_str(), availableSlots.size());
@@ -138,8 +143,20 @@ void Server::readClient(Client &client)
             handleHandshake(client, completeLine);
         else if (client.getState() == ClientState::GUI)
             GuiCommands::dispatch(client, *this, completeLine);
-        else if (client.getState() == ClientState::AI)
-            AiCommands::dispatch(client, *this, completeLine);
+        else if (client.getState() == ClientState::AI) {
+            unsigned int ticks = 7;
+            std::size_t spacePos = completeLine.find(' ');
+            std::string cmdName = completeLine.substr(0, spacePos);
+            if (cmdName == "Inventory")
+                ticks = 1;
+            else if (cmdName == "Connect_nbr")
+                ticks = 0;
+            else if (cmdName == "Fork")
+                ticks = 42;
+            else if (cmdName == "Incantation")
+                ticks = 300;
+            client.queueCommand(completeLine, ticks);
+        }
     }
 }
 
@@ -183,11 +200,44 @@ void Server::acceptPendingClients(const std::vector<pollfd> &fds)
     }
 }
 
+void Server::processTicks(int ticks)
+{
+    for (Client &client : _clients) {
+        if (client.isDead() || client.getState() != ClientState::AI)
+            continue;
+        for (int i = 0; i < ticks; i++) {
+            if (!client.getCommandQueue().empty()) {
+                QueuedCommand &cmd = client.getCommandQueue().front();
+                if (cmd.remainingTicks > 0)
+                    cmd.remainingTicks--;
+                if (cmd.remainingTicks == 0) {
+                    AiCommands::dispatch(client, *this, cmd.line);
+                    client.getCommandQueue().pop();
+                }
+            }
+        }
+    }
+}
+
 void Server::run()
 {
     setup();
     while (true) {
-        if (_poll.wait() <= 0)
+        double tickDurationMs = 1000.0 / _freq;
+        auto now = std::chrono::steady_clock::now();
+        double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+        int ticksToProcess = elapsedMs / tickDurationMs;
+        
+        if (ticksToProcess > 0) {
+            processTicks(ticksToProcess);
+            _lastTick += std::chrono::milliseconds((int)(ticksToProcess * tickDurationMs));
+            now = std::chrono::steady_clock::now();
+            elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+        }
+        int timeout = tickDurationMs - elapsedMs;
+        if (timeout < 0)
+            timeout = 0;
+        if (_poll.wait(timeout) <= 0)
             continue;
         const std::vector<pollfd> &fds = _poll.getFds();
         acceptPendingClients(fds);
@@ -229,6 +279,11 @@ void Server::setFreq(unsigned int t)
 std::vector<Client> &Server::getClients()
 {
     return _clients;
+}
+
+unsigned int Server::getClientsNb() const
+{
+    return _clientsNb;
 }
 
 }

@@ -13,6 +13,14 @@
 
 namespace ZappyServer {
 
+// 🚀 L'IA il y en a pas mal qui connaissent mdr
+
+static const int dir_dx[] = {0, 0, 1, 0, -1};
+static const int dir_dy[] = {0, -1, 0, 1, 0};
+static const int look_w_dx[] = {0, 1, 0, -1, 0};
+static const int look_w_dy[] = {0, 0, 1, 0, -1};
+static const std::array<std::string_view, 7> resNames = {"food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"};
+
 static const std::array<AiCommandEntry, AI_COMMANDS_NUMBER> aiDispatch = {{
     { "Forward", AiCommands::forward },
     { "Right", AiCommands::right },
@@ -31,11 +39,11 @@ static const std::array<AiCommandEntry, AI_COMMANDS_NUMBER> aiDispatch = {{
 void AiCommands::dispatch(Client &client, Server &server, const std::string &line)
 {
     std::size_t spacePos = line.find(' ');
-    std::string cmd = line.substr(0, spacePos);
+    std::string commandName = line.substr(0, spacePos);
     std::string args = spacePos != std::string::npos ? line.substr(spacePos + 1) : "";
 
     for (const auto &entry : aiDispatch) {
-        if (entry.name == cmd) {
+        if (entry.name == commandName) {
             entry.handler(client, server, args);
             return;
         }
@@ -43,88 +51,291 @@ void AiCommands::dispatch(Client &client, Server &server, const std::string &lin
     server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
 }
 
-void AiCommands::forward(Client &client, Server &server, const std::string &args)
+void AiCommands::forward(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    int currentX = client.getX();
+    int currentY = client.getY();
+    unsigned int currentDir = client.getDirection();
+
+    currentX += dir_dx[currentDir];
+    currentY += dir_dy[currentDir];
+    if (currentX < 0)
+        currentX += server.getWidth();
+    if (currentY < 0)
+        currentY += server.getHeight();
+    client.setX(currentX % server.getWidth());
+    client.setY(currentY % server.getHeight());
+    server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
-void AiCommands::right(Client &client, Server &server, const std::string &args)
+void AiCommands::right(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    unsigned int currentDir = client.getDirection();
+
+    currentDir = (currentDir % 4) + 1;
+    client.setDirection(currentDir);
+    server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
-void AiCommands::left(Client &client, Server &server, const std::string &args)
+void AiCommands::left(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    unsigned int currentDir = client.getDirection();
+
+    currentDir = (currentDir == 1) ? 4 : currentDir - 1;
+    client.setDirection(currentDir);
+    server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
-void AiCommands::look(Client &client, Server &server, const std::string &args)
+void AiCommands::look(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    unsigned int currentX = client.getX();
+    unsigned int currentY = client.getY();
+    unsigned int currentDir = client.getDirection();
+    unsigned int currentLevel = client.getLevel();
+    std::string response = "[";
+
+    bool firstTile = true;
+    for (unsigned int depth = 0; depth <= currentLevel; depth++) {
+        for (int widthOffset = -(int)depth; widthOffset <= (int)depth; widthOffset++) {
+            if (!firstTile)
+                response += ",";
+            else firstTile = false;
+            int targetX = (int)currentX + dir_dx[currentDir] * depth + look_w_dx[currentDir] * widthOffset;
+            int targetY = (int)currentY + dir_dy[currentDir] * depth + look_w_dy[currentDir] * widthOffset;
+            while (targetX < 0)
+                targetX += server.getWidth();
+            while (targetY < 0)
+                targetY += server.getHeight();
+            targetX = targetX % server.getWidth();
+            targetY = targetY % server.getHeight();
+
+            for (const Client &otherClient : server.getClients()) {
+                if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getX() == (unsigned int)targetX && otherClient.getY() == (unsigned int)targetY) {
+                    response += " player";
+                }
+            }
+            Tile &tile = server.getMap().getTile(targetX, targetY);
+            for (int resourceType = 0; resourceType < 7; resourceType++) {
+                for (unsigned int resourceCount = 0; resourceCount < tile.resources[resourceType]; resourceCount++) {
+                    response += " ";
+                    response += resNames[resourceType];
+                }
+            }
+        }
+    }
+    std::string cleanedResponse;
+    for (size_t charIndex = 0; charIndex < response.size(); charIndex++) {
+        if (response[charIndex] == ' ' && (charIndex == 0 || response[charIndex-1] == '[' || response[charIndex-1] == ',')) {
+            continue;
+        }
+        cleanedResponse += response[charIndex];
+    }
+    cleanedResponse += "]\n";
+    server.getSocket().sendMessage(client.getFd(), cleanedResponse.c_str(), cleanedResponse.size());
 }
 
-void AiCommands::inventory(Client &client, Server &server, const std::string &args)
+void AiCommands::inventory(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    std::string response = "[food " + std::to_string(client.getInventory(0)) + ", linemate " + std::to_string(client.getInventory(1)) +
+        ", deraumere " + std::to_string(client.getInventory(2)) + ", sibur " + std::to_string(client.getInventory(3)) +
+        ", mendiane " + std::to_string(client.getInventory(4)) + ", phiras " + std::to_string(client.getInventory(5)) +
+        ", thystame " + std::to_string(client.getInventory(6)) + "]\n";
+    server.getSocket().sendMessage(client.getFd(), response.c_str(), response.size());
 }
 
 void AiCommands::broadcast(Client &client, Server &server, const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    std::string text = args;
+    if (!text.empty() && text.back() == '\n')
+        text.pop_back();
+    int senderX = client.getX();
+    int senderY = client.getY();
+    int mapWidth = server.getWidth();
+    int mapHeight = server.getHeight();
+    int bcastDir[4][8] = {
+        {1, 8, 7, 6, 5, 4, 3, 2},
+        {3, 2, 1, 8, 7, 6, 5, 4},
+        {5, 4, 3, 2, 1, 8, 7, 6},
+        {7, 6, 5, 4, 3, 2, 1, 8}
+    };
+
+    for (Client &receiver : server.getClients()) {
+        if (&receiver != &client && !receiver.isDead() && receiver.getState() == ClientState::AI) {
+            int receiverX = receiver.getX();
+            int receiverY = receiver.getY();
+            int deltaXDirect = senderX - receiverX;
+            int deltaXWrapped = (senderX > receiverX) ? (senderX - receiverX - mapWidth) : (senderX - receiverX + mapWidth);
+            int shortestDeltaX = (std::abs(deltaXDirect) < std::abs(deltaXWrapped)) ? deltaXDirect : deltaXWrapped;
+            int deltaYDirect = senderY - receiverY;
+            int deltaYWrapped = (senderY > receiverY) ? (senderY - receiverY - mapHeight) : (senderY - receiverY + mapHeight);
+            int shortestDeltaY = (std::abs(deltaYDirect) < std::abs(deltaYWrapped)) ? deltaYDirect : deltaYWrapped;
+            int soundDirection = 0;
+            if (shortestDeltaX != 0 || shortestDeltaY != 0) {
+                int dxSign = (shortestDeltaX > 0) - (shortestDeltaX < 0);
+                int dySign = (shortestDeltaY > 0) - (shortestDeltaY < 0);
+                int absDirMatrix[3][3] = {
+                    {8, 1, 2},
+                    {7, 0, 3},
+                    {6, 5, 4}
+                };
+                int from_abs = absDirMatrix[dySign + 1][dxSign + 1];
+                soundDirection = bcastDir[receiver.getDirection() - 1][from_abs - 1];
+            }
+            std::string msg = "message " + std::to_string(soundDirection) + ", " + text + "\n";
+            server.getSocket().sendMessage(receiver.getFd(), msg.c_str(), msg.size());
+        }
+    }
+    server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
-void AiCommands::connectNbr(Client &client, Server &server, const std::string &args)
+void AiCommands::connectNbr(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    unsigned int aliveCount = 0;
+    for (const Client &otherClient : server.getClients()) {
+        if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getTeamName() == client.getTeamName())
+            aliveCount++;
+    }
+    unsigned int totalSlots = server.getClientsNb(); // Assuming no eggs yet
+    int remaining = (int)totalSlots - (int)aliveCount;
+    if (remaining < 0)
+        remaining = 0;
+    std::string response = std::to_string(remaining) + "\n";
+    server.getSocket().sendMessage(client.getFd(), response.c_str(), response.size());
 }
 
-void AiCommands::fork(Client &client, Server &server, const std::string &args)
+void AiCommands::fork(Client &client, Server &server, const std::string &)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
-void AiCommands::eject(Client &client, Server &server, const std::string &args)
+void AiCommands::eject(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    bool ejected = false;
+    unsigned int pusherX = client.getX();
+    unsigned int pusherY = client.getY();
+    unsigned int pusherDir = client.getDirection();
+
+    int k_matrix[4][4] = {
+        {1, 7, 5, 3},
+        {3, 1, 7, 5},
+        {5, 3, 1, 7},
+        {7, 5, 3, 1}
+    };
+    int opposite_dir[] = {0, 3, 4, 1, 2};
+    unsigned int from_dir_abs = opposite_dir[pusherDir];
+
+    for (Client &targetClient : server.getClients()) {
+        if (&targetClient != &client && !targetClient.isDead() && targetClient.getState() == ClientState::AI
+            && targetClient.getX() == pusherX && targetClient.getY() == pusherY) {
+            ejected = true;
+            int nextX = pusherX + dir_dx[pusherDir];
+            int nextY = pusherY + dir_dy[pusherDir];
+            if (nextX < 0)
+                nextX += server.getWidth();
+            if (nextY < 0)
+                nextY += server.getHeight();
+            targetClient.setX(nextX % server.getWidth());
+            targetClient.setY(nextY % server.getHeight());
+            int ejectDirection = k_matrix[targetClient.getDirection() - 1][from_dir_abs - 1];
+            std::string msg = "eject: " + std::to_string(ejectDirection) + "\n";
+            server.getSocket().sendMessage(targetClient.getFd(), msg.c_str(), msg.size());
+        }
+    }
+    if (ejected)
+        server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
+    else
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
 }
 
 void AiCommands::take(Client &client, Server &server, const std::string &object)
 {
-    (void)client;
-    (void)server;
-    (void)object;
+    int resourceIndex = -1;
+    for (int currentResIndex = 0; currentResIndex < 7; currentResIndex++) {
+        if (object == resNames[currentResIndex]) {
+            resourceIndex = currentResIndex;
+            break;
+        }
+    }
+    if (resourceIndex == -1) {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+        return;
+    }
+    Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+    if (tile.resources[resourceIndex] > 0) {
+        tile.resources[resourceIndex]--;
+        client.setInventory(resourceIndex, client.getInventory(resourceIndex) + 1);
+        server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
+    } else {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+    }
 }
 
 void AiCommands::set(Client &client, Server &server, const std::string &object)
 {
-    (void)client;
-    (void)server;
-    (void)object;
+    int resourceIndex = -1;
+    for (int currentResIndex = 0; currentResIndex < 7; currentResIndex++) {
+        if (object == resNames[currentResIndex]) {
+            resourceIndex = currentResIndex;
+            break;
+        }
+    }
+    if (resourceIndex == -1) {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+        return;
+    }
+    if (client.getInventory(resourceIndex) > 0) {
+        client.setInventory(resourceIndex, client.getInventory(resourceIndex) - 1);
+        Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+        tile.resources[resourceIndex]++;
+        server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
+    } else {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+    }
 }
 
-void AiCommands::incantation(Client &client, Server &server, const std::string &args)
+void AiCommands::incantation(Client &client, Server &server, __UNUSED__ const std::string &args)
 {
-    (void)client;
-    (void)server;
-    (void)args;
+    unsigned int currentLevel = client.getLevel();
+    if (currentLevel >= 8) {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+        return;
+    }
+    unsigned int requirements[7][7] = {
+        {1, 1, 0, 0, 0, 0, 0},
+        {2, 1, 1, 1, 0, 0, 0},
+        {2, 2, 0, 1, 0, 2, 0},
+        {4, 1, 1, 2, 0, 1, 0},
+        {4, 1, 2, 1, 3, 0, 0},
+        {6, 1, 2, 3, 0, 1, 0},
+        {6, 2, 2, 2, 2, 2, 1}
+    };
+    unsigned int requiredPlayers = requirements[currentLevel - 1][0];
+    Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+    for (int resourceIndex = 1; resourceIndex <= 6; resourceIndex++) {
+        if (tile.resources[resourceIndex] < requirements[currentLevel - 1][resourceIndex]) {
+            server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+            return;
+        }
+    }
+    std::vector<Client*> participants;
+    for (Client &participant : server.getClients()) {
+        if (!participant.isDead() && participant.getState() == ClientState::AI && participant.getX() == client.getX() && participant.getY() == client.getY() && participant.getLevel() == currentLevel) {
+            participants.push_back(&participant);
+        }
+    }
+    if (participants.size() < requiredPlayers) {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+        return;
+    }
+    for (int resourceIndex = 1; resourceIndex <= 6; resourceIndex++) {
+        tile.resources[resourceIndex] -= requirements[currentLevel - 1][resourceIndex];
+    }
+    for (Client *participant : participants) {
+        participant->setLevel(currentLevel + 1);
+        server.getSocket().sendMessage(participant->getFd(), "Elevation underway\n", 19);
+        std::string msg = "Current level: " + std::to_string(currentLevel + 1) + "\n";
+        server.getSocket().sendMessage(participant->getFd(), msg.c_str(), msg.size());
+    }
 }
 
 }

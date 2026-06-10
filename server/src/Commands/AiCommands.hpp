@@ -8,6 +8,8 @@
 #ifndef AICOMMANDS_HPP_
 #define AICOMMANDS_HPP_
 
+#define __UNUSED____ __attribute__((unused))
+
 #include <string>
 #include <functional>
 
