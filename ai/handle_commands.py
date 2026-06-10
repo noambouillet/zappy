@@ -36,10 +36,11 @@ def handle_recv_basic(agent, command, result_command):
         "Connect_nbr\n" : do_connection,
         "Fork\n" : do_fork,
         "Eject" : do_eject,
-        "Incantation" : do_incantation
     }
     if command in dict_commands: 
         dict_commands[command](agent, result_command)
+    elif (command == "Incantation\n"):
+        do_incantation(agent, result_command)
     elif (command.startswith("Broadcast")):
         do_broadcast(agent, result_command)
     elif (command.startswith("Take")):
@@ -47,7 +48,7 @@ def handle_recv_basic(agent, command, result_command):
     elif (command.startswith("Set")):
         do_set(agent, result_command)
     else:
-        print("Command uknown\n")
+        print("Command uknown :", command,"\n")
 
 
     
@@ -75,6 +76,9 @@ def handle_commands(agent, str_list_command):
             #receive_message(agent, result_command)
             continue
         else:
+            if (command == "Incantation\n" and result_command == "Elevation underway"):
+                handle_recv_basic(agent, command, result_command)
+                continue
             handle_recv_basic(agent, command, result_command)
             agent.list_commands.pop(0)
         #print(agent.list_commands)                
@@ -87,12 +91,12 @@ def send_recv_command(socket_connection, info_client, agent):
         socket_connection (_type_): _description_
         info_client (_type_): _description_
     """
+    #socket_connection.sendall(("Look\n").encode('utf-8'))
     socket_connection.sendall(("Look\n").encode('utf-8'))
-    socket_connection.sendall(("Inventory\n").encode('utf-8'))
     socket_connection.sendall(("Forward\n").encode('utf-8'))
     socket_connection.sendall(("Connect_nbr\n").encode('utf-8'))
+    #agent.list_commands.append("Look\n")
     agent.list_commands.append("Look\n")
-    agent.list_commands.append("Inventory\n")
     agent.list_commands.append("Forward\n")
     agent.list_commands.append("Connect_nbr\n")
     str_list_command = ""
