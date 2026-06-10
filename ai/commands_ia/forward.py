@@ -7,16 +7,16 @@
 
 from parsing import logger
 
-def do_forward(agent, result_command):
+def do_forward(agent, response_server):
     """This function is to advance the character
     Args:
         agent (class): the agent IA
-        result_command (str): the message send by the server for the response
+        response_server (str): the message send by the server for the response
     """
-    if (result_command == "ok"):
+    if (response_server == "ok"):
         logger.info("The Forward command was successful (direction: " + agent.direction.name + ")")
         print("Our agent managed to advance one space in the direction:", agent.direction.name)
     else:
-        logger.error("The response message from the server is not suitable for this command. result_command != ok (Left)")
+        logger.error("The response message from the server is not suitable for this command. response_server != ok (Left)")
         print("The response message from the server is not suitable for this command. (Forward)")
     return

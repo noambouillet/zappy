@@ -7,16 +7,16 @@
 
 from parsing import logger
 
-def do_eject(agent, result_command):
+def do_eject(agent, response_server):
     """This function is to know if an egg or a player was eject from the tile 
     Args:
         agent (class): the agent IA
-        result_command (str): the message send by the server for the response
+        response_server (str): the message send by the server for the response
     """
-    if (result_command == "ok"):
+    if (response_server == "ok"):
         logger.info("The Eject command was successful (received and completed).")
         print("The eject command worked correctly, expelling everything that was on the box.")
-    elif (result_command == "ko"):
+    elif (response_server == "ko"):
         logger.info("The Eject command did not result in the expulsion of anything from the square.")
         print("The eject command did not work; there was no noticeable change to the tile.")        
     else:

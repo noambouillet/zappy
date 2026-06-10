@@ -7,13 +7,13 @@
 
 from parsing import logger
 
-def do_broadcast(agent, result_command):
+def do_broadcast(agent, response_server):
     """This function is to confirm the Ok for broacast the message from server
     Args:
         agent (class): agent IA
-        result_command (str): Response from the server
+        response_server (str): Response from the server
     """
-    if (result_command == "ok"):
+    if (response_server == "ok"):
         logger.info("The message was successfully sent to the other AI agents.")
         logger.info("The Broadcast command was successful (received and completed).")
     else:

@@ -7,14 +7,14 @@
 
 from parsing import logger
 
-def do_look(agent, result_command):
+def do_look(agent, response_server):
     """This function is to get and change the vision of the agent with info from the server
     Args:
         agent (class): agent IA
-        result_command (str): Response from the serv
+        response_server (str): Response from the serv
     """
     old_vision = agent.vision
-    remove_bracket = result_command.strip()[1:-1]
+    remove_bracket = response_server.strip()[1:-1]
     vision_split = remove_bracket.split(',')
     tab_vision = []
     for i in vision_split:

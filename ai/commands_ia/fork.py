@@ -7,16 +7,16 @@
 
 from parsing import logger
 
-def do_fork(agent, result_command):
+def do_fork(agent, response_server):
     """This function is to fork a player
     Args:
         agent (class): the agent IA
-        result_command (str): the message send by the server for the response
+        response_server (str): the message send by the server for the response
     """
-    if (result_command == "ok"):
+    if (response_server == "ok"):
         logger.info("The Fork command was successful (received and completed).")
         print("The Fork command was successfully executed, accompanied by the production of an egg.")
     else:
-        logger.error("The response message from the server is not suitable for this command. result_command != ok (Fork)")
+        logger.error("The response message from the server is not suitable for this command. response_server != ok (Fork)")
         print("The response message from the server is not suitable for this command. (Fork)")
     return

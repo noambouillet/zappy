@@ -9,16 +9,11 @@ from constant import Direction, MIN_FOOD, requirement_for_progress
 from abc import ABC, abstractmethod
 
 class Behavior(ABC):
-    """Classe mère pour tous les comportements de l'IA."""
+    """Parent class for all AI behaviors."""
     @abstractmethod
     def execute(self, agent):
         pass
 
-class Survive(Behavior):
-    """This class is to force IA for survive with search food
-    Args:
-        Behavior (class): Mother class
-    """
 class Survive(Behavior):
     def execute(self, agent):
         """This function is to execute survive class
@@ -29,14 +24,14 @@ class Survive(Behavior):
         """
         try:
             if "food" in agent.vision[0]:
-                return "Take food\n"
+                return ["Take food\n"]
             for index, tab_elems in enumerate(agent.vision):
                 print("Index ", index, "Tab_elems", tab_elems)
                 if "food" in tab_elems:
-                    return "Forward\n"
-            return "Forward\n"
+                    return ["Forward\n"]
+            return ["Forward\n"]
         except (TypeError, IndexError):
-            return "Forward\n"
+            return ["Forward\n"]
     
 class Explore(Behavior):
     def execute(self, agent):
@@ -47,16 +42,17 @@ class Explore(Behavior):
             str: command for the agent
         """ 
         info_level_up = requirement_for_progress[agent.level - 1]
-        print(info_level_up)
         name_stone = ""
-        for cle, valeur in requirement_for_progress.items():
+        for cle, valeur in info_level_up.items():
             if (cle != "nb_players" and agent.inventory[cle] < valeur):
                 name_stone = cle
                 break
         if (name_stone and name_stone in agent.vision[0]):
-            return f"Take {name_stone}\n"
+            return [f"Take {name_stone}\n"]
         elif (name_stone and name_stone not in agent.vision[0]):
             return ["Forward\n", "Look\n"]
+        else:
+            return ["Forward\n"]
         
         
 class Evolution(Behavior):
@@ -67,7 +63,7 @@ class Evolution(Behavior):
         Returns:
             str: command for the agent
         """
-        return "Incantation\n"
+        return ["Incantation\n"]
 
 class Agent:
     """This class is to define the drone/agent/ia
@@ -81,31 +77,27 @@ class Agent:
         self.vision = [[]]
         self.unused_slots = 0
         self.elevation = False
-        self.status = Survive()
+        self.behavior = Survive()
     
-    def check_all_ressources(self):
-        """_summary_
-
+    def capable_of_evolving(self):
+        """This function is to determinate if the player can evolve with his ressources
         Returns:
-            _type_: _description_
+            bool: true or false for level up
         """
         info_level_up = requirement_for_progress[self.level - 1]
-        level_up_ok = True
+        can_level_up = True
         for cle, valeur in info_level_up.items():
             if (cle != "nb_players" and self.inventory[cle] < valeur):
-                level_up_ok = False
+                can_level_up = False
                 break
-        if (level_up_ok == False):
-            return False
-        else:
-            return True
-    
-    def change_status_client(self):
-        """_summary_
+        return can_level_up
+        
+    def adapt_behavior(self):
+        """This function is to adapt behavior during the life of the agent
         """
         if (self.inventory["food"] < MIN_FOOD):
             self.status = Survive()
-        elif (self.check_all_ressources() == False):
+        elif (self.capable_of_evolving() == False):
             self.status = Explore()
         else:
             self.status = Evolution()
