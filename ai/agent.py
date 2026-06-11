@@ -6,65 +6,10 @@
 ##
 
 from constant import Direction, MIN_FOOD, requirement_for_progress
-from abc import ABC, abstractmethod
-
-class Behavior(ABC):
-    """Parent class for all AI behaviors."""
-    @abstractmethod
-    def execute(self, agent):
-        pass
-
-class Survive(Behavior):
-    def execute(self, agent):
-        """This function is to execute survive class
-        Args:
-            agent (class): Agent IA
-        Returns:
-            str: command for the agent
-        """
-        try:
-            if "food" in agent.vision[0]:
-                return ["Take food\n"]
-            for index, tab_elems in enumerate(agent.vision):
-                print("Index ", index, "Tab_elems", tab_elems)
-                if "food" in tab_elems:
-                    return ["Forward\n"]
-            return ["Forward\n"]
-        except (TypeError, IndexError):
-            return ["Forward\n"]
+from behavior.survive import Survive
+from behavior.explore import Explore
+from behavior.evolution import Evolution
     
-class Explore(Behavior):
-    def execute(self, agent):
-        """This function is to execute explore class
-        Args:
-            agent (class): Agent IA
-        Returns:
-            str: command for the agent
-        """ 
-        info_level_up = requirement_for_progress[agent.level - 1]
-        name_stone = ""
-        for cle, valeur in info_level_up.items():
-            if (cle != "nb_players" and agent.inventory[cle] < valeur):
-                name_stone = cle
-                break
-        if (name_stone and name_stone in agent.vision[0]):
-            return [f"Take {name_stone}\n"]
-        elif (name_stone and name_stone not in agent.vision[0]):
-            return ["Forward\n", "Look\n"]
-        else:
-            return ["Forward\n"]
-        
-        
-class Evolution(Behavior):
-    def execute(self, agent):
-        """This function is to execute evolution class
-        Args:
-            agent (class): Agent IA
-        Returns:
-            str: command for the agent
-        """
-        return ["Incantation\n"]
-
 class Agent:
     """This class is to define the drone/agent/ia
     """
@@ -96,8 +41,9 @@ class Agent:
         """This function is to adapt behavior during the life of the agent
         """
         if (self.inventory["food"] < MIN_FOOD):
-            self.status = Survive()
+            print(self.inventory["food"])
+            self.behavior = Survive()
         elif (self.capable_of_evolving() == False):
-            self.status = Explore()
+            self.behavior = Explore()
         else:
-            self.status = Evolution()
+            self.behavior = Evolution()

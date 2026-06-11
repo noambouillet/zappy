@@ -74,7 +74,7 @@ def handle_commands(agent, all_responses_server):
             receive_message(agent, response_server)
         else:
             command = agent.list_commands[0]
-            if (command == "Incantation\n" and response_server == "Elevation underway\n"):
+            if (command == "Incantation\n" and response_server == "Elevation underway"):
                 launch_commands(agent, command, response_server)
                 continue
             launch_commands(agent, command, response_server)
@@ -89,25 +89,8 @@ def send_recv_command(socket_connection, agent):
         agent (class): Agent IA
     """
     all_responses_server = ""
-    socket_connection.sendall(("Look\n").encode('utf-8'))
-    socket_connection.sendall(("Take food\n").encode('utf-8'))
-    socket_connection.sendall(("Set food\n").encode('utf-8'))
-    socket_connection.sendall(("Set food\n").encode('utf-8'))
-    socket_connection.sendall(("Inventory\n").encode('utf-8'))
-    agent.list_commands.append("Look\n")
-    agent.list_commands.append("Take food\n")
-    agent.list_commands.append("Set food\n")
-    agent.list_commands.append("Set food\n")
-    agent.list_commands.append("Inventory\n")
     while (True):
         try:
-            # agent.adapt_behavior()
-            # tab_command = agent.behavior.execute(agent)
-            # if (len(agent.list_commands) <= 10 and len(agent.list_commands) + len(tab_command) <= 10):
-            #     for command in tab_command:
-            #         agent.list_commands.append(command)
-            # print("Les commandes envoyées par l'agent:", agent.list_commands)
-            # socket_connection.sendall((agent.list_commands[0]).encode('utf-8'))
             response_server = socket_connection.recv(2048).decode('utf-8')
         except (socket.error, ConnectionError):
             logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
