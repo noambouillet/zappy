@@ -28,6 +28,7 @@ namespace GuiCommands {
 
     void msz(Client &client, Server &server, const std::string &args);
     void bct(Client &client, Server &server, const std::string &args);
+    void bct_broadcast(Server &server, unsigned int x, unsigned int y);
     void mct(Client &client, Server &server, const std::string &args);
     void tna(Client &client, Server &server, const std::string &args);
     void sgt(Client &client, Server &server, const std::string &args);

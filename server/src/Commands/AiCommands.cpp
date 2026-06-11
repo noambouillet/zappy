@@ -87,9 +87,9 @@ void AiCommands::dispatch(Client &client, Server &server, const std::string &lin
 
 void AiCommands::forward(Client &client, Server &server, const std::string &)
 {
-    int currentX = client.getX();
-    int currentY = client.getY();
-    unsigned int currentDir = client.getDirection();
+    int currentX = client.getPlayerData()->getX();
+    int currentY = client.getPlayerData()->getY();
+    unsigned int currentDir = client.getPlayerData()->getDirection();
 
     currentX += directions[currentDir].x;
     currentY += directions[currentDir].y;
@@ -97,38 +97,38 @@ void AiCommands::forward(Client &client, Server &server, const std::string &)
         currentX += server.getWidth();
     if (currentY < 0)
         currentY += server.getHeight();
-    client.setX(currentX % server.getWidth());
-    client.setY(currentY % server.getHeight());
+    client.getPlayerData()->setX(currentX % server.getWidth());
+    client.getPlayerData()->setY(currentY % server.getHeight());
     GuiCommands::ppo(server, client.getFd());
     server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
 void AiCommands::right(Client &client, Server &server, const std::string &)
 {
-    unsigned int currentDir = client.getDirection();
+    unsigned int currentDir = client.getPlayerData()->getDirection();
 
     currentDir = (currentDir % 4) + 1;
-    client.setDirection(currentDir);
+    client.getPlayerData()->setDirection(currentDir);
     GuiCommands::ppo(server, client.getFd());
     server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
 void AiCommands::left(Client &client, Server &server, const std::string &)
 {
-    unsigned int currentDir = client.getDirection();
+    unsigned int currentDir = client.getPlayerData()->getDirection();
 
     currentDir = (currentDir == 1) ? 4 : currentDir - 1;
-    client.setDirection(currentDir);
+    client.getPlayerData()->setDirection(currentDir);
     GuiCommands::ppo(server, client.getFd());
     server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
 
 void AiCommands::look(Client &client, Server &server, const std::string &)
 {
-    unsigned int currentX = client.getX();
-    unsigned int currentY = client.getY();
-    unsigned int currentDir = client.getDirection();
-    unsigned int currentLevel = client.getLevel();
+    unsigned int currentX = client.getPlayerData()->getX();
+    unsigned int currentY = client.getPlayerData()->getY();
+    unsigned int currentDir = client.getPlayerData()->getDirection();
+    unsigned int currentLevel = client.getPlayerData()->getLevel();
     std::string response = "[";
 
     bool firstTile = true;
@@ -151,7 +151,7 @@ void AiCommands::look(Client &client, Server &server, const std::string &)
             targetY = targetY % server.getHeight();
 
             for (const Client &otherClient : server.getClients()) {
-                if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getX() == static_cast<unsigned int>(targetX) && otherClient.getY() == static_cast<unsigned int>(targetY)) {
+                if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getPlayerData()->getX() == static_cast<unsigned int>(targetX) && otherClient.getPlayerData()->getY() == static_cast<unsigned int>(targetY)) {
                     response += " player";
                 }
             }
@@ -177,10 +177,10 @@ void AiCommands::look(Client &client, Server &server, const std::string &)
 
 void AiCommands::inventory(Client &client, Server &server, const std::string &)
 {
-    std::string response = "[food " + std::to_string(client.getInventory(0)) + ", linemate " + std::to_string(client.getInventory(1)) +
-        ", deraumere " + std::to_string(client.getInventory(2)) + ", sibur " + std::to_string(client.getInventory(3)) +
-        ", mendiane " + std::to_string(client.getInventory(4)) + ", phiras " + std::to_string(client.getInventory(5)) +
-        ", thystame " + std::to_string(client.getInventory(6)) + "]\n";
+    std::string response = "[food " + std::to_string(client.getPlayerData()->getInventory(0)) + ", linemate " + std::to_string(client.getPlayerData()->getInventory(1)) +
+        ", deraumere " + std::to_string(client.getPlayerData()->getInventory(2)) + ", sibur " + std::to_string(client.getPlayerData()->getInventory(3)) +
+        ", mendiane " + std::to_string(client.getPlayerData()->getInventory(4)) + ", phiras " + std::to_string(client.getPlayerData()->getInventory(5)) +
+        ", thystame " + std::to_string(client.getPlayerData()->getInventory(6)) + "]\n";
     server.getSocket().sendMessage(client.getFd(), response.c_str(), response.size());
 }
 
@@ -196,10 +196,10 @@ void AiCommands::broadcast(Client &client, Server &server, const std::string &ar
     for (Client &receiver : server.getClients()) {
         if (&receiver != &client && !receiver.isDead() && receiver.getState() == ClientState::AI) {
             int soundDirection = getSoundDirection(
-                client.getX(), client.getY(),
-                receiver.getX(), receiver.getY(),
+                client.getPlayerData()->getX(), client.getPlayerData()->getY(),
+                receiver.getPlayerData()->getX(), receiver.getPlayerData()->getY(),
                 server.getWidth(), server.getHeight(),
-                receiver.getDirection()
+                receiver.getPlayerData()->getDirection()
             );
             std::string msg = "message " + std::to_string(soundDirection) + ", " + text + "\n";
             server.getSocket().sendMessage(receiver.getFd(), msg.c_str(), msg.size());
@@ -232,8 +232,8 @@ void AiCommands::connectNbr(Client &client, Server &server, const std::string &)
 void AiCommands::fork(Client &client, Server &server, const std::string &)
 {
     GuiCommands::pfk(server, client.getFd());
-    unsigned int id = server.addEgg(client.getTeamName(), client.getX(), client.getY());
-    GuiCommands::enw(server, id, client.getFd(), client.getX(), client.getY());
+    unsigned int id = server.addEgg(client.getTeamName(), client.getPlayerData()->getX(), client.getPlayerData()->getY());
+    GuiCommands::enw(server, id, client.getFd(), client.getPlayerData()->getX(), client.getPlayerData()->getY());
     logger.write("An egg has been laid on the ground by team " + client.getTeamName() + ".");
     server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
@@ -241,9 +241,9 @@ void AiCommands::fork(Client &client, Server &server, const std::string &)
 void AiCommands::eject(Client &client, Server &server, const std::string &)
 {
     bool ejected = false;
-    unsigned int pusherX = client.getX();
-    unsigned int pusherY = client.getY();
-    unsigned int pusherDir = client.getDirection();
+    unsigned int pusherX = client.getPlayerData()->getX();
+    unsigned int pusherY = client.getPlayerData()->getY();
+    unsigned int pusherDir = client.getPlayerData()->getDirection();
 
     static const int k_matrix[4][4] = {
         {1, 7, 5, 3},
@@ -256,7 +256,7 @@ void AiCommands::eject(Client &client, Server &server, const std::string &)
 
     for (Client &targetClient : server.getClients()) {
         if (&targetClient != &client && !targetClient.isDead() && targetClient.getState() == ClientState::AI
-            && targetClient.getX() == pusherX && targetClient.getY() == pusherY) {
+            && targetClient.getPlayerData()->getX() == pusherX && targetClient.getPlayerData()->getY() == pusherY) {
             ejected = true;
             int nextX = pusherX + directions[pusherDir].x;
             int nextY = pusherY + directions[pusherDir].y;
@@ -264,9 +264,9 @@ void AiCommands::eject(Client &client, Server &server, const std::string &)
                 nextX += server.getWidth();
             if (nextY < 0)
                 nextY += server.getHeight();
-            targetClient.setX(nextX % server.getWidth());
-            targetClient.setY(nextY % server.getHeight());
-            int ejectDirection = k_matrix[targetClient.getDirection() - 1][from_dir_abs - 1];
+            targetClient.getPlayerData()->setX(nextX % server.getWidth());
+            targetClient.getPlayerData()->setY(nextY % server.getHeight());
+            int ejectDirection = k_matrix[targetClient.getPlayerData()->getDirection() - 1][from_dir_abs - 1];
             std::string msg = "eject: " + std::to_string(ejectDirection) + "\n";
             server.getSocket().sendMessage(targetClient.getFd(), msg.c_str(), msg.size());
             GuiCommands::ppo(server, targetClient.getFd());
@@ -293,13 +293,13 @@ void AiCommands::take(Client &client, Server &server, const std::string &object)
         server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
         return;
     }
-    Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+    Tile &tile = server.getMap().getTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
     if (tile.resources[resourceIndex] > 0) {
         tile.resources[resourceIndex]--;
-        client.setInventory(resourceIndex, client.getInventory(resourceIndex) + 1);
+        client.getPlayerData()->setInventory(resourceIndex, client.getPlayerData()->getInventory(resourceIndex) + 1);
         GuiCommands::pgt(server, client.getFd(), resourceIndex);
         GuiCommands::pin(server, client.getFd());
-        GuiCommands::bct(client, server, std::to_string(client.getX()) + " " + std::to_string(client.getY()));
+        GuiCommands::bct_broadcast(server, client.getPlayerData()->getX(), client.getPlayerData()->getY());
         server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
     } else {
         server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
@@ -319,13 +319,13 @@ void AiCommands::set(Client &client, Server &server, const std::string &object)
         server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
         return;
     }
-    if (client.getInventory(resourceIndex) > 0) {
-        client.setInventory(resourceIndex, client.getInventory(resourceIndex) - 1);
-        Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+    if (client.getPlayerData()->getInventory(resourceIndex) > 0) {
+        client.getPlayerData()->setInventory(resourceIndex, client.getPlayerData()->getInventory(resourceIndex) - 1);
+        Tile &tile = server.getMap().getTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
         tile.resources[resourceIndex]++;
         GuiCommands::pdr(server, client.getFd(), resourceIndex);
         GuiCommands::pin(server, client.getFd());
-        GuiCommands::bct(client, server, std::to_string(client.getX()) + " " + std::to_string(client.getY()));
+        GuiCommands::bct_broadcast(server, client.getPlayerData()->getX(), client.getPlayerData()->getY());
         server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
     } else {
         server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
@@ -334,7 +334,7 @@ void AiCommands::set(Client &client, Server &server, const std::string &object)
 
 namespace Elevation {
     bool canIncant(const Client &client, Server &server, unsigned int &requiredPlayers) {
-        unsigned int currentLevel = client.getLevel();
+        unsigned int currentLevel = client.getPlayerData()->getLevel();
         if (currentLevel >= 8) {
             return false;
         }
@@ -349,7 +349,7 @@ namespace Elevation {
             {6, 2, 2, 2, 2, 2, 1}
         };
         requiredPlayers = requirements[currentLevel - 1][0];
-        Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+        Tile &tile = server.getMap().getTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
         for (int index = 1; index <= 6; index++) {
             if (tile.resources[index] < requirements[currentLevel - 1][index]) {
                 return false;
@@ -361,8 +361,8 @@ namespace Elevation {
     std::vector<int> gatherParticipants(const Client &initiator, Server &server) {
         std::vector<int> fds;
         for (Client &participant : server.getClients()) {
-            if (!participant.isDead() && participant.getState() == ClientState::AI && participant.getX() == initiator.getX()
-                && participant.getY() == initiator.getY() && participant.getLevel() == initiator.getLevel()) {
+            if (!participant.isDead() && participant.getState() == ClientState::AI && participant.getPlayerData()->getX() == initiator.getPlayerData()->getX()
+                && participant.getPlayerData()->getY() == initiator.getPlayerData()->getY() && participant.getPlayerData()->getLevel() == initiator.getPlayerData()->getLevel()) {
                 fds.push_back(participant.getFd());
             }
         }
@@ -379,8 +379,8 @@ namespace Elevation {
             {6, 1, 2, 3, 0, 1, 0},
             {6, 2, 2, 2, 2, 2, 1}
         };
-        unsigned int currentLevel = client.getLevel();
-        Tile &tile = server.getMap().getTile(client.getX(), client.getY());
+        unsigned int currentLevel = client.getPlayerData()->getLevel();
+        Tile &tile = server.getMap().getTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
         for (int index = 1; index <= 6; index++) {
             tile.resources[index] -= requirements[currentLevel - 1][index];
         }
@@ -390,7 +390,7 @@ namespace Elevation {
         for (int fd : fds) {
             for (Client &participant : server.getClients()) {
                 if (participant.getFd() == fd) {
-                    participant.setLevel(newLevel);
+                    participant.getPlayerData()->setLevel(newLevel);
                     server.getSocket().sendMessage(fd, "Elevation underway\n", 19);
                     std::string msg = "Current level: " + std::to_string(newLevel) + "\n";
                     server.getSocket().sendMessage(fd, msg.c_str(), msg.size());
@@ -415,18 +415,18 @@ void AiCommands::incantation(Client &client, Server &server, const std::string &
         return;
     }
 
-    GuiCommands::pic(server, client.getX(), client.getY(), client.getLevel());
+    GuiCommands::pic(server, client.getPlayerData()->getX(), client.getPlayerData()->getY(), client.getPlayerData()->getLevel());
 
     Elevation::consumeResources(client, server);
-    Elevation::elevate(participantFds, server, client.getLevel() + 1);
+    Elevation::elevate(participantFds, server, client.getPlayerData()->getLevel() + 1);
     
     logger.write("A bright flash engulfs the players! They ascended to a higher state of being.");
     
-    GuiCommands::pie(server, client.getX(), client.getY(), true);
+    GuiCommands::pie(server, client.getPlayerData()->getX(), client.getPlayerData()->getY(), true);
     for (int fd : participantFds) {
         GuiCommands::plv(server, fd);
     }
-    GuiCommands::bct(client, server, std::to_string(client.getX()) + " " + std::to_string(client.getY()));
+    GuiCommands::bct_broadcast(server, client.getPlayerData()->getX(), client.getPlayerData()->getY());
 }
 
 }
