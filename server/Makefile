@@ -19,6 +19,7 @@ SRC     = main.cpp \
           src/Encapsulations/Socket.cpp \
           src/GameLoop/Server.cpp \
           src/GameLoop/Client.cpp \
+          src/GameLoop/PlayerData.cpp \
           src/GameLoop/Map.cpp \
           src/Commands/AiCommands.cpp \
           src/Commands/GuiCommands.cpp
