@@ -23,6 +23,41 @@ class Agent:
         self.unused_slots = 0
         self.elevation = False
         self.behavior = Survive()
+
+    def tile_to_coords(selft, tile):
+        """Convert tile from look to coordinates.
+        y = number of forward to do in the current direction
+        x = number of forward to do in right direction
+        -x = number of forward to do in left direction
+        """
+        if tile <= 0:
+            return 0, 0
+        row = 0
+        total = -1
+        while tile > total:
+            total += (2 * row + 1)
+            row += 1
+        row -= 1
+        x = -(total - tile - row)
+        y = row
+        return x, y
+
+    def go_to(self, tile):
+        """Return the list of commands to go to a tile from look
+        """
+        x, y = self.tile_to_coords(tile)
+        commands = []
+        for _ in range(y):
+            commands.append("Forward\n")
+        if x < 0:
+            commands.append("Left\n")
+            for _ in range(-x):
+                commands.append("Forward\n")
+        if x > 0:
+            commands.append("Right\n")
+            for _ in range(x):
+                commands.append("Forward\n")
+        return commands
     
     def capable_of_evolving(self):
         """This function is to determinate if the player can evolve with his ressources
