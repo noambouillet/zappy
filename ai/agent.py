@@ -23,8 +23,10 @@ class Agent:
         self.unused_slots = 0
         self.elevation = False
         self.behavior = Survive()
+        self.size_map = (0, 0)
+        self.team_name = ""
 
-    def tile_to_coords(selft, tile):
+    def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.
         y = number of forward to do in the current direction
         x = number of forward to do in right direction

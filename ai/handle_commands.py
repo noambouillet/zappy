@@ -55,7 +55,7 @@ def launch_commands(agent, command, response_server):
 
 
     
-def handle_commands(agent, all_responses_server):
+def handle_commands(agent : Agent, all_responses_server):
     """This function is to handle commands betwenn commands_ia and commands_server
     Args:
         agent (class): agent IA
@@ -78,23 +78,48 @@ def handle_commands(agent, all_responses_server):
                 launch_commands(agent, command, response_server)
                 continue
             launch_commands(agent, command, response_server)
-            agent.list_commands.pop(0)              
+            agent.list_commands.pop(0)    
+        print("List commands:", agent.list_commands)          
     return all_responses_server
 
+def send_commands(socket_connection : socket.socket, agent : Agent):
+    """Send the commands to server from the execute behavior (class)
 
-def send_recv_command(socket_connection, agent):
+    Args:
+        socket_connection (socket.socket): the socket connection between ia and server
+        agent (Agent): Agent IA
+    """
+    #agent.adapt_behavior()
+    if (len(agent.list_commands) == 0):
+        tab_commands = agent.behavior.execute(agent)
+        for command in tab_commands:
+            if (len(agent.list_commands) < 10):
+                agent.list_commands.append(command)
+                socket_connection.sendall((command).encode('utf-8'))
+                print(f"The command {command} just append in the list of commmands")
+        print(f"New lisf of commands {agent.list_commands}")
+
+def send_recv_command(socket_connection : socket.socket, agent : Agent):
     """This function is to juggle between send and receive commands (Ai/Server)
     Args:
         socket_connection (socket): the point of connection between server and ia
         agent (class): Agent IA
     """
     all_responses_server = ""
+    socket_connection.setblocking(False)
     while (True):
         try:
             response_server = socket_connection.recv(2048).decode('utf-8')
+            if (not response_server):
+                logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                sys.exit(0)
+            all_responses_server += response_server
+        except (BlockingIOError):
+            pass
         except (socket.error, ConnectionError):
             logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
             sys.exit(84)
-        all_responses_server += response_server
         all_responses_server = handle_commands(agent, all_responses_server)
+        send_commands(socket_connection, agent)
     return
+

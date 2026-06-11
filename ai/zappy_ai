@@ -12,7 +12,9 @@ def main():
     socket_connection = connect_to_server(port, machine_name)
     info_client = communication_server_client(socket_connection, team_name)
     agent = Agent()
+    agent.team_name = info_client["team_name"]
     agent.unused_slots = info_client["client_num"]
+    agent.size_map = (info_client["X"], info_client["Y"])
     send_recv_command(socket_connection, agent)
     logger.info("The program has just ended")
 

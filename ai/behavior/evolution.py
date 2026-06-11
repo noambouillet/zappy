@@ -15,4 +15,5 @@ class Evolution(Behavior):
         Returns:
             str: command for the agent
         """
-        return ["Incantation\n"]
+        return []
+        # return ["Incantation\n"]
