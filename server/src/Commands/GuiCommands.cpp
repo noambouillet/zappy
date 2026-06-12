@@ -52,7 +52,7 @@ void GuiCommands::bct(Client &client, Server &server, const std::string &args)
     std::sscanf(args.c_str(), "%u %u", &x, &y);
     Tile &tile = server.getMap().getTile(x, y);
     std::string msg  = "bct " + std::to_string(x) + " " + std::to_string(y);
-    for (int i = 0; i < 7; i++)
+    for (unsigned int i = 0; i < RESOURCES_NUMBER; i++)
         msg += " " + std::to_string(tile.resources[i]);
     msg += "\n";
     server.getSocket().sendMessage(client.getFd(), msg.c_str(), msg.size());
@@ -62,7 +62,7 @@ void GuiCommands::bct_broadcast(Server &server, unsigned int x, unsigned int y)
 {
     Tile &tile = server.getMap().getTile(x, y);
     std::string msg  = "bct " + std::to_string(x) + " " + std::to_string(y);
-    for (int i = 0; i < 7; i++)
+    for (unsigned int i = 0; i < RESOURCES_NUMBER; i++)
         msg += " " + std::to_string(tile.resources[i]);
     msg += "\n";
     for (Client &client : server.getClients()) {
@@ -179,7 +179,7 @@ void GuiCommands::pin(Server &server, int playerId)
         return;
     Client &client = clientOpt.value().get();
     std::string msg = "pin " + std::to_string(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY());
-    for (int i = 0; i < 7; i++) {
+    for (unsigned int i = 0; i < RESOURCES_NUMBER; i++) {
         msg += " " + std::to_string(client.getPlayerData()->getInventory(i));
     }
     msg += "\n";

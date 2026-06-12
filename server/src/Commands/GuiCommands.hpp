@@ -14,6 +14,7 @@
 namespace ZappyServer {
 
 static constexpr unsigned int GUI_COMMANDS_NUMBER = 6;
+static constexpr unsigned int RESOURCES_NUMBER = 7;
 class Server;
 class Client;
 
