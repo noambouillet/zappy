@@ -124,7 +124,8 @@ void ServerData::parse(int argc, char **argv)
         parseArgs(argv, argc, index);
     }
     if (_teamNames.empty()) {
-        throw ServerException("Missing required arguments. Team names must be provided with -n. Use --help for usage.");
+        printHelp(argv[0]);
+        throw ServerException("Missing required arguments. Team names must be provided with -n.");
     }
 }
 
