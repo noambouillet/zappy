@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cctype>
+#include <csignal>
 
 namespace ZappyServer {
 
@@ -43,6 +44,8 @@ void Server::setup()
     _socket.startListening(128);
     _poll.addFd(_socket.getFd(), POLLIN);
     _lastTick = std::chrono::steady_clock::now();
+
+    signal(SIGPIPE, SIG_IGN);
 }
 
 void Server::acceptClient()
@@ -300,17 +303,47 @@ void Server::run()
             now = std::chrono::steady_clock::now();
             elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
         }
-        int timeout = std::ceil(tickDurationMs - elapsedMs);
-        if (timeout < 0) {
-            timeout = 0;
+
+        int minTicks = -1;
+        for (const Client &client : _clients) {
+            if (client.isDead() || client.getState() != ClientState::AI || !client.getPlayerData().has_value()) {
+                continue;
+            }
+            const PlayerData &player = client.getPlayerData().value();
+            
+            if (player.getFoodTicks() > 0) {
+                int eventTicks = player.getFoodTicks();
+                if (minTicks == -1 || eventTicks < minTicks) {
+                    minTicks = eventTicks;
+                }
+            }
+            if (!player.getCommandQueue().empty()) {
+                const QueuedCommand &cmd = player.getCommandQueue().front();
+                int eventTicks = cmd.remainingTicks > 0 ? cmd.remainingTicks : 1;
+                if (minTicks == -1 || eventTicks < minTicks) {
+                    minTicks = eventTicks;
+                }
+            }
         }
-        if (_poll.wait(timeout) <= 0) {
-            continue;
+
+        int timeout = -1;
+        if (minTicks != -1) {
+            double targetElapsedMs = minTicks * tickDurationMs;
+            if (elapsedMs < targetElapsedMs) {
+                timeout = std::ceil(targetElapsedMs - elapsedMs);
+            } else {
+                timeout = 0;
+            }
         }
-        const std::vector<pollfd> &fds = _poll.getFds();
-        acceptPendingClients(fds);
-        readClients(fds);
-        removeDeadClients();
+        
+        int ret = _poll.wait(timeout);
+
+        if (ret > 0) {
+            const std::vector<pollfd> &fds = _poll.getFds();
+            acceptPendingClients(fds);
+            readClients(fds);
+            removeDeadClients();
+        }
     }
 }
 
