@@ -43,6 +43,7 @@ class PlayerData {
         unsigned int getFoodTicks() const;
         void setFoodTicks(unsigned int value);
         std::queue<QueuedCommand> &getCommandQueue();
+        const std::queue<QueuedCommand> &getCommandQueue() const;
         void queueCommand(const std::string &cmd, unsigned int ticks);
 };
 

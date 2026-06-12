@@ -86,6 +86,11 @@ std::queue<QueuedCommand> &PlayerData::getCommandQueue()
     return _commandQueue;
 }
 
+const std::queue<QueuedCommand> &PlayerData::getCommandQueue() const
+{
+    return _commandQueue;
+}
+
 void PlayerData::queueCommand(const std::string &cmd, unsigned int ticks)
 {
     if (_commandQueue.size() < 10) {
