@@ -25,8 +25,8 @@ class Explore(Behavior):
                 break
         print("Stone", name_stone)
         if (name_stone and name_stone in agent.vision[0]):
-            return [f"Take {name_stone}\n"]
+            return [f"Take {name_stone}\n", "Look\n", "Inventory\n"]
         elif (name_stone and name_stone not in agent.vision[0]):
-            return ["Forward\n", "Look\n"]
+            return ["Forward\n", "Look\n", "Inventory\n"]
         else:
             return ["Forward\n"]

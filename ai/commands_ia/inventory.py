@@ -22,6 +22,7 @@ def do_inventory(agent, response_server):
         key_exist = agent.inventory.get(ressource)
         if (key_exist is not None):
             agent.inventory[ressource] = (int)(number_str)
+    agent.adapt_behavior()
     print("The inventory change for the agent from", old_inventory, "to", agent.inventory)
     logger.info("The Inventory command was successful (received and completed).")
     return

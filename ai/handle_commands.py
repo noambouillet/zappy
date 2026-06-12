@@ -89,15 +89,17 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         socket_connection (socket.socket): the socket connection between ia and server
         agent (Agent): Agent IA
     """
-    #agent.adapt_behavior()
     if (len(agent.list_commands) == 0):
+        agent.adapt_behavior()
         tab_commands = agent.behavior.execute(agent)
+        if not tab_commands:
+            return
         for command in tab_commands:
             if (len(agent.list_commands) < 10):
                 agent.list_commands.append(command)
                 socket_connection.sendall((command).encode('utf-8'))
-                print(f"The command {command} just append in the list of commmands")
         print(f"New lisf of commands {agent.list_commands}")
+        logger.info(f"New list of commands send by the client : {agent.list_commands}")
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
     """This function is to juggle between send and receive commands (Ai/Server)
@@ -122,4 +124,3 @@ def send_recv_command(socket_connection : socket.socket, agent : Agent):
         all_responses_server = handle_commands(agent, all_responses_server)
         send_commands(socket_connection, agent)
     return
-
