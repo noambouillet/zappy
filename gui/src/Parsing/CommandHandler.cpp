@@ -14,6 +14,8 @@ CommandHandler::CommandHandler(World &world) : _world(world)
     _commands["sgt"] = &CommandHandler::handle_sgt;
     _commands["tna"] = &CommandHandler::handle_tna;
     _commands["enw"] = &CommandHandler::handle_enw;
+    _commands["pnw"] = &CommandHandler::handle_pnw;
+    _commands["ppo"] = &CommandHandler::handle_ppo;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -85,5 +87,29 @@ void CommandHandler::handle_pnw(std::stringstream &ss)
 
     if (!(ss >> player.id >> player.x >> player.y >> player.orientation >> player.level >> player.teamName))
         return;
+
+    player.visualPos = {0.0f, 0.0f};
+    player.targetPos = {0.0f, 0.0f};
+    player.isMoving = false;
+    player.animationProgress = 0.0f;
     _world.addPlayer(player);
+}
+
+void CommandHandler::handle_ppo(std::stringstream &ss)
+{
+    int id, x, y, orientation;
+    char sharp;
+
+    if (!(ss >> sharp >> id >> x >> y >> orientation))
+        return;
+
+    Player_t &player = _world.getTrantorian(id);
+
+    if (player.x != x || player.y != y) {
+        player.isMoving = true;
+        player.animationProgress = 0.0f;
+    }
+    player.x = x;
+    player.y = y;
+    player.orientation = orientation;
 }

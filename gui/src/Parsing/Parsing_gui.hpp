@@ -14,26 +14,24 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+typedef struct networkData_s {
+    int port;
+    std::string ip;
+} networkData_t;
+
 class Parsing_gui
 {
-private:
-    int _port;
-    std::string _ip;
-public:
-    Parsing_gui();
-    int parse_args(int ac, char **av);
-    void print_help();
-    void check_args(char *addr, char *port);
-    bool is_ipv4(char *addr);
-    int connect_to_server();
-    void send_command(int fd, const std::string& msg);
-    std::string read_from_server(int fd);
-    bool extract_message(std::string &buffer, std::string &message);
-    class ARGS_ERROR : public std::exception {
-        public:
-            ARGS_ERROR(std::string error);
-            const char *what() const noexcept override;
-        private:
-            std::string _msg;
-    };
+    public:
+        Parsing_gui();
+        networkData_t parse_args(int ac, char **av);
+        void print_help();
+        networkData_t check_args(char *addr, char *port);
+        bool is_ipv4(char *addr);
+        class ARGS_ERROR : public std::exception {
+            public:
+                ARGS_ERROR(std::string error);
+                const char *what() const noexcept override;
+            private:
+                std::string _msg;
+        };
 };

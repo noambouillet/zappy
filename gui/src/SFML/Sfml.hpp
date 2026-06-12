@@ -21,7 +21,7 @@ constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
 class Sfml {
     public:
-        Sfml(const World &world);
+        Sfml(World &world);
         ~Sfml();
         sf::RenderWindow &getWindow();
         void handleEvent();
@@ -35,15 +35,19 @@ class Sfml {
         void addTeam(std::string teamName);
         void addEggs(std::vector<int> egg);
         void drawTrantorians();
+        void drawBackground();
+        void updateAnimations(float deltaTime);
+        sf::Vector2f convertToPixels(int x, int y) const;
 
     private:
         sf::RenderWindow  _window;
-        const World &_world;
+        World &_world;
         sf::View _camera;
         EventHandler _eventHandler;
 
         std::unordered_map<std::string, sf::Texture> _textures;
         std::unordered_map<std::string, sf::Sprite> _sprites;
+        sf::Clock _clock;
 
         void updateDimensions();
         int loadTexture();

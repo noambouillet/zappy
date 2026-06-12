@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <SFML/Graphics.hpp>
 
 typedef struct Player_s {
     int id;
@@ -17,6 +18,10 @@ typedef struct Player_s {
     int orientation;
     int level;
     std::string teamName;
+    sf::Vector2f visualPos = {0.0f, 0.0f};
+    sf::Vector2f targetPos = {0.0f, 0.0f};
+    bool isMoving = false;
+    float animationProgress = 0.0f;
 } Player_t;
 
 class World {
@@ -30,11 +35,13 @@ class World {
         void addEgg(const std::vector<int>& egg);
         void setTimeUnit(int timeUnit);
         void addPlayer(Player_t player);
+        sf::Vector2f convertToPixels(int x, int y) const;
 
         const std::vector<std::vector<std::vector<int>>>& getMap() const { return _map; }
         const std::vector<std::vector<int>>& getEggs() const { return _eggs; }
         std::pair<size_t, size_t> getMapSize() const { return _mapSize; }
-        std::map<int, Player_t> getTrantorians() const { return _players; }
+        std::map<int, Player_t> &getTrantorians() { return _players; }
+        Player_t &getTrantorian(int id) { return _players[id];}
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};

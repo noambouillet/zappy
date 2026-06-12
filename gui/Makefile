@@ -6,7 +6,7 @@
 ##
 
 CC      = clang++
-CFLAGS  = -Wall -Wextra -I src/ -I src/Parsing -I src/SFML -I src/Data #-Werror
+CFLAGS  = -Wall -Wextra -I src/ -I src/Parsing -I src/SFML -I src/Data -I src/Network #-Werror
 
 RESET   =   \033[0m
 BLUE    =   \033[38;2;80;160;255m
@@ -17,7 +17,8 @@ SRC     = main.cpp \
 		  src/SFML/Sfml.cpp \
 		  src/Parsing/CommandHandler.cpp \
 		  src/Data/World.cpp \
-		  src/SFML/EventHandler.cpp
+		  src/SFML/EventHandler.cpp \
+		  src/Network/NetworkHandler.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 
