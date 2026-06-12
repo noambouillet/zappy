@@ -17,6 +17,15 @@
 #include <unordered_map>
 #include "EventHandler.hpp"
 
+typedef struct PlayerAnim_s {
+    int id;
+    sf::Vector2f visualPos = {0.0f, 0.0f};
+    sf::Vector2f targetPos = {0.0f, 0.0f};
+    bool isMoving = false;
+    int lastX = -1;
+    int lastY = -1;
+} PlayerAnim_t;
+
 constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
 class Sfml {
@@ -28,16 +37,14 @@ class Sfml {
         void displayWindow();
         void drawMap();
         void setMapSize(size_t width, size_t height);
-        void setTile(int x, int y, std::vector<int> ressources);
-        void drawRessources();
-        void drawEggs();
         void setTimeUnit(int TimeUnit);
-        void addTeam(std::string teamName);
-        void addEggs(std::vector<int> egg);
-        void drawTrantorians();
+        void drawTileElements(int x, int y, const TileData_t &tile);
         void drawBackground();
         void updateAnimations(float deltaTime);
         sf::Vector2f convertToPixels(int x, int y) const;
+        void drawRessources(int x, int y, const TileData_t &tile);
+        void drawEggs(int x, int y, const TileData_t &tile);
+        void drawTrantorians(const TileData_t &tile);
 
     private:
         sf::RenderWindow  _window;
@@ -55,4 +62,5 @@ class Sfml {
         float _tileSize = 0.0f;
         float _offsetX = 0.0f;
         float _offsetY = 0.0f;
+        std::map<int, PlayerAnim_t> _playerAnims;
 };

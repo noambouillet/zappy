@@ -84,14 +84,10 @@ void CommandHandler::handle_enw(std::stringstream &ss)
 void CommandHandler::handle_pnw(std::stringstream &ss)
 {
     Player_t player;
+    char sharp;
 
-    if (!(ss >> player.id >> player.x >> player.y >> player.orientation >> player.level >> player.teamName))
+    if (!(ss >> sharp >> player.id >> player.x >> player.y >> player.orientation >> player.level >> player.teamName))
         return;
-
-    player.visualPos = {0.0f, 0.0f};
-    player.targetPos = {0.0f, 0.0f};
-    player.isMoving = false;
-    player.animationProgress = 0.0f;
     _world.addPlayer(player);
 }
 
@@ -102,14 +98,5 @@ void CommandHandler::handle_ppo(std::stringstream &ss)
 
     if (!(ss >> sharp >> id >> x >> y >> orientation))
         return;
-
-    Player_t &player = _world.getTrantorian(id);
-
-    if (player.x != x || player.y != y) {
-        player.isMoving = true;
-        player.animationProgress = 0.0f;
-    }
-    player.x = x;
-    player.y = y;
-    player.orientation = orientation;
+    _world.movePlayer(id, x, y, orientation);
 }
