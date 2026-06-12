@@ -1,2 +1,6 @@
 test
 *.o
+*.log
+linux
+__pycache__
+*.txt
