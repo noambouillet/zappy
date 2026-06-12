@@ -189,14 +189,13 @@ void Server::readClient(Client &client)
             unsigned int ticks = 7;
             std::size_t spacePos = completeLine.find(' ');
             std::string cmdName = completeLine.substr(0, spacePos);
-            std::transform(cmdName.begin(), cmdName.end(), cmdName.begin(), ::tolower);
-            if (cmdName == "inventory") {
+            if (cmdName == "Inventory") {
                 ticks = 1;
-            } else if (cmdName == "connect_nbr") {
+            } else if (cmdName == "Connect_nbr") {
                 ticks = 0;
-            } else if (cmdName == "fork") {
+            } else if (cmdName == "Fork") {
                 ticks = 42;
-            } else if (cmdName == "incantation") {
+            } else if (cmdName == "Incantation") {
                 ticks = 300;
             }
             client.getPlayerData()->queueCommand(completeLine, ticks);
