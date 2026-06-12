@@ -9,11 +9,8 @@
 
 namespace ZappyServer {
 
-Client::Client(int fd) : _fd(fd), _state(ClientState::WAITING_TEAM), _x(0), _y(0), _direction(1), _level(1), _foodTicks(126)
+Client::Client(int fd) : _fd(fd), _state(ClientState::WAITING_TEAM)
 {
-    for (int index = 0; index < 7; index++) {
-        _inventory[index] = 0;
-    }
 }
 
 int Client::getFd() const
@@ -46,83 +43,6 @@ void Client::setTeamName(const std::string &newTeamName)
     _teamName = newTeamName;
 }
 
-void Client::setX(unsigned int x)
-{
-    _x = x;
-}
-
-void Client::setY(unsigned int y)
-{
-    _y = y;
-}
-
-void Client::setDirection(unsigned int direction)
-{
-    _direction = direction;
-}
-
-void Client::setLevel(unsigned int level)
-{
-    _level = level;
-}
-
-unsigned int Client::getX() const
-{
-    return _x;
-}
-
-unsigned int Client::getY() const
-{
-    return _y;
-}
-
-unsigned int Client::getDirection() const
-{
-    return _direction;
-}
-
-unsigned int Client::getLevel() const
-{
-    return _level;
-}
-
-unsigned int Client::getInventory(unsigned int index) const
-{
-    if (index >= 7) {
-        return 0;
-    }
-    return _inventory[index];
-}
-
-void Client::setInventory(unsigned int index, unsigned int value)
-{
-    if (index < 7) {
-        _inventory[index] = value;
-    }
-}
-
-unsigned int Client::getFoodTicks() const
-{
-    return _foodTicks;
-}
-
-void Client::setFoodTicks(unsigned int value)
-{
-    _foodTicks = value;
-}
-
-std::queue<QueuedCommand> &Client::getCommandQueue()
-{
-    return _commandQueue;
-}
-
-void Client::queueCommand(const std::string &cmd, unsigned int ticks)
-{
-    if (_commandQueue.size() < 10) {
-        _commandQueue.push({cmd, ticks});
-    }
-}
-
 void Client::invalidate()
 {
     _fd = -1;
@@ -131,6 +51,21 @@ void Client::invalidate()
 bool Client::isDead() const
 {
     return _fd == -1;
+}
+
+std::optional<PlayerData> &Client::getPlayerData()
+{
+    return _playerData;
+}
+
+const std::optional<PlayerData> &Client::getPlayerData() const
+{
+    return _playerData;
+}
+
+void Client::initPlayerData()
+{
+    _playerData = PlayerData();
 }
 
 }

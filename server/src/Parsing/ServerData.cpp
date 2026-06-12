@@ -63,7 +63,9 @@ static void parseTeamNames(std::vector<std::string> &teamNames, int argc, char *
     index++;
     while (index < argc && !isKnownOption(argv[index])) {
         const std::string teamName = argv[index];
-
+        if (teamName.empty()) {
+            throw ServerException("Team name cannot be empty.");
+        }
         if (teamName == "GRAPHIC") {
             throw ServerException("Team name GRAPHIC is reserved.");
         }
@@ -121,8 +123,9 @@ void ServerData::parse(int argc, char **argv)
     for (int index = 1; index < argc; index++) {
         parseArgs(argv, argc, index);
     }
-    if (_port == 0 || _width == 0 || _height == 0 || _clientsNb == 0 || _teamNames.empty()) {
-        throw ServerException("Missing required arguments. Use --help for usage.");
+    if (_teamNames.empty()) {
+        printHelp(argv[0]);
+        throw ServerException("Missing required arguments. Team names must be provided with -n.");
     }
 }
 
@@ -134,7 +137,7 @@ void ServerData::printHelp(const std::string &binaryName) const
         << "\tfreq\t\t is the reciprocal of time unit for execution of actions\n";
 }
 
-ServerData::ServerData() : _port(0), _width(0), _height(0), _clientsNb(0), _freq(100)
+ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), _freq(100)
 {
 }
 

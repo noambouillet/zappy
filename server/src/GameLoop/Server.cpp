@@ -13,6 +13,8 @@
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
+#include <cmath>
+#include <cctype>
 
 namespace ZappyServer {
 
@@ -104,6 +106,8 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
         }
     }
 
+    client.initPlayerData();
+
     if (aliveCount >= _clientsNb) {
         auto eggIt = std::find_if(_eggs.begin(), _eggs.end(),
             [&requestedTeamName](const Egg &e) { return e.teamName == requestedTeamName; });
@@ -113,19 +117,19 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
             return;
         }
         GuiCommands::ebo(*this, eggIt->id);
-        client.setX(eggIt->x);
-        client.setY(eggIt->y);
+        client.getPlayerData()->setX(eggIt->x);
+        client.getPlayerData()->setY(eggIt->y);
         _eggs.erase(eggIt);
     } else {
-        client.setX(rand() % _width);
-        client.setY(rand() % _height);
+        client.getPlayerData()->setX(rand() % _width);
+        client.getPlayerData()->setY(rand() % _height);
     }
 
     client.setState(ClientState::AI);
     client.setTeamName(requestedTeamName);
-    client.setDirection((rand() % 4) + 1);
-    client.setLevel(1);
-    client.setInventory(0, 10);
+    client.getPlayerData()->setDirection((rand() % 4) + 1);
+    client.getPlayerData()->setLevel(1);
+    client.getPlayerData()->setInventory(0, 10);
     
     unsigned int totalSlots = _clientsNb;
     for (const Egg &egg : _eggs) {
@@ -160,7 +164,7 @@ void Server::readClient(Client &client)
     char readChunk[1024];
     ssize_t receivedBytes = _socket.receiveMessage(client.getFd(), readChunk, sizeof(readChunk) - 1);
 
-    if (receivedBytes == 0) {
+    if (receivedBytes <= 0) {
         disconnectClient(client);
         return;
     }
@@ -194,7 +198,7 @@ void Server::readClient(Client &client)
             } else if (cmdName == "Incantation") {
                 ticks = 300;
             }
-            client.queueCommand(completeLine, ticks);
+            client.getPlayerData()->queueCommand(completeLine, ticks);
         }
     }
 }
@@ -244,35 +248,37 @@ void Server::acceptPendingClients(const std::vector<pollfd> &fds)
 
 void Server::processTicks(int ticks)
 {
-    for (Client &client : _clients) {
-        if (client.isDead() || client.getState() != ClientState::AI) {
-            continue;
-        }
-        for (int index = 0; index < ticks; index++) {
-            if (client.getFoodTicks() > 0) {
-                client.setFoodTicks(client.getFoodTicks() - 1);
+    for (int index = 0; index < ticks; index++) {
+        for (Client &client : _clients) {
+            if (client.isDead() || client.getState() != ClientState::AI || !client.getPlayerData().has_value()) {
+                continue;
+            }
+            PlayerData &player = client.getPlayerData().value();
+
+            if (player.getFoodTicks() > 0) {
+                player.setFoodTicks(player.getFoodTicks() - 1);
             }
             
-            if (client.getFoodTicks() == 0) {
-                if (client.getInventory(0) > 0) {
-                    client.setInventory(0, client.getInventory(0) - 1);
-                    client.setFoodTicks(126);
+            if (player.getFoodTicks() == 0) {
+                if (player.getInventory(0) > 0) {
+                    player.setInventory(0, player.getInventory(0) - 1);
+                    player.setFoodTicks(126);
                 } else {
                     GuiCommands::pdi(*this, client.getFd());
                     _socket.sendMessage(client.getFd(), "dead\n", 5);
                     logger.write("A wanderer starved to death...");
                     disconnectClient(client);
-                    break;
+                    continue;
                 }
             }
 
-            if (!client.isDead() && !client.getCommandQueue().empty()) {
-                QueuedCommand &cmd = client.getCommandQueue().front();
+            if (!client.isDead() && !player.getCommandQueue().empty()) {
+                QueuedCommand &cmd = player.getCommandQueue().front();
                 if (cmd.remainingTicks > 0)
                     cmd.remainingTicks--;
                 if (cmd.remainingTicks == 0) {
                     AiCommands::dispatch(client, *this, cmd.line);
-                    client.getCommandQueue().pop();
+                    player.getCommandQueue().pop();
                 }
             }
         }
@@ -294,7 +300,7 @@ void Server::run()
             now = std::chrono::steady_clock::now();
             elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
         }
-        int timeout = tickDurationMs - elapsedMs;
+        int timeout = std::ceil(tickDurationMs - elapsedMs);
         if (timeout < 0) {
             timeout = 0;
         }

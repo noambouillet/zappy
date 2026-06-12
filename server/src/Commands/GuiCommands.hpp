@@ -14,6 +14,7 @@
 namespace ZappyServer {
 
 static constexpr unsigned int GUI_COMMANDS_NUMBER = 6;
+static constexpr unsigned int RESOURCES_NUMBER = 7;
 class Server;
 class Client;
 
@@ -28,6 +29,7 @@ namespace GuiCommands {
 
     void msz(Client &client, Server &server, const std::string &args);
     void bct(Client &client, Server &server, const std::string &args);
+    void bct_broadcast(Server &server, unsigned int x, unsigned int y);
     void mct(Client &client, Server &server, const std::string &args);
     void tna(Client &client, Server &server, const std::string &args);
     void sgt(Client &client, Server &server, const std::string &args);
