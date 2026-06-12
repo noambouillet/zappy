@@ -18,7 +18,7 @@ class Agent:
         self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
         self.list_commands = []
         self.level = 1
-        self.direction = Direction.North
+        self.direction = Direction.Up
         self.vision = [[]]
         self.unused_slots = 0
         self.elevation = False
@@ -31,6 +31,12 @@ class Agent:
         y = number of forward to do in the current direction
         x = number of forward to do in right direction
         -x = number of forward to do in left direction
+
+        Args:
+            tile (int): direction from which the broadcast originates
+
+        Returns:
+            (x, y): direction to follow to go to the tile from the agent tile
         """
         if tile <= 0:
             return 0, 0
@@ -59,6 +65,40 @@ class Agent:
             commands.append("Right\n")
             for _ in range(x):
                 commands.append("Forward\n")
+        return commands
+    
+    def follow_direction(self, direction: int):
+        """deplace agent on the map by following the direction
+        Args:
+            direction (int): direction to go
+
+        Returns:
+            tab: all instructions to follow
+        """
+        commands = []
+        up = [1, 2, 3]
+        right = [5]
+        down = [6, 7, 8]
+        left = [4]
+        current_direction: Direction = self.direction
+        direction_to_follow: Direction = Direction.Undefined
+        if (direction in up):
+            direction_to_follow = Direction.Up
+        if (direction in right):
+            direction_to_follow = Direction.Right
+        if (direction in down):
+            direction_to_follow = Direction.Down
+        if (direction in left):
+            direction_to_follow = Direction.Left
+        rotation = (direction_to_follow.value - current_direction.value) % 4
+        if (rotation == 1):
+            commands.append("Right\n")
+        if (rotation == 2):
+            commands.append("Right\n")
+            commands.append("Right\n")
+        if (rotation == 3):
+            commands.append("Left\n")
+        commands.append("Forward\n")
         return commands
     
     def capable_of_evolving(self):

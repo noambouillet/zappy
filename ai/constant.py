@@ -10,10 +10,11 @@ from enum import Enum
 MIN_FOOD = 5
 
 class Direction(Enum):
-    North = 0
-    East = 1
-    South = 2
-    West = 3
+    Up = 0
+    Right = 1
+    Down = 2
+    Left = 3
+    Undefined = 4
     
 requirement_for_progress = [
     {"nb_players" : 1, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
