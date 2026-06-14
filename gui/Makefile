@@ -2,27 +2,49 @@
 ## EPITECH PROJECT, 2026
 ## Zappy
 ## File description:
-## GUI Makefile
+## Gui Makefile
 ##
 
+CC      = clang++
+CFLAGS  = -Wall -Wextra -I src/ -I src/Parsing -I src/SFML -I src/Data -I src/Network -I src/Encapsulations #-Werror
+
 RESET   =   \033[0m
+BLUE    =   \033[38;2;80;160;255m
 GREEN   =   \033[38;2;80;220;120m
 
-BIN = ../zappy_gui
+SRC     = main.cpp \
+		  src/Parsing/Parsing_gui.cpp \
+		  src/SFML/Sfml.cpp \
+		  src/Parsing/CommandHandler.cpp \
+		  src/Data/World.cpp \
+		  src/SFML/EventHandler.cpp \
+		  src/Network/NetworkHandler.cpp \
+		  src/Encapsulations/Socket.cpp \
+		  src/Encapsulations/Poll.cpp
 
-.PHONY: all clean fclean re
+OBJ     = $(SRC:.cpp=.o)
 
-all: $(BIN)
+NAME    = ../zappy_gui
 
-$(BIN):
-	@printf '#!/bin/sh\nexit 0\n' > $(BIN)
-	@chmod +x $(BIN)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) GUI compilation done"
+SFML_FLAGS  =   -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
+
+all: $(NAME)
+
+$(NAME): $(OBJ)
+	@printf '%b\n' "$(BLUE)[LD]$(RESET) $@"
+	@$(CC) $(CFLAGS) $(OBJ) -o $@ $(SFML_FLAGS)
+
+%.o:            %.cpp
+	@printf '%b\n' "$(BLUE)[CC]$(RESET) $< -> $@"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(BIN)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) GUI cleaning done"
+	@rm -f $(OBJ)
+	@printf '%b\n' "$(GREEN)[OK]$(RESET) Gui cleaning done"
 
 fclean: clean
+	@rm -f $(NAME)
 
 re: fclean all
+
+.PHONY: all clean fclean re
