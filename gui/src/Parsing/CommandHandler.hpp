@@ -29,4 +29,5 @@ class CommandHandler {
         void handle_enw(std::stringstream &ss);
         void handle_pnw(std::stringstream &ss);
         void handle_ppo(std::stringstream &ss);
+        void handle_ebo(std::stringstream &ss);
 };

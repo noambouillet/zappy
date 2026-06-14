@@ -23,7 +23,7 @@ struct Player_t {
 constexpr int NB_RESSOURCE = 7;
 struct TileData_t {
     std::map<int, Player_t> players;
-    std::vector<std::vector<int>> eggs;
+    std::map<int, int> eggs;
     std::vector<int> ressources;
 };
 
@@ -37,8 +37,9 @@ class World {
         void addTeam(const std::string& teamName);
         void setTimeUnit(int timeUnit);
 
-        void addEgg(const std::vector<int>& egg);
+        void addEgg(int EggNB, int playerID, int x, int y);
         void addPlayer(Player_t player);
+        void removeEgg(int eggNB);
         
         void movePlayer(int id, int newX, int newY, int orientation);
         

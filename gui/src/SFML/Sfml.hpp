@@ -42,7 +42,8 @@ class Sfml {
         void drawBackground();
         void updateAnimations(float deltaTime);
         sf::Vector2f convertToPixels(int x, int y) const;
-        void drawRessources(int x, int y, const TileData_t &tile);
+        void drawFood(int x, int y, const TileData_t &tile);
+        void drawOres(int x, int y, const TileData_t &tile);
         void drawEggs(int x, int y, const TileData_t &tile);
         void drawTrantorians(const TileData_t &tile);
 

@@ -28,23 +28,30 @@ void World::setTile(int x, int y, const std::vector<int> &ressources)
     _map[y][x].ressources = ressources;
 }
 
-void World::addEgg(const std::vector<int>& egg)
+void World::addEgg(int eggNB, int playerID, int x, int y)
 {
-    if (egg.size() < 4)
-        return;
-    int x = egg[2];
-    int y = egg[3];
-    
-    _map[y][x].eggs.push_back(egg);
+    _map[y][x].eggs[eggNB] = playerID;
 }
 
 void World::addPlayer(Player_t player)
-{
-    int x = player.x;
-    int y = player.y;
-    
-    _map[y][x].players[player.id] = player;
+{ 
+    _map[player.y][player.x].players[player.id] = player;
 }
+
+void World::removeEgg(int eggNB)
+{
+    for (size_t y = 0; y < _mapSize.second; ++y) {
+        for (size_t x = 0; x < _mapSize.first; ++x) {
+            auto it = _map[y][x].eggs.find(eggNB);
+            if (it != _map[y][x].eggs.end()) {
+                _map[y][x].eggs.erase(it);
+                return;
+            }
+        }
+    }
+    throw GuiException("Egg ID not found in TileData");
+}
+
 
 Player_t &World::getTrantorian(int id)
 {

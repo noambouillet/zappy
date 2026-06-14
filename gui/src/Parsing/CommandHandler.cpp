@@ -16,6 +16,7 @@ CommandHandler::CommandHandler(World &world) : _world(world)
     _commands["enw"] = &CommandHandler::handle_enw;
     _commands["pnw"] = &CommandHandler::handle_pnw;
     _commands["ppo"] = &CommandHandler::handle_ppo;
+    _commands["ebo"] = &CommandHandler::handle_ebo;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -91,7 +92,7 @@ void CommandHandler::handle_enw(std::stringstream &ss)
     
     if (!(ss >> sharp1 >> eggNb >> sharp2 >> playerNb >> x >> y))
         return;
-    _world.addEgg({eggNb, playerNb, x, y});
+    _world.addEgg(eggNb, playerNb, x, y);
 }
 
 void CommandHandler::handle_pnw(std::stringstream &ss)
@@ -115,4 +116,14 @@ void CommandHandler::handle_ppo(std::stringstream &ss)
     if (!(ss >> sharp >> id >> x >> y >> orientation))
         return;
     _world.movePlayer(id, x, y, orientation);
+}
+
+void CommandHandler::handle_ebo(std::stringstream &ss)
+{
+    int eggNB;
+    char sharp;
+
+    if (!(ss >> sharp >> eggNB))
+        return;
+    _world.removeEgg(eggNB);
 }

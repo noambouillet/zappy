@@ -55,44 +55,75 @@ void Sfml::drawMap()
     }
 }
 
-void Sfml::drawRessources(int x, int y, const TileData_t &tile)
+void Sfml::drawFood(int x, int y, const TileData_t &tile)
 {
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 2.0f);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 2.0f);
-    float desiredFoodSize = _tileSize * 0.40f; 
+    if (_tileSize <= 0.0f || tile.ressources.empty() || tile.ressources[0] <= 0)
+        return;
+    std::string textureKey = "donut";
+    if (tile.ressources[0] >= 3 && tile.ressources[0] < 7)
+        textureKey = "fewDonuts";
+    else if (tile.ressources[0] >= 7)
+        textureKey = "lotDonuts";
+    auto tex = _textures.find(textureKey);
+    if (tex == _textures.end())
+        return;
+    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 1.3f);
+    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 1.3f);
+    float desiredFoodSize = _tileSize * 0.50f; 
+    const sf::Texture &texture = tex->second;
+    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
+    _sprites[textureKey].setScale(desiredFoodSize / texture.getSize().x, desiredFoodSize / texture.getSize().y);
+    _sprites[textureKey].setPosition(centerX, centerY);
+    _window.draw(_sprites[textureKey]);
+}
 
-    auto tex = _textures.find("food");
-    if (tex != _textures.end() && !tile.ressources.empty() && tile.ressources[0] > 0) {
-        const sf::Texture &texture = tex->second;
-        _sprites["food"].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-        _sprites["food"].setScale(desiredFoodSize / texture.getSize().x, desiredFoodSize / texture.getSize().y);
-        _sprites["food"].setPosition(centerX, centerY);
-        _window.draw(_sprites["food"]);
-    }
+void Sfml::drawOres(int x, int y, const TileData_t &tile)
+{
+    if (_tileSize <= 0.0f || tile.ressources.empty())
+        return;
+    int total_ores = tile.ressources[1] + tile.ressources[2] + tile.ressources[3] + tile.ressources[4] + tile.ressources[5] + tile.ressources[6];
+    if (total_ores <= 0)
+        return;
+    std::string textureKey = "fewOres";
+    if (total_ores >= 3 && total_ores < 7)
+        textureKey = "mediumOres";
+    else if (total_ores >= 7)
+        textureKey = "lotOres";
+    auto tex = _textures.find(textureKey);
+    if (tex == _textures.end())
+        return;
+    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 1.3f);
+    float centerY = _offsetY + (y * _tileSize) + (_tileSize * 0.1f);
+    float desiredOreSize = _tileSize * 0.50f; 
+    const sf::Texture &texture = tex->second;
+    _sprites[textureKey].setTexture(texture);
+    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
+    _sprites[textureKey].setScale(desiredOreSize / texture.getSize().x, desiredOreSize / texture.getSize().y);
+    _sprites[textureKey].setPosition(centerX, centerY);
+    _window.draw(_sprites[textureKey]);
 }
 
 void Sfml::drawEggs(int x, int y, const TileData_t &tile)
 {
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 2.0f);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 2.0f);
-    float offsetX = 0.0f;
-    float offsetY = 0.0f;
-    float desiredEggSize = _tileSize * 0.90f;
-
-    auto tex = _textures.find("egg");
-    if (tex != _textures.end() && !tile.eggs.empty()) {
-        const sf::Texture &texture = tex->second;
-        _sprites["egg"].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-        _sprites["egg"].setScale(desiredEggSize / texture.getSize().x, desiredEggSize / texture.getSize().y);
-        for (size_t i = 0; i < tile.eggs.size(); ++i) {
-            if (tile.eggs.size() > 1) {
-                offsetX = static_cast<float>((i % 3) * (_tileSize * 0.25f) - (_tileSize * 0.25f));
-                offsetY = static_cast<float>((i / 3) * (_tileSize * 0.25f) - (_tileSize * 0.25f));
-            }
-            _sprites["egg"].setPosition(centerX + offsetX, centerY + offsetY);
-            _window.draw(_sprites["egg"]);
-        }
+    if (_tileSize <= 0.0f || tile.eggs.empty() || tile.eggs.size() <= 0)
+        return;
+    std::string textureKey = "egg";
+    if (tile.eggs.size() == 2)
+        textureKey = "twoeggs";
+    else if (tile.eggs.size() >= 3)
+        textureKey = "threeEggs";
+    auto tex = _textures.find(textureKey);
+    if (tex == _textures.end()) {
+        return;
     }
+    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 4.0f);
+    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 6.0f);
+    float desiredEggSize = _tileSize * 0.75f;
+    const sf::Texture &texture = tex->second;
+    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
+    _sprites[textureKey].setScale(desiredEggSize / texture.getSize().x, desiredEggSize / texture.getSize().y);
+    _sprites[textureKey].setPosition(centerX, centerY);
+    _window.draw(_sprites[textureKey]);
 }
 
 void Sfml::drawTrantorians(const TileData_t &tile)
@@ -117,7 +148,8 @@ void Sfml::drawTrantorians(const TileData_t &tile)
 
 void Sfml::drawTileElements(int x, int y, const TileData_t &tile)
 {
-    drawRessources(x, y, tile);
+    drawFood(x, y, tile);
+    drawOres(x, y, tile);
     drawEggs(x, y, tile);
     drawTrantorians(tile);
 }
