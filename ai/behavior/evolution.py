@@ -20,13 +20,12 @@ class Evolution(Behavior):
             return ["Look\n"]
         requirement = requirement_for_progress[agent.level - 1]
         nb_players = requirement["nb_players"]
-        action = self.check_ressources_tile(agent, requirement)
-        if (action != ["Look\n"]):
-            return action
-        if (nb_players < self.nb_player_in_tile(agent)):
+        setup = self.check_ressources_tile(agent, requirement)
+        if (setup != ["Look\n"]):
+            return setup
+        if (self.nb_player_in_tile(agent) < nb_players):
             return ["Broadcast"]
-        return ["Ok\n"]
-        # return ["Incantation\n"]
+        return ["Incantation\n"]
     
     def nb_player_in_tile(self, agent):
         """This function is for to count the number of player on the same tile
@@ -52,9 +51,8 @@ class Evolution(Behavior):
                 resources_tiles[element] += 1
         #print(resources_tiles)
         for resource, nb_ressources in resources_tiles.items():
-            if (resource != "nb_players" and resource != "food"):
+            if (resource != "nb_players"):
                 #print(resource, nb_ressources)
-                print(nb_ressources, resources_for_upgrade[resource], resource)
                 if (resource == "food" and nb_ressources > 0):
                     for _ in range(nb_ressources):
                         list_command += [f"Take food\n"]

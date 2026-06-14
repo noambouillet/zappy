@@ -16,13 +16,14 @@ class Agent:
     def __init__(self):
         self.alive = True
         self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
+        self.survive = False
         self.list_commands = []
         self.level = 1
         self.direction = Direction.Up
         self.vision = [[]]
         self.unused_slots = 0
         self.elevation = False
-        self.behavior = Survive()
+        self.behavior = Explore()
         self.size_map = (0, 0)
         self.team_name = ""
 
@@ -117,8 +118,8 @@ class Agent:
     def adapt_behavior(self):
         """This function is to adapt behavior during the life of the agent
         """
-        if (self.inventory["food"] < MIN_FOOD):
-            print(self.inventory["food"])
+        if (self.inventory["food"] < MIN_FOOD or self.survive == True):
+            self.survive = True
             self.behavior = Survive()
         elif (self.capable_of_evolving() == False):
             self.behavior = Explore()

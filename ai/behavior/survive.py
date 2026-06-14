@@ -15,14 +15,16 @@ class Survive(Behavior):
         Returns:
             str: command for the agent
         """
+        if (agent.inventory["food"] >= 15):
+            agent.survive = False
         if (agent.vision == [[]]):
             return ["Look\n"]
         try:
             if ("food" in agent.vision[0]):
-                return ["Take food\n", "Look\n"]
+                return ["Take food\n", "Look\n", "Inventory\n"]
             for pos, infos in enumerate(agent.vision):
                 if ("food" in infos):
-                    return agent.go_to(pos) + ["Take food\n", "Look\n"]
+                    return agent.go_to(pos) + ["Take food\n", "Look\n", "Inventory\n"]
         except (IndexError, TypeError):
             return ["Forward\n"]
         return ["Forward\n", "Look\n"]
