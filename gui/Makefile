@@ -2,11 +2,11 @@
 ## EPITECH PROJECT, 2026
 ## Zappy
 ## File description:
-## Server Makefile
+## Gui Makefile
 ##
 
 CC      = clang++
-CFLAGS  = -Wall -Wextra -I src/ -I src/Parsing -I src/SFML -I src/Data -I src/Network #-Werror
+CFLAGS  = -Wall -Wextra -I src/ -I src/Parsing -I src/SFML -I src/Data -I src/Network -I src/Encapsulations #-Werror
 
 RESET   =   \033[0m
 BLUE    =   \033[38;2;80;160;255m
@@ -18,7 +18,9 @@ SRC     = main.cpp \
 		  src/Parsing/CommandHandler.cpp \
 		  src/Data/World.cpp \
 		  src/SFML/EventHandler.cpp \
-		  src/Network/NetworkHandler.cpp
+		  src/Network/NetworkHandler.cpp \
+		  src/Encapsulations/Socket.cpp \
+		  src/Encapsulations/Poll.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 
@@ -38,7 +40,7 @@ $(NAME): $(OBJ)
 
 clean:
 	@rm -f $(OBJ)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) Server cleaning done"
+	@printf '%b\n' "$(GREEN)[OK]$(RESET) Gui cleaning done"
 
 fclean: clean
 	@rm -f $(NAME)

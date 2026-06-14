@@ -6,12 +6,13 @@
 */
 
 #include "Parsing_gui.hpp"
-#include <poll.h>
 #include <unistd.h>
 #include <iostream>
 #include "Sfml.hpp"
 #include "CommandHandler.hpp"
 #include "NetworkHandler.hpp"
+#include "Poll.hpp"
+#include "GuiExceptions.hpp"
 
 int main(int ac, char **av)
 {
@@ -19,39 +20,43 @@ int main(int ac, char **av)
     std::string server_buffer;
     World world;
     CommandHandler handler(world);
+    Poll netPoll;
 
     try {
         networkData_t data = parse.parse_args(ac, av);
         NetworkHandler network(data.port, data.ip);
         Sfml gui(world);
+        
         int fd = network.connect_to_server();
         server_buffer = network.read_from_server(fd);
-        if (server_buffer == "WELCOME\n")
-            network.send_command(fd, "GRAPHIC\n");
-        else
+        if (server_buffer == "WELCOME\n") {
+            network.send_command(fd, "GRAPHIC");
+        } else {
             return 84;
+        }
         server_buffer.clear(); 
-        struct pollfd poll_fd[1];
-        poll_fd[0] = {fd, POLLIN, 0};
+        netPoll.addFd(fd, POLLIN);
         while (gui.getWindow().isOpen()) {
             gui.handleEvent();
-            if (poll(poll_fd, 1, 0) < 0)
-                throw std::runtime_error("poll failed");
-                
-            if (poll_fd[0].revents & (POLLHUP | POLLERR | POLLNVAL)) {
-                std::cout << "Server disconnected." << std::endl;
-                break;
-            }
-            if (poll_fd[0].revents & POLLIN) {
-                server_buffer += network.read_from_server(fd);
-                std::string msg;
-                while (network.extract_message(server_buffer, msg)) {
-                    handler.handle(msg);
+            if (netPoll.wait(0) < 0)
+                throw GuiException("poll failed");
+            const auto &fds = netPoll.getFds();
+            if (!fds.empty()) {
+                const struct pollfd &serverFdStruct = fds[0];
+                if (serverFdStruct.revents & (POLLHUP | POLLERR | POLLNVAL)) {
+                    std::cout << "Server disconnected." << std::endl;
+                    break;
+                }
+                if (serverFdStruct.revents & POLLIN) {
+                    server_buffer += network.read_from_server(fd);
+                    std::string msg;
+                    while (network.extract_message(server_buffer, msg)) {
+                        handler.handle(msg);
+                    }
                 }
             }
             gui.displayWindow();
         }
-        close(fd);
     }
     catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;

@@ -11,20 +11,21 @@
 #include <map>
 #include <SFML/Graphics.hpp>
 
-typedef struct Player_s {
+struct Player_t {
     int id;
     int x;
     int y;
     int orientation;
     int level;
     std::string teamName;
-} Player_t;
+};
 
-typedef struct TileData_s {
+constexpr int NB_RESSOURCE = 7;
+struct TileData_t {
     std::map<int, Player_t> players;
     std::vector<std::vector<int>> eggs;
     std::vector<int> ressources;
-} TileData_t;
+};
 
 class World {
     public:
@@ -42,9 +43,9 @@ class World {
         void movePlayer(int id, int newX, int newY, int orientation);
         
         Player_t &getTrantorian(int id);
-        const std::vector<std::vector<TileData_t>>& getMap() const { return _map; }
-        std::pair<size_t, size_t> getMapSize() const { return _mapSize; }
-        TileData_t &getTileData(int x, int y) { return _map[y][x]; }
+        const std::vector<std::vector<TileData_t>>& getMap() const;
+        std::pair<size_t, size_t> getMapSize() const;
+        TileData_t &getTileData(int x, int y);
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};

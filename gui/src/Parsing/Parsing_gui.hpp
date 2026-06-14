@@ -27,11 +27,4 @@ class Parsing_gui
         void print_help();
         networkData_t check_args(char *addr, char *port);
         bool is_ipv4(char *addr);
-        class ARGS_ERROR : public std::exception {
-            public:
-                ARGS_ERROR(std::string error);
-                const char *what() const noexcept override;
-            private:
-                std::string _msg;
-        };
 };

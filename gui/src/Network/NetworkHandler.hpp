@@ -5,34 +5,24 @@
 ** NetworkHandler
 */
 
-#include <iostream>
-#include <string>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#pragma once
 
-#ifndef NETWORKHANDLER_HPP_
-#define NETWORKHANDLER_HPP_
+#include <string>
+#include <exception>
+#include "Socket.hpp"
 
 class NetworkHandler {
     public:
         NetworkHandler(int port, std::string ip);
         ~NetworkHandler();
+
         int connect_to_server();
         void send_command(int fd, const std::string& msg);
         std::string read_from_server(int fd);
         bool extract_message(std::string &buffer, std::string &message);
-        class NETWORK_ERROR : public std::exception {
-            public:
-                NETWORK_ERROR(std::string error);
-                const char *what() const noexcept override;
-            private:
-                std::string _msg;
-        };
+
     private:
         int _port;
         std::string _ip;
+        Socket _socket;
 };
-
-#endif /* !NetworkHandler_HPP_ */

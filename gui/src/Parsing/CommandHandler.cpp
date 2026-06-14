@@ -31,13 +31,14 @@ void CommandHandler::handle(const std::string &line)
     if (it != _commands.end()) {
         (this->*(it->second))(ss);
     } else {
-        std::cout << "Unknow command : " << line << std::endl;
+        std::cout << "Unknown command : " << line << std::endl;
     }
 }
 
 void CommandHandler::handle_msz(std::stringstream &ss)
 {
-    int width, height;
+    int width;
+    int height;
 
     if (!(ss >> width >> height))
         return;
@@ -46,7 +47,15 @@ void CommandHandler::handle_msz(std::stringstream &ss)
 
 void CommandHandler::handle_bct(std::stringstream &ss)
 {
-    int x, y, q0, q1, q2, q3, q4, q5, q6;
+    int x;
+    int y;
+    int q0;
+    int q1;
+    int q2;
+    int q3;
+    int q4;
+    int q5;
+    int q6;
 
     if (!(ss >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6))
         return;
@@ -73,8 +82,12 @@ void CommandHandler::handle_tna(std::stringstream &ss)
 
 void CommandHandler::handle_enw(std::stringstream &ss)
 {
-    int eggNb, playerNb, x, y;
-    char sharp1, sharp2;
+    int eggNb;
+    int playerNb;
+    int  x;
+    int  y;
+    char sharp1;
+    char sharp2;
     
     if (!(ss >> sharp1 >> eggNb >> sharp2 >> playerNb >> x >> y))
         return;
@@ -93,7 +106,10 @@ void CommandHandler::handle_pnw(std::stringstream &ss)
 
 void CommandHandler::handle_ppo(std::stringstream &ss)
 {
-    int id, x, y, orientation;
+    int id;
+    int x;
+    int y;
+    int orientation;
     char sharp;
 
     if (!(ss >> sharp >> id >> x >> y >> orientation))
