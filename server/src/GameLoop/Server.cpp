@@ -19,8 +19,7 @@
 
 namespace ZappyServer {
 
-// #commentaire gen par chatgpt !! C'est une blague, juste je sais que vous allez jamais flag triche, meme si je mets des emojis ultra obvious:
-// 🚀 Server starting up mdr
+// 🚀 Server starting up !!!!
 
 Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
     : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height), _nextEggId(0)
@@ -133,7 +132,7 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
     client.getPlayerData()->setDirection((rand() % 4) + 1);
     client.getPlayerData()->setLevel(1);
     client.getPlayerData()->setInventory(0, 10);
-    
+
     unsigned int totalSlots = _clientsNb;
     for (const Egg &egg : _eggs) {
         if (egg.teamName == requestedTeamName) {
@@ -261,7 +260,7 @@ void Server::processTicks(int ticks)
             if (player.getFoodTicks() > 0) {
                 player.setFoodTicks(player.getFoodTicks() - 1);
             }
-            
+
             if (player.getFoodTicks() == 0) {
                 if (player.getInventory(0) > 0) {
                     player.setInventory(0, player.getInventory(0) - 1);
@@ -296,7 +295,7 @@ void Server::run()
         auto now = std::chrono::steady_clock::now();
         double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
         int ticksToProcess = elapsedMs / tickDurationMs;
-        
+
         if (ticksToProcess > 0) {
             processTicks(ticksToProcess);
             _lastTick += std::chrono::milliseconds((int)(ticksToProcess * tickDurationMs));
@@ -310,7 +309,7 @@ void Server::run()
                 continue;
             }
             const PlayerData &player = client.getPlayerData().value();
-            
+
             if (player.getFoodTicks() > 0) {
                 int eventTicks = player.getFoodTicks();
                 if (minTicks == -1 || eventTicks < minTicks) {
@@ -335,7 +334,7 @@ void Server::run()
                 timeout = 0;
             }
         }
-        
+
         int ret = _poll.wait(timeout);
 
         if (ret > 0) {
