@@ -19,13 +19,13 @@ int main(int ac, char **av)
     Parsing_gui parse;
     std::string server_buffer;
     World world;
-    CommandHandler handler(world);
     Poll netPoll;
 
     try {
         networkData_t data = parse.parse_args(ac, av);
         NetworkHandler network(data.port, data.ip);
         Sfml gui(world);
+        CommandHandler handler(world, gui);
         
         int fd = network.connect_to_server();
         server_buffer = network.read_from_server(fd);

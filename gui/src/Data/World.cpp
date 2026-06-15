@@ -122,3 +122,8 @@ TileData_t &World::getTileData(int x, int y)
 {
     return _map[y][x];
 }
+
+int World::getTime() const
+{
+    return _timeUnit;
+}

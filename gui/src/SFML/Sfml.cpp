@@ -7,6 +7,8 @@
 
 #include "Sfml.hpp"
 #include <algorithm>
+#include <cmath>
+#include "GuiExceptions.hpp"
 
 Sfml::Sfml(World &world): _window(sf::VideoMode::getDesktopMode(), "trantor", sf::Style::Titlebar | sf::Style::Close), _world(world), _eventHandler(_window, _camera)
 {
@@ -55,6 +57,21 @@ void Sfml::drawMap()
     }
 }
 
+void Sfml::drawSprite(std::string textureKey, float size, int x, int y, float offsetX, float offsetY)
+{
+    auto tex = _textures.find(textureKey);
+    if (tex == _textures.end())
+        return;
+    float centerX = _offsetX + (x * _tileSize) + (_tileSize / offsetX);
+    float centerY = _offsetY + (y * _tileSize) + (_tileSize / offsetY);
+    const sf::Texture &texture = tex->second;
+    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
+    _sprites[textureKey].setScale(size / texture.getSize().x, size / texture.getSize().y);
+    _sprites[textureKey].setPosition(centerX, centerY);
+    _window.draw(_sprites[textureKey]);
+}
+
+
 void Sfml::drawFood(int x, int y, const TileData_t &tile)
 {
     if (_tileSize <= 0.0f || tile.ressources.empty() || tile.ressources[0] <= 0)
@@ -64,17 +81,7 @@ void Sfml::drawFood(int x, int y, const TileData_t &tile)
         textureKey = "fewDonuts";
     else if (tile.ressources[0] >= 7)
         textureKey = "lotDonuts";
-    auto tex = _textures.find(textureKey);
-    if (tex == _textures.end())
-        return;
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 1.3f);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 1.3f);
-    float desiredFoodSize = _tileSize * 0.50f; 
-    const sf::Texture &texture = tex->second;
-    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-    _sprites[textureKey].setScale(desiredFoodSize / texture.getSize().x, desiredFoodSize / texture.getSize().y);
-    _sprites[textureKey].setPosition(centerX, centerY);
-    _window.draw(_sprites[textureKey]);
+    drawSprite(textureKey, _tileSize * 0.50f, x, y, 1.3f, 1.3f);
 }
 
 void Sfml::drawOres(int x, int y, const TileData_t &tile)
@@ -89,18 +96,7 @@ void Sfml::drawOres(int x, int y, const TileData_t &tile)
         textureKey = "mediumOres";
     else if (total_ores >= 7)
         textureKey = "lotOres";
-    auto tex = _textures.find(textureKey);
-    if (tex == _textures.end())
-        return;
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 1.3f);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize * 0.1f);
-    float desiredOreSize = _tileSize * 0.50f; 
-    const sf::Texture &texture = tex->second;
-    _sprites[textureKey].setTexture(texture);
-    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-    _sprites[textureKey].setScale(desiredOreSize / texture.getSize().x, desiredOreSize / texture.getSize().y);
-    _sprites[textureKey].setPosition(centerX, centerY);
-    _window.draw(_sprites[textureKey]);
+    drawSprite(textureKey, _tileSize * 0.50f, x, y, 1.3f, 10.0f);
 }
 
 void Sfml::drawEggs(int x, int y, const TileData_t &tile)
@@ -116,14 +112,7 @@ void Sfml::drawEggs(int x, int y, const TileData_t &tile)
     if (tex == _textures.end()) {
         return;
     }
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 4.0f);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 6.0f);
-    float desiredEggSize = _tileSize * 0.75f;
-    const sf::Texture &texture = tex->second;
-    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-    _sprites[textureKey].setScale(desiredEggSize / texture.getSize().x, desiredEggSize / texture.getSize().y);
-    _sprites[textureKey].setPosition(centerX, centerY);
-    _window.draw(_sprites[textureKey]);
+    drawSprite(textureKey, _tileSize * 0.75f, x, y, 4.0f, 6.0f);
 }
 
 void Sfml::drawTrantorians(const TileData_t &tile)
@@ -135,15 +124,53 @@ void Sfml::drawTrantorians(const TileData_t &tile)
         const sf::Texture &texture = tex->second;
         _sprites["benoit"].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
         _sprites["benoit"].setScale(desiredTrantorianSize / texture.getSize().x, desiredTrantorianSize / texture.getSize().y);
+
         for (const auto &pair : tile.players) {
             const Player_t &player = pair.second;
             auto animIt = _playerAnims.find(player.id);
             if (animIt != _playerAnims.end()) {
-                _sprites["benoit"].setPosition(animIt->second.visualPos);
+                const PlayerAnim_t &anim = animIt->second;
+                _sprites["benoit"].setPosition(anim.visualPos);
+                if (anim.isMoving) {
+                    float angle = 15.0f * std::sin(anim.walkTimer * 18.0f);
+                    _sprites["benoit"].setRotation(angle);
+                } else {
+                    _sprites["benoit"].setRotation(0.0f);
+                }
+                
                 _window.draw(_sprites["benoit"]);
+                displayBubble(anim);
             }
         }
     }
+}
+
+void Sfml::displayBubble(const PlayerAnim_t &anim)
+{
+    auto bubbleTexIt = _textures.find("bubble");
+    bool hasBubbleBg = (bubbleTexIt != _textures.end());
+
+    if (!anim.bubbleQueue.empty() && hasBubbleBg) {
+        auto iconTexIt = _textures.find(anim.bubbleQueue.front().first);                    
+        if (iconTexIt != _textures.end()) {
+            sf::Sprite &bubbleSprite = _sprites["bubble"];
+            sf::Sprite &iconSprite = _sprites[anim.bubbleQueue.front().first];
+            float desiredBubbleSize = _tileSize * 0.60f;
+            float desiredIconSize = _tileSize * 0.40f;
+            const sf::Texture &bubbleTex = bubbleTexIt->second;
+            bubbleSprite.setOrigin(bubbleTex.getSize().x / 2.0f, bubbleTex.getSize().y / 2.0f);
+            bubbleSprite.setScale(desiredBubbleSize / bubbleTex.getSize().x, desiredBubbleSize / bubbleTex.getSize().y);
+            float bubbleX = anim.visualPos.x;
+            float bubbleY = anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (desiredBubbleSize / 2.0f) - 4.0f;
+            bubbleSprite.setPosition(bubbleX, bubbleY);                        
+            const sf::Texture &iconTex = iconTexIt->second;
+            iconSprite.setOrigin(iconTex.getSize().x / 2.0f, iconTex.getSize().y / 2.0f);
+            iconSprite.setScale(desiredIconSize / iconTex.getSize().x, desiredIconSize / iconTex.getSize().y);
+            iconSprite.setPosition(bubbleX, bubbleY);                        
+            _window.draw(bubbleSprite);
+            _window.draw(iconSprite);
+        }
+    } 
 }
 
 void Sfml::drawTileElements(int x, int y, const TileData_t &tile)
@@ -222,10 +249,93 @@ int Sfml::loadTexture()
             std::cout << "texture loaded : " << entry.path().stem().string() << std::endl;
         }
     } else {
-        //throw une erreur lors de l'ouverture du fichier assets
+        throw GuiException("file assets dosen't exist");
         return 84;
     }
     return 0;
+}
+
+
+sf::Vector2f Sfml::convertToPixels(int x, int y) const
+{
+    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 2.0f);
+    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 2.0f);
+    return sf::Vector2f(centerX, centerY);
+}
+
+void Sfml::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+{
+    PlayerAnim_t &anim = _playerAnims[id];
+    
+    anim.bubbleQueue.push_back({textureKey, duration});
+    if (anim.bubbleTimer <= 0.0f)
+        anim.bubbleTimer = duration;
+}
+
+void Sfml::updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, float deltaTime, float maxWidth, float maxHeight)
+{
+    sf::Vector2f currentTilePixelPos = convertToPixels(player.x, player.y);
+
+    if (anim.visualPos == sf::Vector2f(0.0f, 0.0f) && currentTilePixelPos != sf::Vector2f(0.0f, 0.0f)) {
+        initPlayerAnim(anim, player, currentTilePixelPos);
+    }
+    if (player.x != anim.lastX || player.y != anim.lastY) {
+        anim.targetPos = currentTilePixelPos;
+        anim.isMoving = true;
+        anim.lastX = player.x;
+        anim.lastY = player.y;
+    }
+    updatePlayerPosition(anim, deltaTime, maxWidth, maxHeight);
+    updatePlayerBubble(anim, deltaTime);
+}
+
+void Sfml::initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::Vector2f &pixelPos)
+{
+    anim.id = player.id;
+    anim.visualPos = pixelPos;
+    anim.targetPos = pixelPos;
+    anim.lastX = player.x;
+    anim.lastY = player.y;
+    anim.isMoving = false;
+}
+
+void Sfml::updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight)
+{
+    if (!anim.isMoving) {
+        anim.walkTimer = 0.0f;
+        return;
+    }
+    if (std::abs(anim.targetPos.x - anim.visualPos.x) > maxWidth / 2.0f || 
+        std::abs(anim.targetPos.y - anim.visualPos.y) > maxHeight / 2.0f) {
+        anim.visualPos = anim.targetPos;
+        anim.isMoving = false;
+        anim.walkTimer = 0.0f;
+        return;
+    }
+    float dx = anim.targetPos.x - anim.visualPos.x;
+    float dy = anim.targetPos.y - anim.visualPos.y;
+    if (std::abs(dx) < 1.0f && std::abs(dy) < 1.0f) {
+        anim.visualPos = anim.targetPos;
+        anim.isMoving = false;
+        anim.walkTimer = 0.0f;
+    } else {
+        anim.visualPos.x += dx * 12.0f * deltaTime;
+        anim.visualPos.y += dy * 12.0f * deltaTime;
+        anim.walkTimer += deltaTime;
+    }
+}
+
+void Sfml::updatePlayerBubble(PlayerAnim_t &anim, float deltaTime)
+{
+    if (anim.bubbleTimer <= 0.0f)
+        return;
+    anim.bubbleTimer -= deltaTime;
+    if (anim.bubbleTimer <= 0.0f && !anim.bubbleQueue.empty()) {
+        anim.bubbleQueue.erase(anim.bubbleQueue.begin());
+        if (!anim.bubbleQueue.empty()) {
+            anim.bubbleTimer = anim.bubbleQueue.front().second;
+        }
+    }
 }
 
 void Sfml::updateAnimations(float deltaTime)
@@ -236,52 +346,11 @@ void Sfml::updateAnimations(float deltaTime)
     for (size_t y = 0; y < _world.getMapSize().second; ++y) {
         for (size_t x = 0; x < _world.getMapSize().first; ++x) {
             TileData_t &tile = _world.getTileData(x, y);
-
             for (const auto &pair : tile.players) {
                 const Player_t &player = pair.second;
                 PlayerAnim_t &anim = _playerAnims[player.id];
-                sf::Vector2f currentTilePixelPos = convertToPixels(player.x, player.y);
-
-                if (anim.visualPos == sf::Vector2f(0.0f, 0.0f) && currentTilePixelPos != sf::Vector2f(0.0f, 0.0f)) { // si le player vient d'être créer
-                    anim.id = player.id;
-                    anim.visualPos = currentTilePixelPos;
-                    anim.targetPos = currentTilePixelPos;
-                    anim.lastX = player.x;
-                    anim.lastY = player.y;
-                    anim.isMoving = false;
-                }
-                if (player.x != anim.lastX || player.y != anim.lastY) { //si le player s'est déplacé
-                    anim.targetPos = currentTilePixelPos;
-                    anim.isMoving = true;
-                    anim.lastX = player.x;
-                    anim.lastY = player.y;
-                }
-                if (anim.isMoving) { // si le player atteint l'une des limites
-                    if (std::abs(anim.targetPos.x - anim.visualPos.x) > maxMapWidthPixels / 2.0f || std::abs(anim.targetPos.y - anim.visualPos.y) > maxMapHeightPixels / 2.0f) {
-                        anim.visualPos = anim.targetPos;
-                        anim.isMoving = false;
-                    }
-                }
-                if (anim.isMoving) { //fonction de lerp pour la fluidité des mouvement
-                    float dx = anim.targetPos.x - anim.visualPos.x;
-                    float dy = anim.targetPos.y - anim.visualPos.y;
-
-                    if (std::abs(dx) < 1.0f && std::abs(dy) < 1.0f) {
-                        anim.visualPos = anim.targetPos;
-                        anim.isMoving = false;
-                    } else {
-                        anim.visualPos.x += dx * 12.0f * deltaTime;
-                        anim.visualPos.y += dy * 12.0f * deltaTime;
-                    }
-                }
+                updatePlayerAnimation(anim, player, deltaTime, maxMapWidthPixels, maxMapHeightPixels);
             }
         }
     }
-}
-
-sf::Vector2f Sfml::convertToPixels(int x, int y) const
-{
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / 2.0f);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize / 2.0f);
-    return sf::Vector2f(centerX, centerY);
 }

@@ -7,7 +7,7 @@
 
 #include "CommandHandler.hpp"
 
-CommandHandler::CommandHandler(World &world) : _world(world)
+CommandHandler::CommandHandler(World &world, Sfml &gui) : _world(world), _gui(gui)
 {
     _commands["msz"] = &CommandHandler::handle_msz;
     _commands["bct"] = &CommandHandler::handle_bct;
@@ -17,6 +17,9 @@ CommandHandler::CommandHandler(World &world) : _world(world)
     _commands["pnw"] = &CommandHandler::handle_pnw;
     _commands["ppo"] = &CommandHandler::handle_ppo;
     _commands["ebo"] = &CommandHandler::handle_ebo;
+    _commands["pin"] = &CommandHandler::handle_pin;
+    _commands["pgt"] = &CommandHandler::handle_pgt;
+    _commands["pdi"] = &CommandHandler::handle_pdi;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -126,4 +129,43 @@ void CommandHandler::handle_ebo(std::stringstream &ss)
     if (!(ss >> sharp >> eggNB))
         return;
     _world.removeEgg(eggNB);
+}
+
+void CommandHandler::handle_pin(std::stringstream &ss)
+{
+    int id;
+    char sharp;
+    if (!(ss >> sharp >> id))
+        return;
+    _gui.setPlayerActionBubble(id, "inventory", 1.0f / _world.getTime()); 
+}
+
+void CommandHandler::handle_pgt(std::stringstream &ss)
+{
+    int id;
+    int resourceId;
+    char sharp;
+    
+    if (!(ss >> sharp >> id >> resourceId))
+        return;
+    static const std::string resourceTextures[] = {
+        "donut",
+        "linemate",
+        "emeraude",
+        "rubis",
+        "diamond",
+        "saphir",
+        "amethyst"
+    };
+    _gui.setPlayerActionBubble(id, resourceTextures[resourceId], 7.0f / _world.getTime());
+}
+
+void CommandHandler::handle_pdi(std::stringstream &ss)
+{
+    int id;
+    char sharp;
+
+    if (!(ss >> sharp >> id))
+        return;
+    _gui.triggerPlayerDeath(id);
 }

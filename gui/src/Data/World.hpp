@@ -43,6 +43,7 @@ class World {
         
         void movePlayer(int id, int newX, int newY, int orientation);
         
+        int getTime() const;
         Player_t &getTrantorian(int id);
         const std::vector<std::vector<TileData_t>>& getMap() const;
         std::pair<size_t, size_t> getMapSize() const;
