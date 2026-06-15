@@ -35,4 +35,6 @@ class CommandHandler {
         void handle_pin(std::stringstream &ss);
         void handle_pgt(std::stringstream &ss);
         void handle_pdi(std::stringstream &ss);
+        void handle_pic(std::stringstream &ss);
+        void handle_pie(std::stringstream &ss);
 };

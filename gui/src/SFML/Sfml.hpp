@@ -33,6 +33,10 @@ typedef struct PlayerAnim_s {
     int deathFrame = 0;
     float deathTimer = 0.0f;
     bool isDeadAndGone = false;
+
+    bool isIncanting = false;
+    int incantFrame = 0;
+    float incantTimer = 0.0f;
 } PlayerAnim_t;
 
 constexpr size_t WIDTH = 1920;
@@ -46,6 +50,8 @@ class Sfml {
         void displayWindow();
         void setPlayerActionBubble(int id, const std::string &textureKey, float duration);
         void triggerPlayerDeath(int id);
+        void setPlayerIncanting(int id, bool state);
+        void stopIncantationAt(int x, int y);
 
     private:
         sf::RenderWindow  _window;
@@ -77,6 +83,8 @@ class Sfml {
         void updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight);
         void updatePlayerBubble(PlayerAnim_t &anim, float deltaTime);
         void updatePlayerDeath(PlayerAnim_t &anim, float deltaTime);
+        void updatePlayerIncantation(PlayerAnim_t &anim, float deltaTime);
+        void drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet);
 
         float _limitWindowWidth = 0.0f;
         float _tileSize = 0.0f;

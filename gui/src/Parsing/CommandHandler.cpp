@@ -20,6 +20,8 @@ CommandHandler::CommandHandler(World &world, Sfml &gui) : _world(world), _gui(gu
     _commands["pin"] = &CommandHandler::handle_pin;
     _commands["pgt"] = &CommandHandler::handle_pgt;
     _commands["pdi"] = &CommandHandler::handle_pdi;
+    _commands["pic"] = &CommandHandler::handle_pic;
+    _commands["pie"] = &CommandHandler::handle_pie;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -145,7 +147,7 @@ void CommandHandler::handle_pgt(std::stringstream &ss)
     int id;
     int resourceId;
     char sharp;
-    
+
     if (!(ss >> sharp >> id >> resourceId))
         return;
     static const std::string resourceTextures[] = {
@@ -168,4 +170,24 @@ void CommandHandler::handle_pdi(std::stringstream &ss)
     if (!(ss >> sharp >> id))
         return;
     _gui.triggerPlayerDeath(id);
+}
+
+void CommandHandler::handle_pic(std::stringstream &ss)
+{
+    int x, y, level, id;
+    
+    if (!(ss >> x >> y >> level))
+        return;
+    while (ss >> id) {
+        _gui.setPlayerIncanting(id, true);
+    }
+}
+
+void CommandHandler::handle_pie(std::stringstream &ss)
+{
+    int x, y, result;
+
+    if (!(ss >> x >> y >> result))
+        return;
+    _gui.stopIncantationAt(x, y);
 }

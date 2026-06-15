@@ -117,36 +117,25 @@ void Sfml::drawEggs(int x, int y, const TileData_t &tile)
 
 void Sfml::drawTrantorians(const TileData_t &tile)
 {
-    float desiredTrantorianSize = _tileSize * 0.95f; 
+    float trantorianSize = _tileSize * 0.95f; 
     auto tex = _textures.find("benoit");
-    
+
     if (tex == _textures.end())
         return;
     const sf::Texture &texture = tex->second;
     sf::Sprite &playerSprite = _sprites["benoit"];
     playerSprite.setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-    playerSprite.setScale(desiredTrantorianSize / texture.getSize().x, desiredTrantorianSize / texture.getSize().y);
+    playerSprite.setScale(trantorianSize / texture.getSize().x, trantorianSize / texture.getSize().y);
     for (const auto &animPair : _playerAnims) {
         const PlayerAnim_t &anim = animPair.second;
         auto playerInTileIt = tile.players.find(anim.id);
         bool isPlayerInTile = (playerInTileIt != tile.players.end());
         if (isPlayerInTile || anim.isDying) {
-            if (anim.isDying) {
-                auto deathTexIt = _textures.find("spritesheetDeath");
-                if (deathTexIt != _textures.end()) {
-                    sf::Sprite &deathSprite = _sprites["spritesheetDeath"];
-                    const sf::Texture &deathTex = deathTexIt->second;
-                    int totalFrames = 32; 
-                    int frameWidth = deathTex.getSize().x / totalFrames;
-                    int frameHeight = deathTex.getSize().y;
-                    deathSprite.setTextureRect(sf::IntRect(anim.deathFrame * frameWidth, 0, frameWidth, frameHeight));
-                    deathSprite.setOrigin(frameWidth / 2.0f, frameHeight / 2.0f);
-                    deathSprite.setScale(desiredTrantorianSize / frameWidth, desiredTrantorianSize / frameHeight);
-                    deathSprite.setPosition(anim.visualPos);
-                    deathSprite.setRotation(0.0f);
-                    _window.draw(deathSprite);
-                }
-            } else {
+            if (anim.isDying)
+                drawAnimation(anim, trantorianSize, 32,"spritesheetDeath");
+            else if (anim.isIncanting)
+                drawAnimation(anim, trantorianSize, 6, "incantation");
+            else {
                 playerSprite.setPosition(anim.visualPos);
                 if (anim.isMoving) {
                     float angle = 15.0f * std::sin(anim.walkTimer * 18.0f);
@@ -162,6 +151,24 @@ void Sfml::drawTrantorians(const TileData_t &tile)
     playerSprite.setRotation(0.0f);
 }
 
+void Sfml::drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet)
+{
+    auto deathTexIt = _textures.find(spritesheet);
+    if (deathTexIt != _textures.end()) {
+        sf::Sprite &deathSprite = _sprites[spritesheet];
+        const sf::Texture &deathTex = deathTexIt->second;
+        int totalFrames = NbFrame; 
+        int frameWidth = deathTex.getSize().x / totalFrames;
+        int frameHeight = deathTex.getSize().y;
+        deathSprite.setTextureRect(sf::IntRect(anim.deathFrame * frameWidth, 0, frameWidth, frameHeight));
+        deathSprite.setOrigin(frameWidth / 2.0f, frameHeight / 2.0f);
+        deathSprite.setScale(size / frameWidth, size / frameHeight);
+        deathSprite.setPosition(anim.visualPos);
+        deathSprite.setRotation(0.0f);
+        _window.draw(deathSprite);
+    }
+}
+
 void Sfml::displayBubble(const PlayerAnim_t &anim)
 {
     auto bubbleTexIt = _textures.find("bubble");
@@ -172,17 +179,17 @@ void Sfml::displayBubble(const PlayerAnim_t &anim)
         if (iconTexIt != _textures.end()) {
             sf::Sprite &bubbleSprite = _sprites["bubble"];
             sf::Sprite &iconSprite = _sprites[anim.bubbleQueue.front().first];
-            float desiredBubbleSize = _tileSize * 0.60f;
-            float desiredIconSize = _tileSize * 0.40f;
+            float BubbleSize = _tileSize * 0.60f;
+            float IconSize = _tileSize * 0.40f;
             const sf::Texture &bubbleTex = bubbleTexIt->second;
             bubbleSprite.setOrigin(bubbleTex.getSize().x / 2.0f, bubbleTex.getSize().y / 2.0f);
-            bubbleSprite.setScale(desiredBubbleSize / bubbleTex.getSize().x, desiredBubbleSize / bubbleTex.getSize().y);
+            bubbleSprite.setScale(BubbleSize / bubbleTex.getSize().x, BubbleSize / bubbleTex.getSize().y);
             float bubbleX = anim.visualPos.x;
-            float bubbleY = anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (desiredBubbleSize / 2.0f) - 4.0f;
+            float bubbleY = anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (BubbleSize / 2.0f) - 4.0f;
             bubbleSprite.setPosition(bubbleX, bubbleY);                        
             const sf::Texture &iconTex = iconTexIt->second;
             iconSprite.setOrigin(iconTex.getSize().x / 2.0f, iconTex.getSize().y / 2.0f);
-            iconSprite.setScale(desiredIconSize / iconTex.getSize().x, desiredIconSize / iconTex.getSize().y);
+            iconSprite.setScale(IconSize / iconTex.getSize().x, IconSize / iconTex.getSize().y);
             iconSprite.setPosition(bubbleX, bubbleY);                        
             _window.draw(bubbleSprite);
             _window.draw(iconSprite);
@@ -297,6 +304,9 @@ void Sfml::updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, flo
         updatePlayerDeath(anim, deltaTime);
         return;
     }
+    if (anim.isIncanting) {
+        updatePlayerIncantation(anim, deltaTime);
+    }
     if (anim.visualPos == sf::Vector2f(0.0f, 0.0f) && currentTilePixelPos != sf::Vector2f(0.0f, 0.0f))
         initPlayerAnim(anim, player, currentTilePixelPos);
     if (player.x != anim.lastX || player.y != anim.lastY) {
@@ -406,5 +416,37 @@ void Sfml::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
         if (anim.deathFrame >= totalFrames) {
             anim.isDeadAndGone = true;
         }
+    }
+}
+
+void Sfml::setPlayerIncanting(int id, bool state)
+{
+    if (_playerAnims.find(id) != _playerAnims.end()) {
+        _playerAnims[id].isIncanting = state;
+        _playerAnims[id].incantFrame = 0;
+        _playerAnims[id].incantTimer = 0.0f;
+    }
+}
+
+void Sfml::stopIncantationAt(int x, int y)
+{
+    for (auto &pair : _playerAnims) {
+        if (pair.second.lastX == x && pair.second.lastY == y) {
+            pair.second.isIncanting = false;
+        }
+    }
+}
+
+void Sfml::updatePlayerIncantation(PlayerAnim_t &anim, float deltaTime)
+{
+    const int totalFrames = 32;
+    const float frameDuration = 0.05f;
+
+    if (!anim.isIncanting)
+        return;
+    anim.incantTimer += deltaTime;
+    if (anim.incantTimer >= frameDuration) {
+        anim.incantTimer = 0.0f;
+        anim.incantFrame = (anim.incantFrame + 1) % totalFrames; 
     }
 }
