@@ -71,6 +71,19 @@ static const std::unordered_map<std::string, AiCommandHandler> aiDispatch = {
     { "Set", AiCommands::set },
 };
 
+unsigned int AiCommands::getCommandTicks(const std::string &commandName)
+{
+    if (commandName == "Inventory")
+        return 1;
+    if (commandName == "Connect_nbr")
+        return 0;
+    if (commandName == "Fork")
+        return 42;
+    if (commandName == "Incantation")
+        return 300;
+    return 7;
+}
+
 void AiCommands::dispatch(Client &client, Server &server, const std::string &line)
 {
     std::size_t spacePos = line.find(' ');
@@ -82,6 +95,7 @@ void AiCommands::dispatch(Client &client, Server &server, const std::string &lin
         entry->second(client, server, args);
         return;
     }
+    logger.warn("Client fd " + std::to_string(client.getFd()) + " sent unknown command: " + commandName);
     server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
 }
 
