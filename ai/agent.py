@@ -22,7 +22,8 @@ class Agent:
         self.direction = Direction.Up
         self.vision = [[]]
         self.unused_slots = 0
-        self.elevation = False
+        self.prepare_incantation = False
+        self.is_incantation = False
         self.behavior = Evolution()
         self.size_map = (0, 0)
         self.team_name = ""
@@ -120,10 +121,13 @@ class Agent:
     def adapt_behavior(self):
         """This function is to adapt behavior during the life of the agent
         """
+        if (self.prepare_incantation == True or self.is_incantation == True):
+            self.behavior = Evolution()
+            return
         if (self.inventory["food"] < MIN_FOOD or self.survive == True):
             self.survive = True
             self.behavior = Survive()
         elif (self.capable_of_evolving() == False):
             self.behavior = Explore()
-        else:
+        elif (self.elevation == False):
             self.behavior = Evolution()
