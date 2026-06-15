@@ -12,12 +12,10 @@ def receive_message(agent, response_server):
         agent (_type_): _description_
         response_server (_type_): _description_
     """
-    print(response_server.strip())
-    response_split = response_server.split(' ')
+    response_clean = response_server.strip()
+    response_split = response_clean.split(' ')
+    direction = (int)(response_split[1].replace(',', ''))
     if (len(response_split) > 2):
         info_message = response_split[2].split('|')
-        if (info_message[0] == "INVOCATION"):
-            agent.elevation = True
-            if (agent.level == info_message[1]):
-                agent.info_invocation = True
+        agent.mailbox.append({"action" : info_message[0], "direction" : direction, "level" : (int)(info_message[1]), "team" : info_message[2]})
     return

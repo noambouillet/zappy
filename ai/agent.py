@@ -15,7 +15,7 @@ class Agent:
     """
     def __init__(self):
         self.alive = True
-        self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
+        self.inventory = {"food" : 10, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
         self.survive = False
         self.list_commands = []
         self.level = 1
@@ -27,8 +27,9 @@ class Agent:
         self.behavior = Evolution()
         self.size_map = (0, 0)
         self.team_name = ""
-        self.teammate_same_level = 0
-        self.sound_direction = -1
+        self.teammate_same_level = 1
+        self.mailbox = []
+        self.eject_players = False
 
     def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.
@@ -129,5 +130,5 @@ class Agent:
             self.behavior = Survive()
         elif (self.capable_of_evolving() == False):
             self.behavior = Explore()
-        elif (self.elevation == False):
+        else:
             self.behavior = Evolution()
