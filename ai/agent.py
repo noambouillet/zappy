@@ -15,7 +15,7 @@ class Agent:
     """
     def __init__(self):
         self.alive = True
-        self.inventory = {"food" : 10, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
+        self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
         self.survive = False
         self.list_commands = []
         self.level = 1
@@ -24,7 +24,7 @@ class Agent:
         self.unused_slots = 0
         self.prepare_incantation = False
         self.is_incantation = False
-        self.behavior = Evolution()
+        self.behavior = Explore()
         self.size_map = (0, 0)
         self.team_name = ""
         self.shared_ressources = []

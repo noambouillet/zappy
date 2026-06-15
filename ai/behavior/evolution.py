@@ -50,7 +50,7 @@ class Evolution(Behavior):
             else:
                 print("Broadcast INVOCATION")
                 print("=============================\n")
-                return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}"]
+                return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}\n"]
         setup = self.check_ressources_tile(agent, requirement)
         if (setup != ["Look\n"]):
             agent.prepare_incantation = True
@@ -66,9 +66,9 @@ class Evolution(Behavior):
             agent (class): Agent/IA
         """
         for msg in agent.mailbox:
-            if (msg.action == "AVAILABLE" and msg.level == agent.level and msg.team_name == agent.team_name and msg.direction == 0):
+            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team_name"] == agent.team_name and msg["direction"] == 0):
                 agent.teammate_same_level += 1
-            elif (msg.action == "AVAILABLE" and msg.team_name != agent.team_name and msg.direction == 0):
+            elif (msg["action"] == "AVAILABLE" and msg["team_name"] != agent.team_name and msg["direction"] == 0):
                 agent.eject_players = True
         agent.mailbox.clear()
         return

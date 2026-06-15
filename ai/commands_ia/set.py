@@ -23,6 +23,8 @@ def do_set(agent, response_server, command):
         logger.info("The Set command was successful (received and completed).")
         print(f"The Set command worked correctly, the desired object was able to be placed on the ground. ({ressource})")
     elif (response_server == "ko"):
+        agent.prepare_incantation = False
+        agent.is_incantation = False
         logger.info("The Set command did not result in the placement of the object on the ground")
         print("The Set command did not work; there was no noticeable change to the tile.")        
     else:

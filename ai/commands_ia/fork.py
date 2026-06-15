@@ -14,6 +14,7 @@ def do_fork(agent, response_server):
         response_server (str): the message send by the server for the response
     """
     if (response_server == "ok"):
+        agent.unused_slots += 1
         logger.info("The Fork command was successful (received and completed).")
         print("The Fork command was successfully executed, accompanied by the production of an egg.")
     else:
