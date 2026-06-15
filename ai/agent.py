@@ -23,9 +23,11 @@ class Agent:
         self.vision = [[]]
         self.unused_slots = 0
         self.elevation = False
-        self.behavior = Explore()
+        self.behavior = Evolution()
         self.size_map = (0, 0)
         self.team_name = ""
+        self.teammate_same_level = 0
+        self.sound_direction = -1
 
     def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.

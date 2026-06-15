@@ -16,15 +16,19 @@ class Evolution(Behavior):
         Returns:
             str: command for the agent
         """
+        #return [f"Broadcast INVOCATION|{agent.level}\n"]
         if (agent.vision == [[]]):
             return ["Look\n"]
         requirement = requirement_for_progress[agent.level - 1]
         nb_players = requirement["nb_players"]
         setup = self.check_ressources_tile(agent, requirement)
+        if (self.nb_player_in_tile(agent) < nb_players):
+            if (agent.unused_slots > 0):
+                return [f"Broadcast INVOCATION|{agent.level}"]
+            else:
+                return ["Fork\n"]
         if (setup != ["Look\n"]):
             return setup
-        if (self.nb_player_in_tile(agent) < nb_players):
-            return ["Broadcast"]
         return ["Incantation\n"]
     
     def nb_player_in_tile(self, agent):

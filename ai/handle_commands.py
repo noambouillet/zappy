@@ -90,10 +90,8 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         agent (Agent): Agent IA
     """
     if (len(agent.list_commands) == 0):
-        tab_commands = []
         agent.adapt_behavior()
-        tab_commands.append("Inventory\n")
-        tab_commands += agent.behavior.execute(agent)
+        tab_commands = agent.behavior.execute(agent)
         if not tab_commands:
             return
         for command in tab_commands:
