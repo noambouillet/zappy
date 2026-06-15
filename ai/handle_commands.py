@@ -52,8 +52,6 @@ def launch_commands(agent, command, response_server):
         do_set(agent, response_server, command)
     else:
         print(f"Command uknown : {command}")
-
-
     
 def handle_commands(agent : Agent, all_responses_server):
     """This function is to handle commands betwenn commands_ia and commands_server

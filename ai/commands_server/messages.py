@@ -6,12 +6,38 @@
 ##
 
 def receive_message(agent, response_server):
-    """This function is for receiving messages from another AI"
+    """This function is for receiving messages from another AI
+    
+    Expected format from server:
+    message K, text
+
+    Example:
+    message 4, RES|linemate
 
     Args:
         agent (_type_): _description_
         response_server (_type_): _description_
     """
+    # print("[MESSAGE] Raw:", response_server)
+    # try:
+    #     header, content = response_server.split(",", 1)
+    #     direction = int(header.split()[1])
+    #     content = content.strip()
+    # except (ValueError, IndexError):
+    #     print("[MESSAGE] Invalid message format")
+    #     return
+    # if not content.startswith("RES|"):
+    #     print("[MESSAGE] Ignored message:", content)
+    #     return
+    # parts = content.split("|")
+    # if len(parts) != 2:
+    #     print("[MESSAGE] Invalid RES message:", content)
+    #     return
+    # ressource = parts[1]
+    # print("[MESSAGE] Ressource info received:", ressource)
+    # print("[MESSAGE] Direction:", direction)
+    # agent.add_shared_ressource(ressource, direction)
+
     response_clean = response_server.strip()
     response_split = response_clean.split(' ')
     direction = (int)(response_split[1].replace(',', ''))

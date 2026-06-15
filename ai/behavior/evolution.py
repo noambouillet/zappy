@@ -16,7 +16,11 @@ class Evolution(Behavior):
         Returns:
             str: command for the agent
         """
+        print("\n========== EVOLUTION ==========")
+        #return [f"Broadcast INVOCATION|{agent.level}\n"]
         if (agent.vision == [[]]):
+            print("vision empty -> Look")
+            print("=============================\n")
             return ["Look\n"]
         if (agent.eject_players == True):
             agent.eject_players = False
@@ -25,6 +29,8 @@ class Evolution(Behavior):
         if (condition != []):
             return condition
         agent.is_incantation = True
+        print("Launch Incantation")
+        print("=============================\n")
         return ["Incantation\n"]
     
     def implementation_of_conditions(self, agent):
@@ -38,12 +44,18 @@ class Evolution(Behavior):
         self.check_players_tile(agent)
         if (agent.teammate_same_level < nb_players):
             if (agent.unused_slots == 0):
+                print("Fork")
+                print("=============================\n")
                 return ["Fork\n"]
             else:
+                print("Broadcast INVOCATION")
+                print("=============================\n")
                 return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}"]
         setup = self.check_ressources_tile(agent, requirement)
         if (setup != ["Look\n"]):
             agent.prepare_incantation = True
+            print("setup != Look")
+            print("=============================\n")
             return setup
         agent.prepare_incantation = False
         return []
@@ -61,29 +73,32 @@ class Evolution(Behavior):
         agent.mailbox.clear()
         return
     
-    def check_ressources_tile(self, agent, resources_for_upgrade):
+    def check_ressources_tile(self, agent, ressources_for_upgrade):
         """This function is to determinate, the ressources on a tile are necessary/useless 
         Args:
             agent (class): Agent/IA
         """
         list_command = []
-        print(agent.vision)
-        resources_tiles = {"food" : 0, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0}
+        print("vision:", agent.vision)
+        ressources_tiles = {"food" : 0, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0}
         for element in agent.vision[0]:
             if (element != "player"):
-                resources_tiles[element] += 1
-        for resource, nb_ressources in resources_tiles.items():
-            if (resource != "nb_players"):
-                if (resource == "food" and nb_ressources > 0):
+                ressources_tiles[element] += 1
+        print("ressources tiles", ressources_tiles)
+        for ressource, nb_ressources in ressources_tiles.items():
+            if (ressource != "nb_players"):
+                print("number ressource", ressource, nb_ressources)
+                if (ressource == "food" and nb_ressources > 0):
                     for _ in range(nb_ressources):
                         list_command += [f"Take food\n"]
-                elif (resource != "food" and nb_ressources > resources_for_upgrade[resource]):
-                    for _ in range(nb_ressources - resources_for_upgrade[resource]):
-                        list_command += [f"Take {resource}\n"]
-                elif (resource != "food" and nb_ressources < resources_for_upgrade[resource]):
-                    for _ in range(resources_for_upgrade[resource] - nb_ressources):
-                        list_command += [f"Set {resource}\n"]
+                    print("list command", list_command)
+                elif (ressource != "food" and nb_ressources > ressources_for_upgrade[ressource]):
+                    for _ in range(nb_ressources - ressources_for_upgrade[ressource]):
+                        list_command += [f"Take {ressource}\n"]
+                    print("list command", list_command)
+                elif (ressource != "food" and nb_ressources < ressources_for_upgrade[ressource]):
+                    for _ in range(ressources_for_upgrade[ressource] - nb_ressources):
+                        list_command += [f"Set {ressource}\n"]
+                    print("list command", list_command)
         list_command += ["Look\n"]
         return list_command
-                    
-                    

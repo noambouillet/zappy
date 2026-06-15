@@ -27,9 +27,12 @@ class Agent:
         self.behavior = Evolution()
         self.size_map = (0, 0)
         self.team_name = ""
+        self.shared_ressources = []
+        self.tick = 0
         self.teammate_same_level = 1
         self.mailbox = []
         self.eject_players = False
+        self.sound_direction = -1
 
     def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.
@@ -106,6 +109,79 @@ class Agent:
         commands.append("Forward\n")
         return commands
     
+    def movement_cost(self, commands):
+        """calculate the cost of a movement command list
+
+        Args:
+            commands (list): list of command
+
+        Returns:
+            int: cost of movement
+        """
+        cost = 0
+        for command in commands:
+            if command in ["Forward\n", "Left\n", "Right\n"]:
+                cost += 1
+        return cost
+    
+    def broadcast_cost(self, direction):
+        """caluclate the cost to follow a broadcast direction
+
+        Args:
+            direction (list): list of command
+
+        Returns:
+            int: cost of follow direction
+        """
+        return self.movement_cost(self.follow_direction(direction))
+    
+    def add_shared_ressource(self, ressource, direction):
+        """stock info received from broadcast
+
+        Args:
+            ressource (string): ressource type
+            direction (int): direction to follow
+        """
+        if ressource not in self.inventory:
+            return
+        for info in self.shared_ressources:
+            if info["ressource"] == ressource and info["direction"] == direction:
+                info["tick"] = self.tick
+                print("[BROADCAST MEMORY] Refresh:", info)
+                return
+        info = {"ressource": ressource, "direction": direction, "tick": self.tick}
+        self.shared_ressources.append(info)
+        print("[BROADCAST MEMORY] Add:", info)
+
+    def clean_shared_ressources(self, max_time = 5):
+        """delete old broadcast information
+
+        Args:
+            max_time (int, optional): max tick number before removing info from shared info. Defaults to 5.
+        """
+        clean_ressources = []
+        for info in self.shared_ressources:
+            time = self.tick - info["tick"]
+            if time <= max_time:
+                clean_ressources.append(info)
+            else:
+                print("[BROADCAST MEMORY] Remove old info:", info)
+        self.shared_ressources = clean_ressources
+
+    def get_best_shared_ressource(self, needed_ressources):
+        self.clean_shared_ressources()
+        best_info = None
+        best_cost = None
+        for info in self.shared_ressources:
+            if info["ressource"] not in needed_ressources:
+                continue
+            cost = self.broadcast_cost(info["direction"])
+            print("[BROADCAST MEMORY] Candidate:", info, "cost:", cost)
+            if best_cost is None or cost < best_cost:
+                best_cost = cost
+                best_info = info
+        return best_info, best_cost
+    
     def capable_of_evolving(self):
         """This function is to determinate if the player can evolve with his ressources
         Returns:
@@ -113,8 +189,8 @@ class Agent:
         """
         info_level_up = requirement_for_progress[self.level - 1]
         can_level_up = True
-        for cle, valeur in info_level_up.items():
-            if (cle != "nb_players" and self.inventory[cle] < valeur):
+        for item, valeur in info_level_up.items():
+            if (item != "nb_players" and self.inventory[item] < valeur):
                 can_level_up = False
                 break
         return can_level_up
@@ -128,7 +204,7 @@ class Agent:
         if (self.inventory["food"] < MIN_FOOD or self.survive == True):
             self.survive = True
             self.behavior = Survive()
-        elif (self.capable_of_evolving() == False):
+        elif (self.capable_of_evolving() == False and self.prepare_incantation == False):
             self.behavior = Explore()
         else:
             self.behavior = Evolution()
