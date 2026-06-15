@@ -118,31 +118,48 @@ void Sfml::drawEggs(int x, int y, const TileData_t &tile)
 void Sfml::drawTrantorians(const TileData_t &tile)
 {
     float desiredTrantorianSize = _tileSize * 0.95f; 
-
     auto tex = _textures.find("benoit");
-    if (tex != _textures.end() && !tile.players.empty()) {
-        const sf::Texture &texture = tex->second;
-        _sprites["benoit"].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-        _sprites["benoit"].setScale(desiredTrantorianSize / texture.getSize().x, desiredTrantorianSize / texture.getSize().y);
-
-        for (const auto &pair : tile.players) {
-            const Player_t &player = pair.second;
-            auto animIt = _playerAnims.find(player.id);
-            if (animIt != _playerAnims.end()) {
-                const PlayerAnim_t &anim = animIt->second;
-                _sprites["benoit"].setPosition(anim.visualPos);
+    
+    if (tex == _textures.end())
+        return;
+    const sf::Texture &texture = tex->second;
+    sf::Sprite &playerSprite = _sprites["benoit"];
+    playerSprite.setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
+    playerSprite.setScale(desiredTrantorianSize / texture.getSize().x, desiredTrantorianSize / texture.getSize().y);
+    for (const auto &animPair : _playerAnims) {
+        const PlayerAnim_t &anim = animPair.second;
+        auto playerInTileIt = tile.players.find(anim.id);
+        bool isPlayerInTile = (playerInTileIt != tile.players.end());
+        if (isPlayerInTile || anim.isDying) {
+            if (anim.isDying) {
+                auto deathTexIt = _textures.find("spritesheetDeath");
+                if (deathTexIt != _textures.end()) {
+                    sf::Sprite &deathSprite = _sprites["spritesheetDeath"];
+                    const sf::Texture &deathTex = deathTexIt->second;
+                    int totalFrames = 32; 
+                    int frameWidth = deathTex.getSize().x / totalFrames;
+                    int frameHeight = deathTex.getSize().y;
+                    deathSprite.setTextureRect(sf::IntRect(anim.deathFrame * frameWidth, 0, frameWidth, frameHeight));
+                    deathSprite.setOrigin(frameWidth / 2.0f, frameHeight / 2.0f);
+                    deathSprite.setScale(desiredTrantorianSize / frameWidth, desiredTrantorianSize / frameHeight);
+                    deathSprite.setPosition(anim.visualPos);
+                    deathSprite.setRotation(0.0f);
+                    _window.draw(deathSprite);
+                }
+            } else {
+                playerSprite.setPosition(anim.visualPos);
                 if (anim.isMoving) {
                     float angle = 15.0f * std::sin(anim.walkTimer * 18.0f);
-                    _sprites["benoit"].setRotation(angle);
+                    playerSprite.setRotation(angle);
                 } else {
-                    _sprites["benoit"].setRotation(0.0f);
+                    playerSprite.setRotation(0.0f);
                 }
-                
-                _window.draw(_sprites["benoit"]);
+                _window.draw(playerSprite);                
                 displayBubble(anim);
             }
         }
     }
+    playerSprite.setRotation(0.0f);
 }
 
 void Sfml::displayBubble(const PlayerAnim_t &anim)
@@ -276,9 +293,12 @@ void Sfml::updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, flo
 {
     sf::Vector2f currentTilePixelPos = convertToPixels(player.x, player.y);
 
-    if (anim.visualPos == sf::Vector2f(0.0f, 0.0f) && currentTilePixelPos != sf::Vector2f(0.0f, 0.0f)) {
-        initPlayerAnim(anim, player, currentTilePixelPos);
+    if (anim.isDying) {
+        updatePlayerDeath(anim, deltaTime);
+        return;
     }
+    if (anim.visualPos == sf::Vector2f(0.0f, 0.0f) && currentTilePixelPos != sf::Vector2f(0.0f, 0.0f))
+        initPlayerAnim(anim, player, currentTilePixelPos);
     if (player.x != anim.lastX || player.y != anim.lastY) {
         anim.targetPos = currentTilePixelPos;
         anim.isMoving = true;
@@ -351,6 +371,40 @@ void Sfml::updateAnimations(float deltaTime)
                 PlayerAnim_t &anim = _playerAnims[player.id];
                 updatePlayerAnimation(anim, player, deltaTime, maxMapWidthPixels, maxMapHeightPixels);
             }
+        }
+    }
+    for (auto it = _playerAnims.begin(); it != _playerAnims.end();) {
+        if (it->second.isDeadAndGone) {
+            _world.removeTrantorian(it->second.id);
+            it = _playerAnims.erase(it);
+        } else
+            ++it;
+    }
+}
+
+void Sfml::triggerPlayerDeath(int id)
+{
+    if (_playerAnims.find(id) != _playerAnims.end()) {
+        _playerAnims[id].isDying = true;
+        _playerAnims[id].deathFrame = 0;
+        _playerAnims[id].deathTimer = 0.0f;
+    }
+}
+
+void Sfml::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
+{
+    const int totalFrames = 32;
+    const float frameDuration = 0.1f;
+
+
+    if (!anim.isDying)
+        return;
+    anim.deathTimer += deltaTime;
+    if (anim.deathTimer >= frameDuration) {
+        anim.deathTimer = 0.0f;
+        anim.deathFrame++;
+        if (anim.deathFrame >= totalFrames) {
+            anim.isDeadAndGone = true;
         }
     }
 }

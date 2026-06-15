@@ -40,6 +40,7 @@ class World {
         void addEgg(int EggNB, int playerID, int x, int y);
         void addPlayer(Player_t player);
         void removeEgg(int eggNB);
+        void removeTrantorian(int id);
         
         void movePlayer(int id, int newX, int newY, int orientation);
         

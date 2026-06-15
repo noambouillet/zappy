@@ -25,7 +25,7 @@ typedef struct PlayerAnim_s {
     int lastX = -1;
     int lastY = -1;
     float walkTimer = 0.0f;
-    
+
     std::vector<std::pair<std::string, float>> bubbleQueue;
     float bubbleTimer = 0.0f;
 
@@ -45,6 +45,7 @@ class Sfml {
         void handleEvent();
         void displayWindow();
         void setPlayerActionBubble(int id, const std::string &textureKey, float duration);
+        void triggerPlayerDeath(int id);
 
     private:
         sf::RenderWindow  _window;
@@ -75,6 +76,7 @@ class Sfml {
         void initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::Vector2f &pixelPos);
         void updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight);
         void updatePlayerBubble(PlayerAnim_t &anim, float deltaTime);
+        void updatePlayerDeath(PlayerAnim_t &anim, float deltaTime);
 
         float _limitWindowWidth = 0.0f;
         float _tileSize = 0.0f;

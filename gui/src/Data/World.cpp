@@ -52,6 +52,20 @@ void World::removeEgg(int eggNB)
     throw GuiException("Egg ID not found in TileData");
 }
 
+void World::removeTrantorian(int id)
+{
+    for (size_t y = 0; y < _mapSize.second; ++y) {
+        for (size_t x = 0; x < _mapSize.first; ++x) {
+            auto it = _map[y][x].players.find(id);
+            if (it != _map[y][x].players.end()) {
+                _map[y][x].players.erase(it);
+                return;
+            }
+        }
+    }
+    throw GuiException("Player ID not found in TileData");
+}
+
 
 Player_t &World::getTrantorian(int id)
 {
