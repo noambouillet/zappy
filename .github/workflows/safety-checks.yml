@@ -48,10 +48,10 @@ jobs:
 
       - name: Full clean
         run: |
-          if make -n fclean >/dev/null 2>&1; then
-            make fclean
+          if make -n clean >/dev/null 2>&1; then
+            make clean
           else
-            echo "Skipping fclean: target not found"
+            echo "Skipping clean: target not found"
           fi
 
       - name: Compile
@@ -74,10 +74,10 @@ jobs:
 
       - name: Clean
         run: |
-          if make -n clean >/dev/null 2>&1; then
-            make clean
+          if make -n flean >/dev/null 2>&1; then
+            make flean
           else
-            echo "Skipping clean: target not found"
+            echo "Skipping fclean: target not found"
           fi
 
       - name: Check expected executables were cleaned
@@ -90,7 +90,7 @@ jobs:
           IFS="$OLD_IFS"
           for exec in "$@"; do
             if [ -e "$exec" ]; then
-              echo "::error file=$exec::Executable still exists after make clean"
+              echo "::error file=$exec::Executable still exists after make fclean"
               exit 1
             fi
           done
