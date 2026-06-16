@@ -66,7 +66,7 @@ void Socket::bindSocket(unsigned int port)
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(static_cast<uint16_t>(port));
     if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0) {
-        throw ServerException("bind failed.");
+        throw ServerException("Bind failed, try a different port.");
     }
 }
 
