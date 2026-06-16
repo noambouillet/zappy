@@ -41,10 +41,10 @@ $(NAME): $(OBJ)
 
 clean:
 	@rm -f $(OBJ)
+	@rm -f $(NAME)
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) Server cleaning done"
 
 fclean: clean
-	@rm -f $(NAME)
 
 re: fclean all
 
