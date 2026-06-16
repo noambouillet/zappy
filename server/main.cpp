@@ -13,10 +13,8 @@ int main(int argc, char **argv)
 {
     try {
         ZappyServer::ServerData server;
-
         server.parse(argc, argv);
         server.run();
-        return 0;
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 84;
