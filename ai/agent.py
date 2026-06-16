@@ -75,61 +75,61 @@ class Agent:
                 commands.append("Forward\n")
         return commands
     
-    # def follow_direction(self, direction: int):
-    #     print("[FOLLOW_DIRECTION] Broadcast direction:", direction)
-    #     if direction == 0:
-    #         return []
-    #     if direction == 1:
-    #         return ["Forward\n"]
-    #     if direction == 2:
-    #         return ["Forward\n", "Left\n", "Forward\n"]
-    #     if direction == 3:
-    #         return ["Left\n", "Forward\n"]
-    #     if direction == 4:
-    #         return ["Left\n", "Forward\n"]
-    #     if direction == 5:
-    #         return ["Right\n", "Right\n", "Forward\n"]
-    #     if direction == 6:
-    #         return ["Right\n", "Forward\n"]
-    #     if direction == 7:
-    #         return ["Right\n", "Forward\n"]
-    #     if direction == 8:
-    #         return ["Forward\n", "Right\n", "Forward\n"]
-    #     return ["Look\n"]
-
     def follow_direction(self, direction: int):
-        """deplace agent on the map by following the direction
-        Args:
-            direction (int): direction to go
+        print("[FOLLOW_DIRECTION] Broadcast direction:", direction)
+        if direction == 0:
+            return []
+        if direction == 1:
+            return ["Forward\n"]
+        if direction == 2:
+            return ["Forward\n", "Left\n", "Forward\n"]
+        if direction == 3:
+            return ["Left\n", "Forward\n"]
+        if direction == 4:
+            return ["Left\n", "Forward\n"]
+        if direction == 5:
+            return ["Right\n", "Right\n", "Forward\n"]
+        if direction == 6:
+            return ["Right\n", "Forward\n"]
+        if direction == 7:
+            return ["Right\n", "Forward\n"]
+        if direction == 8:
+            return ["Forward\n", "Right\n", "Forward\n"]
+        return ["Look\n"]
 
-        Returns:
-            tab: all instructions to follow
-        """
-        commands = []
-        up = [1, 2, 3]
-        right = [5]
-        down = [6, 7, 8]
-        left = [4]
-        current_direction: Direction = self.direction
-        direction_to_follow: Direction = Direction.Undefined
-        if (direction in up):
-            direction_to_follow = Direction.Up
-        if (direction in right):
-            direction_to_follow = Direction.Right
-        if (direction in down):
-            direction_to_follow = Direction.Down
-        if (direction in left):
-            direction_to_follow = Direction.Left
-        rotation = (direction_to_follow.value - current_direction.value) % 4
-        if (rotation == 1):
-            commands.append("Right\n")
-        if (rotation == 2):
-            commands.append("Right\n")
-            commands.append("Right\n")
-        if (rotation == 3):
-            commands.append("Left\n")
-        commands.append("Forward\n")
-        return commands
+    # def follow_direction(self, direction: int):
+    #     """deplace agent on the map by following the direction
+    #     Args:
+    #         direction (int): direction to go
+
+    #     Returns:
+    #         tab: all instructions to follow
+    #     """
+    #     commands = []
+    #     up = [1, 2, 3]
+    #     right = [5]
+    #     down = [6, 7, 8]
+    #     left = [4]
+    #     current_direction: Direction = self.direction
+    #     direction_to_follow: Direction = Direction.Undefined
+    #     if (direction in up):
+    #         direction_to_follow = Direction.Up
+    #     if (direction in right):
+    #         direction_to_follow = Direction.Right
+    #     if (direction in down):
+    #         direction_to_follow = Direction.Down
+    #     if (direction in left):
+    #         direction_to_follow = Direction.Left
+    #     rotation = (direction_to_follow.value - current_direction.value) % 4
+    #     if (rotation == 1):
+    #         commands.append("Right\n")
+    #     if (rotation == 2):
+    #         commands.append("Right\n")
+    #         commands.append("Right\n")
+    #     if (rotation == 3):
+    #         commands.append("Left\n")
+    #     commands.append("Forward\n")
+    #     return commands
     
     def movement_cost(self, commands):
         """calculate the cost of a movement command list
@@ -223,7 +223,7 @@ class Agent:
         if (self.prepare_incantation == True or self.is_incantation == True):
             self.behavior = Evolution()
             return
-        if (self.inventory["food"] < MIN_FOOD or self.survive == True):
+        if (self.inventory["food"] <= MIN_FOOD or self.survive == True):
             self.survive = True
             self.behavior = Survive()
         elif (self.capable_of_evolving() == False and self.prepare_incantation == False):

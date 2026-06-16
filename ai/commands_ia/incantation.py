@@ -20,7 +20,7 @@ def do_incantation(agent, response_server):
     elif (response_server.startswith("Current level:")):
         list_level = response_server.split((':'))
         level = (int)(list_level[1])
-        logger.info("The Incantation command was successful (received and completed). Player level ", agent.level, "to", level)
+        logger.info(f"The Incantation command was successful (received and completed). Player level {agent.level} to {level}")
         print("The Incantation command was successful; the character has evolved to the following level: ", level)
         agent.level = level
         agent.is_incantation = False

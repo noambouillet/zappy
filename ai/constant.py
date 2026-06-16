@@ -7,7 +7,7 @@
 
 from enum import Enum
 
-MIN_FOOD = 5
+MIN_FOOD = 7
 
 class Direction(Enum):
     Up = 0
