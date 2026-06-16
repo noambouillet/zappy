@@ -32,7 +32,7 @@ class Agent:
         self.teammate_same_level = 1
         self.mailbox = []
         self.eject_players = False
-        self.sound_direction = -1
+        self.joining_invocation = False
 
     def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.
@@ -75,6 +75,28 @@ class Agent:
                 commands.append("Forward\n")
         return commands
     
+    # def follow_direction(self, direction: int):
+    #     print("[FOLLOW_DIRECTION] Broadcast direction:", direction)
+    #     if direction == 0:
+    #         return []
+    #     if direction == 1:
+    #         return ["Forward\n"]
+    #     if direction == 2:
+    #         return ["Forward\n", "Left\n", "Forward\n"]
+    #     if direction == 3:
+    #         return ["Left\n", "Forward\n"]
+    #     if direction == 4:
+    #         return ["Left\n", "Forward\n"]
+    #     if direction == 5:
+    #         return ["Right\n", "Right\n", "Forward\n"]
+    #     if direction == 6:
+    #         return ["Right\n", "Forward\n"]
+    #     if direction == 7:
+    #         return ["Right\n", "Forward\n"]
+    #     if direction == 8:
+    #         return ["Forward\n", "Right\n", "Forward\n"]
+    #     return ["Look\n"]
+
     def follow_direction(self, direction: int):
         """deplace agent on the map by following the direction
         Args:

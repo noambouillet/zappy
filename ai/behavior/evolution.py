@@ -17,11 +17,16 @@ class Evolution(Behavior):
             str: command for the agent
         """
         print("\n========== EVOLUTION ==========")
-        #return [f"Broadcast INVOCATION|{agent.level}\n"]
+        agent.tick += 1
         if (agent.vision == [[]]):
             print("vision empty -> Look")
             print("=============================\n")
             return ["Look\n"]
+        join_commands = self.check_invocation_call(agent)
+        if join_commands is not None:
+            print("[EVOLUTION] Stop own invocation -> join teammate")
+            print("=============================\n")
+            return join_commands
         if (agent.eject_players == True):
             agent.eject_players = False
             return ["Eject\n"]
@@ -33,6 +38,23 @@ class Evolution(Behavior):
         print("=============================\n")
         return ["Incantation\n"]
     
+    def check_invocation_call(self, agent):
+        for mail in agent.mailbox:
+            print("[EVOLUTION][MAIL] Read:", mail)
+            if (mail["action"] != "INVOCATION") or (mail["level"] != agent.level) or (mail["team"] != agent.team_name):
+                continue
+            direction = mail["direction"]
+            print("[EVOLUTION][MAIL] Same level invocation detected")
+            print("[EVOLUTION][MAIL] Direction:", direction)
+            if direction == 0:
+                print("[EVOLUTION][MAIL] Already on invocation tile -> AVAILABLE + Look")
+                agent.joining_invocation = False
+                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n", "Look\n"]
+            print("[EVOLUTION][MAIL] Join existing invocation instead of broadcasting mine")
+            agent.joining_invocation = True
+            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n"] + agent.follow_direction(direction) + ["Look\n"]
+        return None
+    
     def implementation_of_conditions(self, agent):
         """This function is implementation conditions
         Args:
@@ -41,9 +63,12 @@ class Evolution(Behavior):
         requirement = requirement_for_progress[agent.level - 1]
         nb_players = requirement["nb_players"]
         agent.teammate_same_level = 1
-        self.check_players_tile(agent)
+        nb_agent_comming = self.check_players_tile(agent)
+        print(f"nb_players requis: {nb_players}")
+        print(f"nb_players sur la case: {agent.teammate_same_level}")
+        print(f"nb_players en route: {nb_agent_comming}")
         if (agent.teammate_same_level < nb_players):
-            if (agent.unused_slots == 0):
+            if (agent.unused_slots == 0 and (agent.teammate_same_level + nb_agent_comming) < nb_players):
                 print("Fork")
                 print("=============================\n")
                 return ["Fork\n"]
@@ -65,13 +90,18 @@ class Evolution(Behavior):
         Args:
             agent (class): Agent/IA
         """
+        nb_agent_comming = 0
         for msg in agent.mailbox:
-            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team_name"] == agent.team_name and msg["direction"] == 0):
+            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["direction"] == 0):
                 agent.teammate_same_level += 1
-            elif (msg["action"] == "AVAILABLE" and msg["team_name"] != agent.team_name and msg["direction"] == 0):
+                print("[EVOLUTION][MAIL] Teammate available on tile")
+            elif (msg["action"] == "AVAILABLE" and msg["team"] != agent.team_name and msg["direction"] == 0):
                 agent.eject_players = True
+                print("[EVOLUTION][MAIL] Enemy detected on tile")
+            elif (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["direction"] != 0):
+                nb_agent_comming += 1
         agent.mailbox.clear()
-        return
+        return nb_agent_comming
     
     def check_ressources_tile(self, agent, ressources_for_upgrade):
         """This function is to determinate, the ressources on a tile are necessary/useless 

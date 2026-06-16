@@ -15,6 +15,8 @@ class Survive(Behavior):
         Returns:
             str: command for the agent
         """
+        print("\n========== SURVIVE ==========")
+        agent.tick += 1
         if (agent.inventory["food"] >= 15):
             agent.survive = False
         if (agent.vision == [[]]):

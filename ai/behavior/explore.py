@@ -17,6 +17,11 @@ class Explore(Behavior):
         print("[EXPLORE] Inventory:", agent.inventory)
         print("[EXPLORE] Vision:", agent.vision)
         print("[EXPLORE] Shared ressources:", agent.shared_ressources)
+        command = self.check_mail(agent)
+        if command is not None:
+            print("[EXPLORE] Stop exploration -> join invocation")
+            print("=============================\n")
+            return command
         if not agent.vision or agent.vision == [[]]:
             print("=============================\n")
             return ["Look\n"]
@@ -41,6 +46,23 @@ class Explore(Behavior):
         print("[EXPLORE] Nothing useful -> Forward + Look")
         print("=============================\n")
         return broadcast_commands + ["Forward\n", "Look\n"]
+    
+    def check_mail(self, agent):
+        for mail in agent.mailbox:
+            print("[EXPLORE][MAIL] Read:", mail)
+            if (mail["action"] != "INVOCATION") or (mail["level"] != agent.level) or (mail["team"] != agent.team_name):
+                continue
+            direction = mail["direction"]
+            print("[EXPLORE][MAIL] Invocation call detected")
+            print("[EXPLORE][MAIL] Direction:", direction)
+            if direction == 0:
+                print("[EXPLORE][MAIL] Already on invocation tile -> AVAILABLE + Look")
+                agent.joining_invocation = False
+                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n", "Look\n"]
+            print("[EXPLORE][MAIL] Move toward invocation")
+            agent.joining_invocation = True
+            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n"] + agent.follow_direction(direction) + ["Look\n"]
+        return None
 
     def get_needed_ressources(self, agent):
         requirements = requirement_for_progress[agent.level - 1]
@@ -99,13 +121,14 @@ class Explore(Behavior):
         return local_commands
 
     def broadcast_ressources(self, agent, needed_ressources, chosen_ressource, chosen_tile):
+        return []
         commands = []
         already_sent = []
         for index, tile in enumerate(agent.vision):
             if index == 0:
                 continue
             for ressource in tile:
-                if (ressource == "player") or (ressource not in agent.inventory) or (ressource in already_sent) or (ressource == chosen_ressource and index == chosen_tile) or (ressource not in needed_ressources and ressource != "food"):
+                if (ressource == "player") or (ressource == "food") or (ressource not in agent.inventory) or (ressource in already_sent) or (ressource == chosen_ressource and index == chosen_tile):
                     continue
                 command = f"Broadcast RES|{ressource}\n"
                 print("[EXPLORE] Broadcast:", command.strip())
