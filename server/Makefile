@@ -48,4 +48,7 @@ fclean: clean
 
 re: fclean all
 
+tests_run:
+	@tests/test_parsing.sh ../zappy_server || true
+
 .PHONY: all clean fclean re
