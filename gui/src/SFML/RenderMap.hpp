@@ -8,6 +8,7 @@
 #pragma once
 #include "World.hpp"
 #include "TextureManager.hpp"
+#include "HandleTrantorians.hpp"
 
 class RenderMap {
     public:
@@ -16,6 +17,7 @@ class RenderMap {
         void update(float tileSize, float offsetX, float offsetY);
         void drawBackground();
         void drawMap();
+        HandleTrantorians &getHandleTrantorians();
     private:
         void drawFood(int x, int y, const TileData_t &tile);
         void drawOres(int x, int y, const TileData_t &tile);
@@ -26,6 +28,7 @@ class RenderMap {
         TextureManager &_textureManager;
         sf::RenderWindow  &_window;
         World &_world;
+        HandleTrantorians _handleTrantorians;
         float _tileSize;
         float _offsetX;
         float _offsetY;

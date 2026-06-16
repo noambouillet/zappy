@@ -14,6 +14,7 @@
 #include <iostream>
 #include "World.hpp"
 #include "Sfml.hpp"
+#include "HandleTrantorians.hpp"
 
 class CommandHandler {
     public:
@@ -23,7 +24,7 @@ class CommandHandler {
     private:
         std::unordered_map<std::string, void (CommandHandler::*)(std::stringstream &)> _commands;
         World &_world;
-        Sfml &_gui;
+        HandleTrantorians &_handleTrantorians;
         void handle_msz(std::stringstream &ss);
         void handle_bct(std::stringstream &ss);
         void handle_sgt(std::stringstream &ss);

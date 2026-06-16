@@ -7,7 +7,7 @@
 
 #include "RenderMap.hpp"
 
-RenderMap::RenderMap(TextureManager &textureManager, sf::RenderWindow  &window, World &world): _textureManager(textureManager), _window(window), _world(world) {}
+RenderMap::RenderMap(TextureManager &textureManager, sf::RenderWindow  &window, World &world): _textureManager(textureManager), _window(window), _world(world), _handleTrantorians(_textureManager, _window, _world) {}
 
 RenderMap::~RenderMap() {}
 
@@ -77,7 +77,7 @@ void RenderMap::drawTileElements(int x, int y, const TileData_t &tile)
     drawFood(x, y, tile);
     drawOres(x, y, tile);
     drawEggs(x, y, tile);
-    //drawTrantorians(tile);
+    _handleTrantorians.drawTrantorians(tile);
 }
 
 void RenderMap::drawBackground()
@@ -108,4 +108,10 @@ void RenderMap::update(float tileSize, float offsetX, float offsetY)
     _tileSize = tileSize;
     _offsetX = offsetX;
     _offsetY = offsetY;
+    _handleTrantorians.update(tileSize, offsetX, offsetY);
+}
+
+HandleTrantorians &RenderMap::getHandleTrantorians()
+{
+    return _handleTrantorians;
 }

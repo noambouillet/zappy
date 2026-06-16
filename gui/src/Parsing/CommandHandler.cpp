@@ -7,7 +7,7 @@
 
 #include "CommandHandler.hpp"
 
-CommandHandler::CommandHandler(World &world, Sfml &gui) : _world(world), _gui(gui)
+CommandHandler::CommandHandler(World &world, Sfml &gui) : _world(world), _handleTrantorians(gui.getHandleTrantorians())
 {
     _commands["msz"] = &CommandHandler::handle_msz;
     _commands["bct"] = &CommandHandler::handle_bct;
@@ -139,7 +139,7 @@ void CommandHandler::handle_pin(std::stringstream &ss)
     char sharp;
     if (!(ss >> sharp >> id))
         return;
-    _gui.setPlayerActionBubble(id, "inventory", 1.0f / _world.getTime()); 
+    _handleTrantorians.setPlayerActionBubble(id, "inventory", 1.0f / _world.getTime()); 
 }
 
 void CommandHandler::handle_pgt(std::stringstream &ss)
@@ -159,7 +159,7 @@ void CommandHandler::handle_pgt(std::stringstream &ss)
         "saphir",
         "amethyst"
     };
-    _gui.setPlayerActionBubble(id, resourceTextures[resourceId], 7.0f / _world.getTime());
+    _handleTrantorians.setPlayerActionBubble(id, resourceTextures[resourceId], 7.0f / _world.getTime());
 }
 
 void CommandHandler::handle_pdi(std::stringstream &ss)
@@ -169,7 +169,7 @@ void CommandHandler::handle_pdi(std::stringstream &ss)
 
     if (!(ss >> sharp >> id))
         return;
-    _gui.triggerPlayerDeath(id);
+    _handleTrantorians.triggerPlayerDeath(id);
 }
 
 void CommandHandler::handle_pic(std::stringstream &ss)
@@ -179,7 +179,7 @@ void CommandHandler::handle_pic(std::stringstream &ss)
     if (!(ss >> x >> y >> level))
         return;
     while (ss >> id) {
-        _gui.setPlayerIncanting(id, true);
+        _handleTrantorians.setPlayerIncanting(id, true);
     }
 }
 
@@ -189,5 +189,5 @@ void CommandHandler::handle_pie(std::stringstream &ss)
 
     if (!(ss >> x >> y >> result))
         return;
-    _gui.stopIncantationAt(x, y);
+    _handleTrantorians.stopIncantationAt(x, y);
 }
