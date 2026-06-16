@@ -74,8 +74,8 @@ jobs:
 
       - name: Clean
         run: |
-          if make -n flean >/dev/null 2>&1; then
-            make flean
+          if make -n fclean >/dev/null 2>&1; then
+            make fclean
           else
             echo "Skipping fclean: target not found"
           fi
