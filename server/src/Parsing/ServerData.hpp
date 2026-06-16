@@ -23,11 +23,11 @@ class ServerData {
         std::vector<std::string> _teamNames;
 
         void parseArgs(char **argv, int argc, int &index);
+        void printServerData() const;
     public:
         ServerData();
 
         void parse(int argc, char **argv);
-        void printHelp(const std::string &binaryName) const;
         void run() const;
         unsigned int getPort() const;
         unsigned int getWidth() const;

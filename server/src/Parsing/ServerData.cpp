@@ -14,13 +14,33 @@
 
 namespace ZappyServer {
 
+static constexpr std::string_view ascii67 = R"(    _
+^^^^( )
+|      |   _
+|     /   ( )^^^^
+|    (    |      |
+|     )    \     |
+\___/      )    |
+         (     |
+          \___/
+)";
+
+static void printHelp()
+{
+    std::cout << "USAGE: " << "./zappy_server" << " -p port -x width -y height -n name1 name2 ... -c clientsNb -f freq\n"
+        << "\tport\t\t is the port number\n" << "\twidth\t\t is the width of the world\n" << "\theight\t\t is the height of the world\n"
+        << "\tnameZ\t\t is the name of the team Z\n" << "\tclientsNb\t is the number of authorized clients per team\n"
+        << "\tfreq\t\t is the reciprocal of time unit for execution of actions\n";
+}
+
 static unsigned int parsePositiveInt(const std::string &value, const std::string &label)
 {
     char *end = nullptr;
     const long parsed = std::strtol(value.c_str(), &end, 10);
 
     if (value.empty() || end == nullptr || *end != '\0' || parsed <= 0) {
-        throw ServerException("Invalid " + label + ": '" + value + "'.");
+        printHelp();
+        throw ServerException("Invalid " + label + ": '" + value + "'. Must be a positive integer.");
     }
     return static_cast<unsigned int>(parsed);
 }
@@ -30,6 +50,7 @@ static unsigned int parseBoundedInt(const std::string &value, const std::string 
     const unsigned int parsed = parsePositiveInt(value, label);
 
     if (parsed < min || parsed > max) {
+        printHelp();
         throw ServerException("Invalid " + label + ": must be between " + std::to_string(min) + " and " + std::to_string(max) + ".");
     }
     return parsed;
@@ -117,24 +138,30 @@ void ServerData::parseArgs(char **argv, int argc, int &index)
 void ServerData::parse(int argc, char **argv)
 {
     if (argc == 2 && std::string(argv[1]) == "--help") {
-        printHelp(argv[0]);
+        printHelp();
         std::exit(0);
     }
     for (int index = 1; index < argc; index++) {
         parseArgs(argv, argc, index);
     }
     if (_teamNames.empty()) {
-        printHelp(argv[0]);
+        printHelp();
         throw ServerException("Missing required arguments. Team names must be provided with -n.");
     }
 }
 
-void ServerData::printHelp(const std::string &binaryName) const
+void ServerData::printServerData() const
 {
-    std::cout << "USAGE: " << binaryName << " -p port -x width -y height -n name1 name2 ... -c clientsNb -f freq\n"
-        << "\tport\t\t is the port number\n" << "\twidth\t\t is the width of the world\n" << "\theight\t\t is the height of the world\n"
-        << "\tnameZ\t\t is the name of the team Z\n" << "\tclientsNb\t is the number of authorized clients per team\n"
-        << "\tfreq\t\t is the reciprocal of time unit for execution of actions\n";
+    std::cout << "------------------\n";
+    std::cout << ascii67;
+    std::cout << "------------------\n";
+    std::cout << "port = " << _port << "\nwidth = " << _width << "\nheight = " << _height << "\nclients_nb = " << _clientsNb << "\nfreq = " << _freq << std::endl;
+    std::cout << "------------------\n";
+    std::cout << "Teams:\n";
+    for (std::string team : _teamNames) {
+        std::cout << "- " << team << "\n";
+    }
+    std::cout << "------------------\n";
 }
 
 ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), _freq(100)
@@ -143,6 +170,7 @@ ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), 
 
 void ServerData::run() const
 {
+    printServerData();
     Server server(_port, _width, _height, _clientsNb, _freq, _teamNames);
     server.run();
 }

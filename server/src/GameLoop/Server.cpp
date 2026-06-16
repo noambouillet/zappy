@@ -19,11 +19,10 @@
 
 namespace ZappyServer {
 
-// #commentaire gen par chatgpt !! C'est une blague, juste je sais que vous allez jamais flag triche, meme si je mets des emojis ultra obvious:
-// 🚀 Server starting up mdr
+// 🚀 Server starting up !!!!
 
 Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
-    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height), _nextEggId(0)
+    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height), _nextEggId(0), _running(true), _shell(*this)
 {}
 
 Server::~Server()
@@ -35,6 +34,11 @@ Socket &Server::getSocket() {
     return _socket;
 }
 
+void Server::stop()
+{
+    _running = false;
+}
+
 void Server::setup()
 {
     _socket.openSocket();
@@ -43,6 +47,10 @@ void Server::setup()
     logger.write("The world has opened on port " + std::to_string(_port) + ".");
     _socket.startListening(128);
     _poll.addFd(_socket.getFd(), POLLIN);
+    if (isatty(STDIN_FILENO)) {
+        std::cout << "> " << std::flush;
+        _poll.addFd(STDIN_FILENO, POLLIN);
+    }
     _lastTick = std::chrono::steady_clock::now();
 
     signal(SIGPIPE, SIG_IGN);
@@ -344,15 +352,36 @@ int Server::calculateNextTimeout(double elapsedMs, double tickDurationMs)
     return -1;
 }
 
+void Server::readShellCommands(const std::vector<pollfd>& fds)
+{
+    for (const pollfd &entry : fds) {
+        if (entry.fd == STDIN_FILENO && (entry.revents & POLLIN)) {
+            std::string line;
+
+            if (!std::getline(std::cin, line)) {
+                stop();
+                return;
+            }
+            try {
+                _shell.processCommand(line);
+            } catch (const std::exception &e) {
+                std::cerr << e.what() << '\n';
+            }
+            if (_running)
+                std::cout << "> " << std::flush;
+        }
+    }
+}
+
 void Server::run()
 {
     setup();
-    while (true) {
+    while (_running) {
         double tickDurationMs = 1000.0 / _freq;
         auto now = std::chrono::steady_clock::now();
         double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
         int ticksToProcess = elapsedMs / tickDurationMs;
-        
+
         if (ticksToProcess > 0) {
             processTicks(ticksToProcess);
             _lastTick += std::chrono::milliseconds((int)(ticksToProcess * tickDurationMs));
@@ -361,13 +390,13 @@ void Server::run()
         }
 
         int timeout = calculateNextTimeout(elapsedMs, tickDurationMs);
-        
         int ret = _poll.wait(timeout);
 
         if (ret > 0) {
             const std::vector<pollfd> &fds = _poll.getFds();
             acceptPendingClients(fds);
             readClients(fds);
+            readShellCommands(fds);
             removeDeadClients();
         }
     }

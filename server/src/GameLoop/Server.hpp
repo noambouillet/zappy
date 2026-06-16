@@ -13,6 +13,7 @@
 #include "Client.hpp"
 #include "Map.hpp"
 #include "Egg.hpp"
+#include "InputParser.hpp"
 #include <vector>
 #include <string>
 #include <chrono>
@@ -36,6 +37,8 @@ class Server {
         std::vector<Egg> _eggs;
         unsigned int _nextEggId;
         std::chrono::time_point<std::chrono::steady_clock> _lastTick;
+        bool _running;
+        InputParser _shell;
 
         void setup();
         void processTicks(int ticks);
@@ -55,12 +58,14 @@ class Server {
         bool isValidTeam(const std::string &name) const;
         void acceptPendingClients(const std::vector<pollfd> &fds);
         void readClients(const std::vector<pollfd> &fds);
+        void readShellCommands(const std::vector<pollfd>& fds);
         void removeDeadClients();
     public:
         Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb,
             unsigned int freq, const std::vector<std::string> &teamNames);
         ~Server();
         void run();
+        void stop();
         Socket &getSocket();
         unsigned int getWidth() const;
         unsigned int getHeight() const;
