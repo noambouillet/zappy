@@ -21,7 +21,8 @@ SRC     = main.cpp \
 		  src/Network/NetworkHandler.cpp \
 		  src/Encapsulations/Socket.cpp \
 		  src/Encapsulations/Poll.cpp \
-		  src/Data/TextureManager.cpp
+		  src/Data/TextureManager.cpp \
+		  src/SFML/RenderMap.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 

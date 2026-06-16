@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include "EventHandler.hpp"
 #include "TextureManager.hpp"
+#include "RenderMap.hpp"
 
 typedef struct PlayerAnim_s {
     int id;
@@ -60,22 +61,16 @@ class Sfml {
         sf::View _camera;
         EventHandler _eventHandler;
         TextureManager _textureManager;
+        RenderMap _renderMap;
         sf::Clock _clock;
 
         void updateDimensions();
-        void drawMap();
         void setMapSize(size_t width, size_t height);
         void setTimeUnit(int TimeUnit);
-        void drawTileElements(int x, int y, const TileData_t &tile);
-        void drawBackground();
         void updateAnimations(float deltaTime);
         sf::Vector2f convertToPixels(int x, int y) const;
-        void drawFood(int x, int y, const TileData_t &tile);
-        void drawOres(int x, int y, const TileData_t &tile);
-        void drawEggs(int x, int y, const TileData_t &tile);
         void drawTrantorians(const TileData_t &tile);
         void displayBubble(const PlayerAnim_t &anim);
-        void drawSprite(std::string textureKey, float size, int x, int y, float offsetX, float offsetY);
         void updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, float deltaTime, float maxWidth, float maxHeight);
         void initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::Vector2f &pixelPos);
         void updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight);
