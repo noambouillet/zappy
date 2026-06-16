@@ -188,14 +188,14 @@ void Server::dispatchClientLine(Client &client, const std::string &completeLine)
 
 void Server::readClient(Client &client)
 {
-    char readChunk[4096];
-    ssize_t receivedBytes = _socket.receiveMessage(client.getFd(), readChunk, sizeof(readChunk));
+    char readChunk[BUFFER_SIZE];
+    ssize_t receivedBytes = _socket.receiveMessage(client.getFd(), readChunk, BUFFER_SIZE);
 
     if (receivedBytes <= 0) {
         disconnectClient(client);
         return;
     }
-    
+
     client.getReadBuffer().append(readChunk, receivedBytes);
     std::string &readBuffer = client.getReadBuffer();
     std::size_t newlinePos;

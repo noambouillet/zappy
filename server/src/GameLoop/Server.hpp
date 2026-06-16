@@ -19,6 +19,8 @@
 
 namespace ZappyServer {
 
+static constexpr int BUFFER_SIZE = 4096;
+
 class Server {
     private:
         unsigned int _port;
