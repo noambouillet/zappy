@@ -34,8 +34,29 @@ Logger::~Logger()
 void Logger::write(const std::string &message)
 {
     if (_file.is_open()) {
-        _file << message << std::endl;
+        std::time_t now = std::time(nullptr);
+        std::string date = std::ctime(&now);
+        if (!date.empty() && date.back() == '\n') {
+            date.pop_back();
+        }
+        _file << "[" << date << "] " << message << std::endl;
     }
+    std::cout << message << std::endl;
+}
+
+void Logger::info(const std::string &message)
+{
+    write("[INFO] " + message);
+}
+
+void Logger::warn(const std::string &message)
+{
+    write("[WARN] " + message);
+}
+
+void Logger::error(const std::string &message)
+{
+    write("[ERROR] " + message);
 }
 
 Logger logger("server.log");

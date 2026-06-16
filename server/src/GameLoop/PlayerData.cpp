@@ -6,6 +6,7 @@
 */
 
 #include "PlayerData.hpp"
+#include "Logger.hpp"
 
 namespace ZappyServer {
 
@@ -95,6 +96,8 @@ void PlayerData::queueCommand(const std::string &cmd, unsigned int ticks)
 {
     if (_commandQueue.size() < 10) {
         _commandQueue.push({cmd, ticks});
+    } else {
+        logger.warn("Command queue full, dropping command: " + cmd);
     }
 }
 

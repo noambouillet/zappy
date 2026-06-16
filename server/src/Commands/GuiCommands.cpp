@@ -11,6 +11,7 @@
 #include <array>
 #include <string_view>
 #include <optional>
+#include "Logger.hpp"
 
 namespace ZappyServer {
 
@@ -35,6 +36,7 @@ void GuiCommands::dispatch(Client &client, Server &server, const std::string &li
             return;
         }
     }
+    logger.warn("Client fd " + std::to_string(client.getFd()) + " sent unknown GUI command: " + cmd);
     GuiCommands::suc(client, server);
 }
 

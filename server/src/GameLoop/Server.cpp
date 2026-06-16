@@ -62,6 +62,7 @@ void Server::acceptClient()
     _clients.emplace_back(newClientFd);
     _poll.addFd(newClientFd, POLLIN);
     _socket.sendMessage(newClientFd, "WELCOME\n", 8);
+    logger.info("New connection from fd " + std::to_string(newClientFd));
 }
 
 bool Server::isValidTeam(const std::string &name) const
@@ -71,6 +72,7 @@ bool Server::isValidTeam(const std::string &name) const
 
 void Server::disconnectClient(Client &client)
 {
+    logger.info("Client fd " + std::to_string(client.getFd()) + " disconnected");
     _poll.removeFd(client.getFd());
     close(client.getFd());
     client.invalidate();
@@ -101,6 +103,30 @@ void Server::handleGuiHandshake(Client &client)
     logger.write("The omniscient graphic team has entered the world.");
 }
 
+unsigned int Server::countAlivePlayersInTeam(const std::string &teamName) const
+{
+    unsigned int aliveCount = 0;
+    for (const Client &otherClient : _clients) {
+        if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getTeamName() == teamName) {
+            aliveCount++;
+        }
+    }
+    return aliveCount;
+}
+
+int Server::computeAvailableSlots(const std::string &teamName, unsigned int aliveCount) const
+{
+    unsigned int totalSlots = _clientsNb;
+    for (const Egg &egg : _eggs) {
+        if (egg.teamName == teamName)
+            totalSlots++;
+    }
+    int remaining = static_cast<int>(totalSlots) - static_cast<int>(aliveCount) - 1;
+    if (remaining < 0)
+        return 0;
+    return remaining;
+}
+
 void Server::handleAiHandshake(Client &client, const std::string &requestedTeamName)
 {
     if (!isValidTeam(requestedTeamName)) {
@@ -110,13 +136,7 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
         return;
     }
 
-    unsigned int aliveCount = 0;
-    for (const Client &otherClient : _clients) {
-        if (!otherClient.isDead() && otherClient.getState() == ClientState::AI && otherClient.getTeamName() == requestedTeamName) {
-            aliveCount++;
-        }
-    }
-
+    unsigned int aliveCount = countAlivePlayersInTeam(requestedTeamName);
     client.initPlayerData();
 
     if (aliveCount >= _clientsNb) {
@@ -141,18 +161,8 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
     client.getPlayerData()->setDirection((rand() % 4) + 1);
     client.getPlayerData()->setLevel(1);
     client.getPlayerData()->setInventory(0, 10);
-
-    unsigned int totalSlots = _clientsNb;
-    for (const Egg &egg : _eggs) {
-        if (egg.teamName == requestedTeamName) {
-            totalSlots++;
-        }
-    }
-    int remaining = static_cast<int>(totalSlots) - static_cast<int>(aliveCount) - 1;
-    if (remaining < 0) {
-        remaining = 0;
-    }
-
+    
+    int remaining = computeAvailableSlots(requestedTeamName, aliveCount);
     std::string availableSlots  = std::to_string(remaining) + "\n";
     std::string worldDimensions = std::to_string(_width) + " " + std::to_string(_height) + "\n";
     _socket.sendMessage(client.getFd(), availableSlots.c_str(), availableSlots.size());
@@ -170,47 +180,46 @@ void Server::handleHandshake(Client &client, const std::string &receivedTeamName
     handleAiHandshake(client, receivedTeamName);
 }
 
+void Server::dispatchClientLine(Client &client, const std::string &completeLine)
+{
+    if (client.getState() == ClientState::WAITING_TEAM) {
+        handleHandshake(client, completeLine);
+    } else if (client.getState() == ClientState::GUI) {
+        GuiCommands::dispatch(client, *this, completeLine);
+    } else if (client.getState() == ClientState::AI) {
+        std::size_t spacePos = completeLine.find(' ');
+        std::string cmdName = completeLine.substr(0, spacePos);
+        unsigned int ticks = AiCommands::getCommandTicks(cmdName);
+        client.getPlayerData()->queueCommand(completeLine, ticks);
+    }
+}
+
 void Server::readClient(Client &client)
 {
-    char readChunk[1024];
-    ssize_t receivedBytes = _socket.receiveMessage(client.getFd(), readChunk, sizeof(readChunk) - 1);
+    char readChunk[BUFFER_SIZE];
+    ssize_t receivedBytes = _socket.receiveMessage(client.getFd(), readChunk, BUFFER_SIZE);
 
     if (receivedBytes <= 0) {
         disconnectClient(client);
         return;
     }
-    readChunk[receivedBytes] = '\0';
-    client.getReadBuffer() += readChunk;
+
+    client.getReadBuffer().append(readChunk, receivedBytes);
     std::string &readBuffer = client.getReadBuffer();
     std::size_t newlinePos;
+    
     while ((newlinePos = readBuffer.find('\n')) != std::string::npos) {
         std::string completeLine = readBuffer.substr(0, newlinePos);
         readBuffer.erase(0, newlinePos + 1);
+        
         if (!completeLine.empty() && completeLine.back() == '\r') {
             completeLine.pop_back();
         }
         if (completeLine.empty()) {
             continue;
         }
-        if (client.getState() == ClientState::WAITING_TEAM) {
-            handleHandshake(client, completeLine);
-        } else if (client.getState() == ClientState::GUI) {
-            GuiCommands::dispatch(client, *this, completeLine);
-        } else if (client.getState() == ClientState::AI) {
-            unsigned int ticks = 7;
-            std::size_t spacePos = completeLine.find(' ');
-            std::string cmdName = completeLine.substr(0, spacePos);
-            if (cmdName == "Inventory") {
-                ticks = 1;
-            } else if (cmdName == "Connect_nbr") {
-                ticks = 0;
-            } else if (cmdName == "Fork") {
-                ticks = 42;
-            } else if (cmdName == "Incantation") {
-                ticks = 300;
-            }
-            client.getPlayerData()->queueCommand(completeLine, ticks);
-        }
+        
+        dispatchClientLine(client, completeLine);
     }
 }
 
@@ -257,6 +266,42 @@ void Server::acceptPendingClients(const std::vector<pollfd> &fds)
     }
 }
 
+void Server::processFoodDecay(Client &client, PlayerData &player)
+{
+    if (player.getFoodTicks() > 0) {
+        player.setFoodTicks(player.getFoodTicks() - 1);
+    }
+    
+    if (player.getFoodTicks() == 0) {
+        if (player.getInventory(0) > 0) {
+            player.setInventory(0, player.getInventory(0) - 1);
+            player.setFoodTicks(126);
+        } else {
+            GuiCommands::pdi(*this, client.getFd());
+            _socket.sendMessage(client.getFd(), "dead\n", 5);
+            logger.write("A wanderer starved to death...");
+            disconnectClient(client);
+        }
+    }
+}
+
+void Server::processClientCommand(Client &client, PlayerData &player)
+{
+    if (client.isDead() || player.getCommandQueue().empty()) {
+        return;
+    }
+    
+    QueuedCommand &cmd = player.getCommandQueue().front();
+    if (cmd.remainingTicks > 0) {
+        cmd.remainingTicks--;
+    }
+    if (cmd.remainingTicks == 0) {
+        logger.info("Player fd " + std::to_string(client.getFd()) + " executed command: " + cmd.line);
+        AiCommands::dispatch(client, *this, cmd.line);
+        player.getCommandQueue().pop();
+    }
+}
+
 void Server::processTicks(int ticks)
 {
     for (int index = 0; index < ticks; index++) {
@@ -266,34 +311,45 @@ void Server::processTicks(int ticks)
             }
             PlayerData &player = client.getPlayerData().value();
 
-            if (player.getFoodTicks() > 0) {
-                player.setFoodTicks(player.getFoodTicks() - 1);
-            }
+            processFoodDecay(client, player);
+            processClientCommand(client, player);
+        }
+    }
+}
 
-            if (player.getFoodTicks() == 0) {
-                if (player.getInventory(0) > 0) {
-                    player.setInventory(0, player.getInventory(0) - 1);
-                    player.setFoodTicks(126);
-                } else {
-                    GuiCommands::pdi(*this, client.getFd());
-                    _socket.sendMessage(client.getFd(), "dead\n", 5);
-                    logger.write("A wanderer starved to death...");
-                    disconnectClient(client);
-                    continue;
-                }
+int Server::calculateNextTimeout(double elapsedMs, double tickDurationMs)
+{
+    int minTicks = -1;
+    for (const Client &client : _clients) {
+        if (client.isDead() || client.getState() != ClientState::AI || !client.getPlayerData().has_value()) {
+            continue;
+        }
+        const PlayerData &player = client.getPlayerData().value();
+        
+        if (player.getFoodTicks() > 0) {
+            int eventTicks = player.getFoodTicks();
+            if (minTicks == -1 || eventTicks < minTicks) {
+                minTicks = eventTicks;
             }
-
-            if (!client.isDead() && !player.getCommandQueue().empty()) {
-                QueuedCommand &cmd = player.getCommandQueue().front();
-                if (cmd.remainingTicks > 0)
-                    cmd.remainingTicks--;
-                if (cmd.remainingTicks == 0) {
-                    AiCommands::dispatch(client, *this, cmd.line);
-                    player.getCommandQueue().pop();
-                }
+        }
+        if (!player.getCommandQueue().empty()) {
+            const QueuedCommand &cmd = player.getCommandQueue().front();
+            int eventTicks = cmd.remainingTicks > 0 ? cmd.remainingTicks : 1;
+            if (minTicks == -1 || eventTicks < minTicks) {
+                minTicks = eventTicks;
             }
         }
     }
+
+    if (minTicks != -1) {
+        double targetElapsedMs = minTicks * tickDurationMs;
+        if (elapsedMs < targetElapsedMs) {
+            return std::ceil(targetElapsedMs - elapsedMs);
+        } else {
+            return 0;
+        }
+    }
+    return -1;
 }
 
 void Server::readShellCommands(const std::vector<pollfd>& fds)
@@ -333,38 +389,7 @@ void Server::run()
             elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
         }
 
-        int minTicks = -1;
-        for (const Client &client : _clients) {
-            if (client.isDead() || client.getState() != ClientState::AI || !client.getPlayerData().has_value()) {
-                continue;
-            }
-            const PlayerData &player = client.getPlayerData().value();
-
-            if (player.getFoodTicks() > 0) {
-                int eventTicks = player.getFoodTicks();
-                if (minTicks == -1 || eventTicks < minTicks) {
-                    minTicks = eventTicks;
-                }
-            }
-            if (!player.getCommandQueue().empty()) {
-                const QueuedCommand &cmd = player.getCommandQueue().front();
-                int eventTicks = cmd.remainingTicks > 0 ? cmd.remainingTicks : 1;
-                if (minTicks == -1 || eventTicks < minTicks) {
-                    minTicks = eventTicks;
-                }
-            }
-        }
-
-        int timeout = -1;
-        if (minTicks != -1) {
-            double targetElapsedMs = minTicks * tickDurationMs;
-            if (elapsedMs < targetElapsedMs) {
-                timeout = std::ceil(targetElapsedMs - elapsedMs);
-            } else {
-                timeout = 0;
-            }
-        }
-
+        int timeout = calculateNextTimeout(elapsedMs, tickDurationMs);
         int ret = _poll.wait(timeout);
 
         if (ret > 0) {

@@ -20,6 +20,8 @@
 
 namespace ZappyServer {
 
+static constexpr int BUFFER_SIZE = 4096;
+
 class Server {
     private:
         unsigned int _port;
@@ -40,10 +42,16 @@ class Server {
 
         void setup();
         void processTicks(int ticks);
+        int calculateNextTimeout(double elapsedMs, double tickDurationMs);
+        void processFoodDecay(Client &client, PlayerData &player);
+        void processClientCommand(Client &client, PlayerData &player);
         void acceptClient();
+        void dispatchClientLine(Client &client, const std::string &completeLine);
         void readClient(Client &client);
         void handleHandshake(Client &client, const std::string &line);
         void handleGuiHandshake(Client &client);
+        unsigned int countAlivePlayersInTeam(const std::string &teamName) const;
+        int computeAvailableSlots(const std::string &teamName, unsigned int aliveCount) const;
         void handleAiHandshake(Client &client, const std::string &requestedTeamName);
         void closeClients();
         void disconnectClient(Client &client);

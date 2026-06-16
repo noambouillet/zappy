@@ -46,6 +46,7 @@ struct Vector2D {
 using AiCommandHandler = std::function<void(Client &, Server &, const std::string &)>;
 
 namespace AiCommands {
+    unsigned int getCommandTicks(const std::string &commandName);
     void dispatch(Client &client, Server &server, const std::string &line);
     void forward(Client &client, Server &server, const std::string &args);
     void right(Client &client, Server &server, const std::string &args);
