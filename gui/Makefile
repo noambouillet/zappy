@@ -20,7 +20,8 @@ SRC     = main.cpp \
 		  src/SFML/EventHandler.cpp \
 		  src/Network/NetworkHandler.cpp \
 		  src/Encapsulations/Socket.cpp \
-		  src/Encapsulations/Poll.cpp
+		  src/Encapsulations/Poll.cpp \
+		  src/Data/TextureManager.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 

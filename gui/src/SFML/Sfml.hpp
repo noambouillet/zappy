@@ -16,6 +16,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "EventHandler.hpp"
+#include "TextureManager.hpp"
 
 typedef struct PlayerAnim_s {
     int id;
@@ -58,13 +59,10 @@ class Sfml {
         World &_world;
         sf::View _camera;
         EventHandler _eventHandler;
-
-        std::unordered_map<std::string, sf::Texture> _textures;
-        std::unordered_map<std::string, sf::Sprite> _sprites;
+        TextureManager _textureManager;
         sf::Clock _clock;
 
         void updateDimensions();
-        int loadTexture();
         void drawMap();
         void setMapSize(size_t width, size_t height);
         void setTimeUnit(int TimeUnit);

@@ -13,37 +13,34 @@
 Sfml::Sfml(World &world): _window(sf::VideoMode::getDesktopMode(), "trantor", sf::Style::Titlebar | sf::Style::Close), _world(world), _eventHandler(_window, _camera)
 {
     _window.setFramerateLimit(60);
-    loadTexture();
+    _textureManager.loadAllTextures();
 }
 
 Sfml::~Sfml()
 {
 }
-
+//sfml
 sf::RenderWindow &Sfml::getWindow()
 {
     return _window;
 }
 
-
+//sfml
 void Sfml::handleEvent()
 {
     _eventHandler.update(_limitWindowWidth);
 }
 
+//rendermap
 void Sfml::drawMap() 
 {
     sf::RectangleShape tileShape(sf::Vector2f(_tileSize, _tileSize));
     tileShape.setOutlineColor(sf::Color::Black);
     tileShape.setOutlineThickness(-1.0f);
 
-    auto tex = _textures.find("ground");
-    if (tex != _textures.end()) {
-        tileShape.setTexture(&tex->second);
-        tileShape.setFillColor(sf::Color::White);
-    } else {
-        tileShape.setFillColor(sf::Color(34, 139, 34));
-    }
+    const sf::Texture &tex = _textureManager.getTexture("ground");
+    tileShape.setTexture(&tex);
+    tileShape.setFillColor(sf::Color::White);
     for (size_t y = 0; y < _world.getMapSize().second; ++y) {
         for (size_t x = 0; x < _world.getMapSize().first; ++x) {
             tileShape.setPosition(_offsetX + (x * _tileSize), _offsetY + (y * _tileSize));
@@ -59,19 +56,17 @@ void Sfml::drawMap()
 
 void Sfml::drawSprite(std::string textureKey, float size, int x, int y, float offsetX, float offsetY)
 {
-    auto tex = _textures.find(textureKey);
-    if (tex == _textures.end())
-        return;
+    const sf::Texture &texture = _textureManager.getTexture(textureKey);
+    sf::Sprite &sprite = _textureManager.getSprite(textureKey);
     float centerX = _offsetX + (x * _tileSize) + (_tileSize / offsetX);
     float centerY = _offsetY + (y * _tileSize) + (_tileSize / offsetY);
-    const sf::Texture &texture = tex->second;
-    _sprites[textureKey].setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-    _sprites[textureKey].setScale(size / texture.getSize().x, size / texture.getSize().y);
-    _sprites[textureKey].setPosition(centerX, centerY);
-    _window.draw(_sprites[textureKey]);
+    sprite.setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
+    sprite.setScale(size / texture.getSize().x, size / texture.getSize().y);
+    sprite.setPosition(centerX, centerY);
+    _window.draw(sprite);
 }
 
-
+//rendermap
 void Sfml::drawFood(int x, int y, const TileData_t &tile)
 {
     if (_tileSize <= 0.0f || tile.ressources.empty() || tile.ressources[0] <= 0)
@@ -84,6 +79,7 @@ void Sfml::drawFood(int x, int y, const TileData_t &tile)
     drawSprite(textureKey, _tileSize * 0.50f, x, y, 1.3f, 1.3f);
 }
 
+//rendermap
 void Sfml::drawOres(int x, int y, const TileData_t &tile)
 {
     if (_tileSize <= 0.0f || tile.ressources.empty())
@@ -99,6 +95,7 @@ void Sfml::drawOres(int x, int y, const TileData_t &tile)
     drawSprite(textureKey, _tileSize * 0.50f, x, y, 1.3f, 10.0f);
 }
 
+//rendermap
 void Sfml::drawEggs(int x, int y, const TileData_t &tile)
 {
     if (_tileSize <= 0.0f || tile.eggs.empty() || tile.eggs.size() <= 0)
@@ -108,22 +105,15 @@ void Sfml::drawEggs(int x, int y, const TileData_t &tile)
         textureKey = "twoeggs";
     else if (tile.eggs.size() >= 3)
         textureKey = "threeEggs";
-    auto tex = _textures.find(textureKey);
-    if (tex == _textures.end()) {
-        return;
-    }
     drawSprite(textureKey, _tileSize * 0.75f, x, y, 4.0f, 6.0f);
 }
-
+//handleTrantorian
 void Sfml::drawTrantorians(const TileData_t &tile)
 {
     float trantorianSize = _tileSize * 0.95f; 
-    auto tex = _textures.find("benoit");
+    const sf::Texture &texture = _textureManager.getTexture("benoit");
+    sf::Sprite &playerSprite = _textureManager.getSprite("benoit");
 
-    if (tex == _textures.end())
-        return;
-    const sf::Texture &texture = tex->second;
-    sf::Sprite &playerSprite = _sprites["benoit"];
     playerSprite.setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
     playerSprite.setScale(trantorianSize / texture.getSize().x, trantorianSize / texture.getSize().y);
     for (const auto &animPair : _playerAnims) {
@@ -151,52 +141,46 @@ void Sfml::drawTrantorians(const TileData_t &tile)
     playerSprite.setRotation(0.0f);
 }
 
+//handleTrantorian
 void Sfml::drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet)
 {
-    auto deathTexIt = _textures.find(spritesheet);
-    if (deathTexIt != _textures.end()) {
-        sf::Sprite &deathSprite = _sprites[spritesheet];
-        const sf::Texture &deathTex = deathTexIt->second;
-        int totalFrames = NbFrame; 
-        int frameWidth = deathTex.getSize().x / totalFrames;
-        int frameHeight = deathTex.getSize().y;
-        deathSprite.setTextureRect(sf::IntRect(anim.deathFrame * frameWidth, 0, frameWidth, frameHeight));
-        deathSprite.setOrigin(frameWidth / 2.0f, frameHeight / 2.0f);
-        deathSprite.setScale(size / frameWidth, size / frameHeight);
-        deathSprite.setPosition(anim.visualPos);
-        deathSprite.setRotation(0.0f);
-        _window.draw(deathSprite);
-    }
+    const sf::Texture &texture = _textureManager.getTexture(spritesheet);
+    sf::Sprite &sprite = _textureManager.getSprite(spritesheet);
+    int totalFrames = NbFrame; 
+    int frameWidth = texture.getSize().x / totalFrames;
+    int frameHeight = texture.getSize().y;
+    sprite.setTextureRect(sf::IntRect(anim.deathFrame * frameWidth, 0, frameWidth, frameHeight)); // problème à régler c'est sur deathframe
+    sprite.setOrigin(frameWidth / 2.0f, frameHeight / 2.0f);
+    sprite.setScale(size / frameWidth, size / frameHeight);
+    sprite.setPosition(anim.visualPos);
+    sprite.setRotation(0.0f);
+    _window.draw(sprite);
 }
 
+//handleTrantorian
 void Sfml::displayBubble(const PlayerAnim_t &anim)
 {
-    auto bubbleTexIt = _textures.find("bubble");
-    bool hasBubbleBg = (bubbleTexIt != _textures.end());
+    float BubbleSize = _tileSize * 0.60f;
+    float IconSize = _tileSize * 0.40f;
+    const sf::Texture &bubbleTexture = _textureManager.getTexture("bubble");
+    sf::Sprite &bubbleSprite = _textureManager.getSprite("bubble");
 
-    if (!anim.bubbleQueue.empty() && hasBubbleBg) {
-        auto iconTexIt = _textures.find(anim.bubbleQueue.front().first);                    
-        if (iconTexIt != _textures.end()) {
-            sf::Sprite &bubbleSprite = _sprites["bubble"];
-            sf::Sprite &iconSprite = _sprites[anim.bubbleQueue.front().first];
-            float BubbleSize = _tileSize * 0.60f;
-            float IconSize = _tileSize * 0.40f;
-            const sf::Texture &bubbleTex = bubbleTexIt->second;
-            bubbleSprite.setOrigin(bubbleTex.getSize().x / 2.0f, bubbleTex.getSize().y / 2.0f);
-            bubbleSprite.setScale(BubbleSize / bubbleTex.getSize().x, BubbleSize / bubbleTex.getSize().y);
-            float bubbleX = anim.visualPos.x;
-            float bubbleY = anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (BubbleSize / 2.0f) - 4.0f;
-            bubbleSprite.setPosition(bubbleX, bubbleY);                        
-            const sf::Texture &iconTex = iconTexIt->second;
-            iconSprite.setOrigin(iconTex.getSize().x / 2.0f, iconTex.getSize().y / 2.0f);
-            iconSprite.setScale(IconSize / iconTex.getSize().x, IconSize / iconTex.getSize().y);
-            iconSprite.setPosition(bubbleX, bubbleY);                        
-            _window.draw(bubbleSprite);
-            _window.draw(iconSprite);
-        }
+    if (!anim.bubbleQueue.empty()) {
+        const sf::Texture &iconTexture = _textureManager.getTexture(anim.bubbleQueue.front().first);
+        sf::Sprite &iconSprite = _textureManager.getSprite(anim.bubbleQueue.front().first);
+        bubbleSprite.setOrigin(bubbleTexture.getSize().x / 2.0f, bubbleTexture.getSize().y / 2.0f);
+        bubbleSprite.setScale(BubbleSize / bubbleTexture.getSize().x, BubbleSize / bubbleTexture.getSize().y);
+        float bubbleX = anim.visualPos.x;
+        float bubbleY = anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (BubbleSize / 2.0f) - 4.0f;
+        bubbleSprite.setPosition(bubbleX, bubbleY);                        
+        iconSprite.setOrigin(iconTexture.getSize().x / 2.0f, iconTexture.getSize().y / 2.0f);
+        iconSprite.setScale(IconSize / iconTexture.getSize().x, IconSize / iconTexture.getSize().y);
+        iconSprite.setPosition(bubbleX, bubbleY);                        
+        _window.draw(bubbleSprite);
+        _window.draw(iconSprite);
     } 
 }
-
+//rendermap
 void Sfml::drawTileElements(int x, int y, const TileData_t &tile)
 {
     drawFood(x, y, tile);
@@ -204,22 +188,19 @@ void Sfml::drawTileElements(int x, int y, const TileData_t &tile)
     drawEggs(x, y, tile);
     drawTrantorians(tile);
 }
-
+//rendermap
 void Sfml::drawBackground()
 {
-    auto tex = _textures.find("background");
-    if (tex == _textures.end())
-        return;
-
-    const sf::Texture &texture = tex->second;
-    sf::Sprite &bgSprite = _sprites["background"];
-    bgSprite.setPosition(0.0f, 0.0f);
+    const sf::Texture &texture = _textureManager.getTexture("background");
+    sf::Sprite &sprite = _textureManager.getSprite("background");
+    sprite.setPosition(0.0f, 0.0f);
     float scaleX = static_cast<float>(_window.getSize().x) / texture.getSize().x;
     float scaleY = static_cast<float>(_window.getSize().y) / texture.getSize().y;
-    bgSprite.setScale(scaleX, scaleY);
-    _window.draw(bgSprite);
+    sprite.setScale(scaleX, scaleY);
+    _window.draw(sprite);
 }
 
+//sfml
 void Sfml::displayWindow()
 {
     float deltaTime = _clock.restart().asSeconds();
@@ -237,6 +218,7 @@ void Sfml::displayWindow()
     _window.display();
 }
 
+//sfml
 void Sfml::updateDimensions()
 {
     if (_world.getMapSize().first == 0 || _world.getMapSize().second == 0)
@@ -253,33 +235,7 @@ void Sfml::updateDimensions()
     _camera.setCenter(currentWindowWidth / 2.0f, currentWindowHeight / 2.0f);
 }
 
-int Sfml::loadTexture()
-{
-    std::string path = "gui/assets/images";
-
-    if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
-        for (const auto& entry : std::filesystem::directory_iterator(path)) {
-            if (!entry.is_regular_file())
-                continue;
-            sf::Texture texture;
-            sf::Sprite sprite;
-            if (!texture.loadFromFile(entry.path().string())) {
-                std::cerr << "fail to load " << entry.path().string() << std::endl;
-                continue;
-            }
-            _textures[entry.path().stem().string()] = std::move(texture);
-            sprite.setTexture(_textures[entry.path().stem().string()]);
-            _sprites[entry.path().stem().string()] = std::move(sprite);
-            std::cout << "texture loaded : " << entry.path().stem().string() << std::endl;
-        }
-    } else {
-        throw GuiException("file assets dosen't exist");
-        return 84;
-    }
-    return 0;
-}
-
-
+//handleTrantorian
 sf::Vector2f Sfml::convertToPixels(int x, int y) const
 {
     float centerX = _offsetX + (x * _tileSize) + (_tileSize / 2.0f);
@@ -287,6 +243,7 @@ sf::Vector2f Sfml::convertToPixels(int x, int y) const
     return sf::Vector2f(centerX, centerY);
 }
 
+//handleTrantorian
 void Sfml::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
 {
     PlayerAnim_t &anim = _playerAnims[id];
@@ -296,6 +253,7 @@ void Sfml::setPlayerActionBubble(int id, const std::string &textureKey, float du
         anim.bubbleTimer = duration;
 }
 
+//handleTrantorian
 void Sfml::updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, float deltaTime, float maxWidth, float maxHeight)
 {
     sf::Vector2f currentTilePixelPos = convertToPixels(player.x, player.y);
@@ -319,6 +277,7 @@ void Sfml::updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, flo
     updatePlayerBubble(anim, deltaTime);
 }
 
+//handleTrantorian
 void Sfml::initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::Vector2f &pixelPos)
 {
     anim.id = player.id;
@@ -329,6 +288,7 @@ void Sfml::initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::
     anim.isMoving = false;
 }
 
+//handleTrantorian
 void Sfml::updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight)
 {
     if (!anim.isMoving) {
@@ -355,6 +315,7 @@ void Sfml::updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWi
     }
 }
 
+//handleTrantorian
 void Sfml::updatePlayerBubble(PlayerAnim_t &anim, float deltaTime)
 {
     if (anim.bubbleTimer <= 0.0f)
@@ -368,6 +329,7 @@ void Sfml::updatePlayerBubble(PlayerAnim_t &anim, float deltaTime)
     }
 }
 
+//handleTrantorian
 void Sfml::updateAnimations(float deltaTime)
 {
     float maxMapWidthPixels = _world.getMapSize().first * _tileSize;
@@ -392,6 +354,7 @@ void Sfml::updateAnimations(float deltaTime)
     }
 }
 
+//handleTrantorian
 void Sfml::triggerPlayerDeath(int id)
 {
     if (_playerAnims.find(id) != _playerAnims.end()) {
@@ -401,6 +364,7 @@ void Sfml::triggerPlayerDeath(int id)
     }
 }
 
+//handleTrantorian
 void Sfml::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
 {
     const int totalFrames = 32;
@@ -419,6 +383,7 @@ void Sfml::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
     }
 }
 
+//handleTrantorian
 void Sfml::setPlayerIncanting(int id, bool state)
 {
     if (_playerAnims.find(id) != _playerAnims.end()) {
@@ -428,6 +393,7 @@ void Sfml::setPlayerIncanting(int id, bool state)
     }
 }
 
+//handleTrantorian
 void Sfml::stopIncantationAt(int x, int y)
 {
     for (auto &pair : _playerAnims) {
@@ -437,6 +403,7 @@ void Sfml::stopIncantationAt(int x, int y)
     }
 }
 
+//handleTrantorian
 void Sfml::updatePlayerIncantation(PlayerAnim_t &anim, float deltaTime)
 {
     const int totalFrames = 32;
