@@ -17,8 +17,7 @@ void InputParser::printHelpShell()
 {
     std::cout << "COMMANDS:\n" << "\t/help\t\t gives you the list of the shell's commands\n"
         << "\t/exit\t\t lets you leave the shell\n" << "\t/clear\t\t lets you clear the screen.\n"
-        << "\t/pause\t\t stops the gameloop and doesn't compute ticks.\n" << "\t/resume\t\t resumes the gameloop.\n"
-        << "\t/status\t\t displays the status of the teams\n";
+        << "\t/pause\t\t stops the gameloop and doesn't compute ticks.\n" << "\t/resume\t\t resumes the gameloop.\n";
 }
 
 void InputParser::processCommand(const std::string& command)
@@ -35,10 +34,6 @@ void InputParser::processCommand(const std::string& command)
         _server.pause();
     } else if (command == "/resume") {
         _server.resume();
-    } else if (command == "/status") {
-        (void)_server;
-        //_server.status();
-        std::cout << "Commands not implemented yet.\n";
     } else {
         throw ServerException("Invalid command.");
     }
