@@ -10,7 +10,11 @@
 #include "Interfaces/IGui.hpp"
 #include "Encapsulations/RayWindow.hpp"
 #include "Encapsulations/RayCamera.hpp"
+#include "Encapsulations/RayTexture.hpp"
 #include "World.hpp"
+#include <memory>
+#include <unordered_map>
+#include <string>
 
 class RaylibGui : public IGui {
     public:
@@ -30,4 +34,7 @@ class RaylibGui : public IGui {
         World &_world;
         RayWindow _window;
         RayCamera _camera;
+        std::unique_ptr<RayTexture> _backgroundTexture;
+        std::unordered_map<std::string, std::unique_ptr<RayTexture>> _textures;
+        void drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color);
 };

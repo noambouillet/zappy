@@ -17,6 +17,7 @@ GUI_FLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lsfml-graphics -lsfml-w
 GUI_SRC = src/Raylib/RaylibGui.cpp \
 		  src/Raylib/Encapsulations/RayWindow.cpp \
 		  src/Raylib/Encapsulations/RayCamera.cpp \
+		  src/Raylib/Encapsulations/RayTexture.cpp \
 		  src/SFML/Sfml.cpp \
 		  src/SFML/EventHandler.cpp \
 		  src/SFML/RenderMap.cpp \
