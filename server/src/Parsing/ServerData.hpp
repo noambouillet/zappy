@@ -20,6 +20,7 @@ class ServerData {
         unsigned int _height;
         unsigned int _clientsNb;
         unsigned int _freq;
+        unsigned int _seed;
         std::vector<std::string> _teamNames;
 
         void parseArgs(char **argv, int argc, int &index);
@@ -28,12 +29,13 @@ class ServerData {
         ServerData();
 
         void parse(int argc, char **argv);
-        void run() const;
+        void run();
         unsigned int getPort() const;
         unsigned int getWidth() const;
         unsigned int getHeight() const;
         unsigned int getClientsNb() const;
         unsigned int getFreq() const;
+        unsigned int getSeed() const;
         const std::vector<std::string> &getTeamNames() const;
 };
 

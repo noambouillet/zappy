@@ -10,21 +10,21 @@
 #include "Logger.hpp"
 #include "GuiCommands.hpp"
 #include "AiCommands.hpp"
-#include <poll.h>
-#include <unistd.h>
 #include <algorithm>
-#include <cmath>
-#include <cctype>
 #include <csignal>
 
 namespace ZappyServer {
 
 // 🚀 Server starting up !!!!
 
-Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
+Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, unsigned int seed, const std::vector<std::string> &teamNames)
     : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height),
     _nextEggId(0), _running(true), _paused(false), _shell(*this)
-{}
+{
+    _map.setSeed(seed);
+    _map.generate();
+    _rng.seed(seed);
+}
 
 Server::~Server()
 {
@@ -168,8 +168,11 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
         client.getPlayerData()->setY(eggIt->y);
         _eggs.erase(eggIt);
     } else {
-        client.getPlayerData()->setX(rand() % _width);
-        client.getPlayerData()->setY(rand() % _height);
+        std::uniform_int_distribution<unsigned int> distX(0, _width - 1);
+        std::uniform_int_distribution<unsigned int> distY(0, _height - 1);
+
+        client.getPlayerData()->setX(distX(_rng));
+        client.getPlayerData()->setY(distY(_rng));
     }
 
     client.setState(ClientState::AI);

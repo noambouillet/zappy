@@ -27,10 +27,18 @@ static constexpr std::string_view ascii67 = R"(    _
 
 static void printHelp()
 {
-    std::cout << "USAGE: " << "./zappy_server" << " -p port -x width -y height -n name1 name2 ... -c clientsNb -f freq\n"
-        << "\tport\t\t is the port number\n" << "\twidth\t\t is the width of the world\n" << "\theight\t\t is the height of the world\n"
-        << "\tnameZ\t\t is the name of the team Z\n" << "\tclientsNb\t is the number of authorized clients per team\n"
-        << "\tfreq\t\t is the reciprocal of time unit for execution of actions\n";
+    std::cout
+        << "USAGE: ./zappy_server [options]\n"
+        << "\n"
+        << "OPTIONS:\n"
+        << "  -p, --port <port>\t\tServer port (1024-65535)\n"
+        << "  -x, --width <width>\t\tWorld width (10-42)\n"
+        << "  -y, --height <height>\t\tWorld height (10-42)\n"
+        << "  -n, --teams <names...>\tTeam names (at least one required)\n"
+        << "  -c, --clientnbr <nb>\t\tMax clients per team (1-200)\n"
+        << "  -f, --freq <freq>\t\tTime unit frequency (1-10000)\n"
+        << "  -s, --seed <seed>\t\tRandom seed (optional, strict positive integer)\n"
+        << "  --help\t\t\tDisplay this help message\n";
 }
 
 static unsigned int parsePositiveInt(const std::string &value, const std::string &label)
@@ -108,28 +116,32 @@ void ServerData::parseArgs(char **argv, int argc, int &index)
 {
     const std::string option = argv[index];
 
-    if (option == "-p") {
+    if (option == "-p" || option == "--port") {
         _port = parseBoundedInt(requireValue(argc, argv, index, option), "port", 1024, 65535);
         return;
     }
-    if (option == "-x") {
+    if (option == "-x" || option == "--width") {
         _width = parseBoundedInt(requireValue(argc, argv, index, option), "width", 10, 42);
         return;
     }
-    if (option == "-y") {
+    if (option == "-y" || option == "--height") {
         _height = parseBoundedInt(requireValue(argc, argv, index, option), "height", 10, 42);
         return;
     }
-    if (option == "-n") {
+    if (option == "-n" || option == "--teams") {
         parseTeamNames(_teamNames, argc, argv, index);
         return;
     }
-    if (option == "-c") {
+    if (option == "-c" || option == "--clientnbr") {
         _clientsNb = parseBoundedInt(requireValue(argc, argv, index, option), "clients number", 1, 200);
         return;
     }
-    if (option == "-f") {
+    if (option == "-f" || option == "--freq") {
         _freq = parseBoundedInt(requireValue(argc, argv, index, option), "freq", 1, 10000);
+        return;
+    }
+    if (option == "-s" || option == "--seed") {
+        _seed = parsePositiveInt(requireValue(argc, argv, index, option), "seed");
         return;
     }
     throw ServerException("Unknown or incomplete argument: " + option + ".");
@@ -155,7 +167,8 @@ void ServerData::printServerData() const
     std::cout << "------------------\n";
     std::cout << ascii67;
     std::cout << "------------------\n";
-    std::cout << "port = " << _port << "\nwidth = " << _width << "\nheight = " << _height << "\nclients_nb = " << _clientsNb << "\nfreq = " << _freq << std::endl;
+    std::cout << "port = " << _port << "\nwidth = " << _width << "\nheight = " << _height << "\nclients_nb = "
+    << _clientsNb << "\nfreq = " << _freq << "\nseed = " << _seed << std::endl;
     std::cout << "------------------\n";
     std::cout << "Teams:\n";
     for (std::string team : _teamNames) {
@@ -164,14 +177,16 @@ void ServerData::printServerData() const
     std::cout << "------------------\n";
 }
 
-ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), _freq(100)
+ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), _freq(100), _seed(0)
 {
 }
 
-void ServerData::run() const
+void ServerData::run()
 {
+    if (_seed == 0)
+        _seed = std::random_device{}();
     printServerData();
-    Server server(_port, _width, _height, _clientsNb, _freq, _teamNames);
+    Server server(_port, _width, _height, _clientsNb, _freq, _seed, _teamNames);
     server.run();
 }
 
@@ -198,6 +213,11 @@ unsigned int ServerData::getClientsNb() const
 unsigned int ServerData::getFreq() const
 {
     return _freq;
+}
+
+unsigned int ServerData::getSeed() const
+{
+    return _seed;
 }
 
 const std::vector<std::string> &ServerData::getTeamNames() const
