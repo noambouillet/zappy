@@ -30,6 +30,8 @@ bool Parsing_gui::is_ipv4(char* addr)
 
     if (!addr || addr[0] == '\0')
         return false;
+    if (std::string(addr) == "localhost")
+        return true;
     if (sscanf(addr, "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4)
         return false;
     if (a < 0 || a > 255)
@@ -43,7 +45,6 @@ bool Parsing_gui::is_ipv4(char* addr)
     return true;
 }
 
-
 networkData_t Parsing_gui::check_args(char *addr, char *port)
 {
     networkData_t data;
@@ -55,7 +56,10 @@ networkData_t Parsing_gui::check_args(char *addr, char *port)
     data.port = std::stoi(port);
     if (data.port < 1 || data.port > 65535)
         throw GuiException("The port: '" + std::string(port) + "' is out of range (port must be between 1 and 65535)");
-    data.ip = addr;
+    if (std::string(addr) == "localhost")
+        data.ip = "127.0.0.1";
+    else
+        data.ip = addr;
     return data;
 }
 
