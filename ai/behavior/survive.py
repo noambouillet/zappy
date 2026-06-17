@@ -6,6 +6,7 @@
 ##
 
 from .class_behavior import Behavior
+from constant import FOOD_TO_REACH
 
 class Survive(Behavior):
     def execute(self, agent):
@@ -17,7 +18,7 @@ class Survive(Behavior):
         """
         print("\n========== SURVIVE ==========")
         agent.tick += 1
-        if (agent.inventory["food"] >= 15):
+        if (agent.inventory["food"] >= FOOD_TO_REACH):
             agent.survive = False
         if (agent.vision == [[]]):
             return ["Look\n"]

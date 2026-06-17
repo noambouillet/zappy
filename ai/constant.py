@@ -8,6 +8,8 @@
 from enum import Enum
 
 MIN_FOOD = 7
+INVOCATION_FREQUENCE = 10
+FOOD_TO_REACH = 15
 
 class Direction(Enum):
     Up = 0

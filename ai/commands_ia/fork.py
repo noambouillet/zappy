@@ -16,8 +16,8 @@ def do_fork(agent, response_server):
     if (response_server == "ok"):
         agent.unused_slots += 1
         logger.info("The Fork command was successful (received and completed).")
-        print("The Fork command was successfully executed, accompanied by the production of an egg.")
+        print("[FORK] The Fork command was successfully executed, accompanied by the production of an egg.")
     else:
         logger.error("The response message from the server is not suitable for this command. response_server != ok (Fork)")
-        print("The response message from the server is not suitable for this command. (Fork)")
+        print("[FORK] The response message from the server is not suitable for this command. (Fork)")
     return

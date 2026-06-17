@@ -57,10 +57,8 @@ class Explore(Behavior):
             print("[EXPLORE][MAIL] Direction:", direction)
             if direction == 0:
                 print("[EXPLORE][MAIL] Already on invocation tile -> AVAILABLE + Look")
-                agent.joining_invocation = False
                 return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n", "Look\n"]
             print("[EXPLORE][MAIL] Move toward invocation")
-            agent.joining_invocation = True
             return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n"] + agent.follow_direction(direction) + ["Look\n"]
         return None
 
