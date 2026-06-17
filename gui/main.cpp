@@ -36,7 +36,7 @@ int main(int ac, char **av)
         }
         server_buffer.clear(); 
         netPoll.addFd(fd, POLLIN);
-        while (gui.getWindow().isOpen()) {
+        while (gui.isOpen()) {
             gui.handleEvent();
             if (netPoll.wait(0) < 0)
                 throw GuiException("poll failed");
