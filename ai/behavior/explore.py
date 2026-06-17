@@ -23,6 +23,9 @@ class Explore(Behavior):
         if not agent.vision or agent.vision == [[]]:
             print("=============================\n")
             return ["Look\n"]
+        food_commands = agent.take_food_on_tile()
+        if food_commands:
+            return food_commands
         needed_ressources = self.get_needed_ressources(agent)
         print("[EXPLORE] Needed ressources:", needed_ressources)
         best_ressource, tile_index = self.find_best_ressource(agent, needed_ressources)
@@ -71,8 +74,8 @@ class Explore(Behavior):
         if ressource is None or tile is None:
             return None
         if tile == 0:
-            return [f"Take {ressource}\n", "Inventory\n", "Look\n"]
-        return agent.go_to(tile) + [f"Take {ressource}\n", "Inventory\n", "Look\n"]
+            return [f"Take {ressource}\n", "Take food\n", "Inventory\n", "Look\n"]
+        return agent.go_to(tile) + [f"Take {ressource}\n", "Take food\n", "Inventory\n", "Look\n"]
 
     def get_shared_commands(self, agent, shared_info):
         if shared_info is None:

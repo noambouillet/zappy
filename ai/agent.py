@@ -36,6 +36,25 @@ class Agent:
         self.joining_invocation = False
         self.waiting = False
 
+    def take_food_on_tile(self):
+        """take all food available on current tile
+
+        Returns:
+            list: commands list
+        """
+        commands = []
+        if not self.vision or self.vision == [[]]:
+            return commands
+        if len(self.vision) == 0:
+            return commands
+        for elem in self.vision[0]:
+            if elem == "food":
+                commands.append("Take food\n")
+        if commands:
+            commands.append("Inventory\n")
+            commands.append("Look\n")
+        return commands
+
     def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.
         y = number of forward to do in the current direction

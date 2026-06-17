@@ -19,6 +19,9 @@ class Evolution(Behavior):
         agent.tick += 1
         if (agent.vision == [[]]):
             return ["Look\n"]
+        food_commands = agent.take_food_on_tile()
+        if food_commands:
+            return food_commands
         if (agent.inventory["food"] < 10):
             agent.survive = True
             return ["Look\n", "Inventory\n"]
