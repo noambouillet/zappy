@@ -9,7 +9,6 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <SFML/Graphics.hpp>
 
 struct Player_t {
     int id;
