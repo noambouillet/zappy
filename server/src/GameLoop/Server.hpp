@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <random>
 
 namespace ZappyServer {
 
@@ -39,6 +40,7 @@ class Server {
         std::chrono::time_point<std::chrono::steady_clock> _lastTick;
         bool _running;
         bool _paused;
+        std::mt19937 _rng;
         InputParser _shell;
 
         void setup();
@@ -63,7 +65,7 @@ class Server {
         void removeDeadClients();
     public:
         Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb,
-            unsigned int freq, const std::vector<std::string> &teamNames);
+            unsigned int freq, unsigned int seed, const std::vector<std::string> &teamNames);
         ~Server();
         void run();
         void stop();
@@ -81,6 +83,7 @@ class Server {
         const std::vector<Egg> &getEggs() const;
         unsigned int addEgg(const std::string &teamName, unsigned int x, unsigned int y);
         void destroyEggsOnTile(unsigned int x, unsigned int y);
+        void killClient(int fd);
 };
 
 }
