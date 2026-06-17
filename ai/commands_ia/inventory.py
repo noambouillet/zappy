@@ -13,16 +13,24 @@ def do_inventory(agent, response_server):
         agent (class): agent IA
         response_server (str): Response from the server
     """
-    old_inventory = agent.inventory
-    info_inventory = response_server.split(' ')
-    for i in range(1, len(info_inventory) - 1, 2):
-        ressource = info_inventory[i]
-        number_str = info_inventory[i + 1].replace(',', '')
-        number_str = number_str.strip()
-        key_exist = agent.inventory.get(ressource)
-        if (key_exist is not None):
-            agent.inventory[ressource] = (int)(number_str)
+    if not response_server.startswith("["):
+        print("[INVENTORY] Invalid response:", response_server)
+        return
+    old_inventory = agent.inventory.copy()
+    clean_response = response_server.replace("[", "")
+    clean_response = clean_response.replace("]", "")
+    clean_response = clean_response.replace(",", "")
+    parts = clean_response.split()
+    index = 0
+    while index < len(parts) - 1:
+        ressource = parts[index]
+        number_str = parts[index + 1]
+        if ressource in agent.inventory:
+            try:
+                agent.inventory[ressource] = int(number_str)
+            except ValueError:
+                print("[INVENTORY] Invalid number:", ressource, number_str)
+        index += 2
     agent.adapt_behavior()
     print("The inventory change for the agent from", old_inventory, "to", agent.inventory)
     logger.info("The Inventory command was successful (received and completed).")
-    return
