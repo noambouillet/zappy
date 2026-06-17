@@ -21,7 +21,7 @@ static void printHelpShell()
         << "\t/exit\t\t lets you leave the shell\n" << "\t/clear\t\t lets you clear the screen.\n"
         << "\t/pause\t\t stops the gameloop and doesn't compute ticks.\n" << "\t/resume\t\t resumes the gameloop.\n"
         << "\t/setFreq <freq>\t changes the frequency.\n" << "\t/clients\t shows connected clients.\n"
-        << "\t/map\t\t shows the map.\n" << "\t/kill <fd>\t kills an AI client.\n";
+        << "\t/map\t\t shows the map.\n" << "\t/kill <fd>\t kills an AI client.\n" << "\t/heatmap\t saves the heatmap to heatmap.ppm.\n";
 }
 
 static unsigned int parsePositiveInt(const std::string &value, const std::string &label)
@@ -121,6 +121,8 @@ void InputParser::processCommand(const std::string& command)
         printClients();
     } else if (command == "/map") {
         printMap();
+    } else if (command == "/heatmap") {
+        _server.saveHeatmap("heatmap.ppm");
     } else {
         throw ServerException("Invalid command.");
     }

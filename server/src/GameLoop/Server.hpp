@@ -21,7 +21,8 @@
 
 namespace ZappyServer {
 
-static constexpr int BUFFER_SIZE = 4096;
+static constexpr unsigned int BUFFER_SIZE = 4096;
+static constexpr unsigned int CELL_SIZE = 20;
 
 class Server {
     private:
@@ -31,6 +32,7 @@ class Server {
         unsigned int _clientsNb;
         unsigned int _freq;
         std::vector<std::string> _teamNames;
+        std::vector<std::vector<unsigned int>> _heatmap;
         Socket _socket;
         Poll _poll;
         std::vector<Client> _clients;
@@ -81,6 +83,8 @@ class Server {
         std::vector<Client> &getClients();
         unsigned int getClientsNb() const;
         const std::vector<Egg> &getEggs() const;
+        void visitTile(unsigned int x, unsigned int y);
+        void saveHeatmap(const std::string &filename) const;
         unsigned int addEgg(const std::string &teamName, unsigned int x, unsigned int y);
         void destroyEggsOnTile(unsigned int x, unsigned int y);
         void killClient(int fd);

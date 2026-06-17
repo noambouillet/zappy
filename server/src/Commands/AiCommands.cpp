@@ -14,6 +14,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <cmath>
+#include <vector>
 
 namespace ZappyServer {
 
@@ -30,7 +31,7 @@ int getSoundDirection(int senderX, int senderY, int receiverX, int receiverY, in
 
     int dxSign = (shortestDeltaX > 0) - (shortestDeltaX < 0);
     int dySign = (shortestDeltaY > 0) - (shortestDeltaY < 0);
-    
+
     static const int absDirMatrix[3][3] = {
         {8, 1, 2},
         {7, 0, 3},
@@ -113,6 +114,7 @@ void AiCommands::forward(Client &client, Server &server, const std::string &)
         currentY += server.getHeight();
     client.getPlayerData()->setX(currentX % server.getWidth());
     client.getPlayerData()->setY(currentY % server.getHeight());
+    server.visitTile(currentX % server.getWidth(), currentY % server.getHeight());
     GuiCommands::ppo(server, client.getFd());
     server.getSocket().sendMessage(client.getFd(), "ok\n", 3);
 }
@@ -204,7 +206,7 @@ void AiCommands::broadcast(Client &client, Server &server, const std::string &ar
     if (!text.empty() && text.back() == '\n') {
         text.pop_back();
     }
-    
+
     logger.write("A voice echoes through the plains: \"" + text + "\"");
 
     for (Client &receiver : server.getClients()) {
@@ -352,7 +354,7 @@ namespace Elevation {
         if (currentLevel >= 8) {
             return false;
         }
-        
+
         static const unsigned int requirements[7][7] = {
             {1, 1, 0, 0, 0, 0, 0},
             {2, 1, 1, 1, 0, 0, 0},
@@ -433,9 +435,9 @@ void AiCommands::incantation(Client &client, Server &server, const std::string &
 
     Elevation::consumeResources(client, server);
     Elevation::elevate(participantFds, server, client.getPlayerData()->getLevel() + 1);
-    
+
     logger.write("A bright flash engulfs the players! They ascended to a higher state of being.");
-    
+
     GuiCommands::pie(server, client.getPlayerData()->getX(), client.getPlayerData()->getY(), true);
     for (int fd : participantFds) {
         GuiCommands::plv(server, fd);

@@ -12,14 +12,15 @@
 #include "AiCommands.hpp"
 #include <algorithm>
 #include <csignal>
+#include <cmath>
 
 namespace ZappyServer {
 
 // 🚀 Server starting up !!!!
 
 Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, unsigned int seed, const std::vector<std::string> &teamNames)
-    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height),
-    _nextEggId(0), _running(true), _paused(false), _shell(*this)
+    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _heatmap(height, std::vector<unsigned int>(width, 0)),
+    _map(width, height), _nextEggId(0), _running(true), _paused(false), _shell(*this)
 {
     _map.setSeed(seed);
     _map.generate();
@@ -193,6 +194,7 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
 
         client.getPlayerData()->setX(distX(_rng));
         client.getPlayerData()->setY(distY(_rng));
+        visitTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
     }
 
     client.setState(ClientState::AI);
@@ -490,6 +492,59 @@ unsigned int Server::getClientsNb() const
 const std::vector<Egg> &Server::getEggs() const
 {
     return _eggs;
+}
+
+void Server::visitTile(unsigned int x, unsigned int y)
+{
+    _heatmap[y][x]++;
+}
+
+void Server::saveHeatmap(const std::string &filename) const
+{
+    std::ofstream file(filename);
+    file << "P3\n";
+    file << _width * CELL_SIZE << " " << _height * CELL_SIZE << "\n";
+    file << "255\n";
+    unsigned int maxVisits = 1;
+
+    for (const auto &row : _heatmap)
+        for (unsigned int value : row)
+            maxVisits = std::max(maxVisits, value);
+    for (unsigned int y = 0; y < _height; y++) {
+        for (unsigned int py = 0; py < CELL_SIZE; py++) {
+            for (unsigned int x = 0; x < _width; x++) {
+                double t = std::log(1.0 + _heatmap[y][x]) / std::log(1.0 + maxVisits);
+                int red = 0;
+                int green = 0;
+                int blue = 0;
+                if (t < 0.25) {
+                    double percentage = t / 0.25;
+                    red = 0;
+                    green = static_cast<int>(255 * percentage);
+                    blue = 255;
+                } else if (t < 0.5) {
+                    double percentage = (t - 0.25) / 0.25;
+                    red = 0;
+                    green = 255;
+                    blue = static_cast<int>(255 * (1.0 - percentage));
+                } else if (t < 0.75) {
+                    double percentage = (t - 0.5) / 0.25;
+                    red = static_cast<int>(255 * percentage);
+                    green = 255;
+                    blue = 0;
+                } else {
+                    double percentage = (t - 0.75) / 0.25;
+                    red = 255;
+                    green = static_cast<int>(255 * (1.0 - percentage));
+                    blue = 0;
+                }
+                for (unsigned int px = 0; px < CELL_SIZE; px++) {
+                    file << red << " " << green << " " << blue << " ";
+                }
+            }
+        file << '\n';
+        }
+    }
 }
 
 unsigned int Server::addEgg(const std::string &teamName, unsigned int x, unsigned int y)
