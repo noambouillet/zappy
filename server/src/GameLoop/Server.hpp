@@ -83,6 +83,7 @@ class Server {
         const std::vector<Egg> &getEggs() const;
         unsigned int addEgg(const std::string &teamName, unsigned int x, unsigned int y);
         void destroyEggsOnTile(unsigned int x, unsigned int y);
+        void killClient(int fd);
 };
 
 }

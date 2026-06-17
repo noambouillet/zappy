@@ -94,6 +94,26 @@ void Server::disconnectClient(Client &client)
     client.invalidate();
 }
 
+void Server::killClient(int fd)
+{
+    for (Client &client : _clients) {
+        if (client.isDead())
+            continue;
+        if (client.getFd() != fd)
+            continue;
+        if (client.getState() != ClientState::AI) {
+            std::cout << "Only AI clients can be killed.\n";
+            return;
+        }
+        GuiCommands::pdi(*this, fd);
+        _socket.sendMessage(client.getFd(), "dead\n", 5);
+        disconnectClient(client);
+        logger.write("Murdered AI client " + std::to_string(fd) + ".");
+        return;
+    }
+    std::cout << "Client not found.\n";
+}
+
 void Server::handleGuiHandshake(Client &client)
 {
     client.setState(ClientState::GUI);
@@ -454,6 +474,7 @@ unsigned int Server::getFreq() const
 void Server::setFreq(unsigned int t)
 {
     _freq = t;
+    _lastTick = std::chrono::steady_clock::now();
 }
 
 std::vector<Client> &Server::getClients()

@@ -19,7 +19,8 @@ class InputParser {
     private:
         Server& _server;
 
-        void printHelpShell();
+        void printClients() const;
+        void printMap() const;
     public:
         InputParser(Server& server);
         ~InputParser() = default;
