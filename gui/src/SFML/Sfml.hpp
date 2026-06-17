@@ -19,20 +19,23 @@
 #include "TextureManager.hpp"
 #include "RenderMap.hpp"
 #include "HandleTrantorians.hpp"
+#include "Interfaces/IGui.hpp"
 
 constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
-class Sfml {
+
+class Sfml : public IGui {
     public:
         Sfml(World &world);
-        ~Sfml();
+        ~Sfml() override;
         sf::RenderWindow &getWindow();
-        void handleEvent();
-        void displayWindow();
-        void setPlayerActionBubble(int id, const std::string &textureKey, float duration);
-        void triggerPlayerDeath(int id);
-        void setPlayerIncanting(int id, bool state);
-        void stopIncantationAt(int x, int y);
+        bool isOpen() const override;
+        void handleEvent() override;
+        void displayWindow() override;
+        void setPlayerActionBubble(int id, const std::string &textureKey, float duration) override;
+        void triggerPlayerDeath(int id) override;
+        void setPlayerIncanting(int id, bool state) override;
+        void stopIncantationAt(int x, int y) override;
         HandleTrantorians &getHandleTrantorians();
 
     private:
