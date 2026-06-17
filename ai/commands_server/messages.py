@@ -45,6 +45,6 @@ def receive_message(agent, response_server):
         except ValueError:
             print("[MESSAGE] Invalid level:", parts[1])
             return
-        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2]})
+        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": agent.tick})
         return
     print("[MESSAGE] Ignored message:", content)

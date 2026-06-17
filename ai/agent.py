@@ -9,6 +9,7 @@ from constant import Direction, MIN_FOOD, requirement_for_progress
 from behavior.survive import Survive
 from behavior.explore import Explore
 from behavior.evolution import Evolution
+from behavior.follower import Follower
     
 class Agent:
     """This class is to define the drone/agent/ia
@@ -33,6 +34,7 @@ class Agent:
         self.mailbox = []
         self.eject_players = False
         self.joining_invocation = False
+        self.waiting = False
 
     def tile_to_coords(self, tile):
         """Convert tile from look to coordinates.
@@ -174,16 +176,29 @@ class Agent:
                 can_level_up = False
                 break
         return can_level_up
-        
+    
+    def player_is_call(self):
+        """This function is to check the call Invocation by another player
+        Returns:
+            bool: True or False
+        """
+        for msg in self.mailbox:
+            if (msg["action"] == "INVOCATION" and msg["level"] == self.level and msg["team"] == self.team_name):
+                self.joining_invocation = True
+                return True
+        return False
+    
     def adapt_behavior(self):
         """This function is to adapt behavior during the life of the agent
         """
-        if (self.prepare_incantation == True or self.is_incantation == True):
+        if ((self.prepare_incantation == True or self.is_incantation == True)):
             self.behavior = Evolution()
             return
         if (self.inventory["food"] <= MIN_FOOD or self.survive == True):
             self.survive = True
             self.behavior = Survive()
+        elif (self.joining_invocation == True or self.waiting == True):
+            self.behavior = Follower()
         elif (self.capable_of_evolving() == False and self.prepare_incantation == False):
             self.behavior = Explore()
         else:

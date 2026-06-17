@@ -63,7 +63,8 @@ def handle_commands(agent : Agent, all_responses_server):
     """
     while '\n' in all_responses_server:
         response_server, all_responses_server = all_responses_server.split('\n', 1)
-        command = agent.list_commands[0]
+        if (len(agent.list_commands) > 0):
+            command = agent.list_commands[0]
         print(f"This is the server's current response : {response_server}")
         if (response_server.startswith("dead")):
             receive_dead()
@@ -77,7 +78,7 @@ def handle_commands(agent : Agent, all_responses_server):
             else:
                 continue
         elif ((response_server.startswith("Current level:") or (response_server == "ko"))):
-            if (command != "Incantation\n" and not command.startswith("Take") and not command.startwith("Set")):
+            if (command != "Incantation\n" and not command.startswith("Take") and not command.startswith("Set")):
                 do_incantation(agent, response_server)
             else:
                 launch_commands(agent, command, response_server)

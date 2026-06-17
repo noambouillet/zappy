@@ -22,9 +22,9 @@ class Evolution(Behavior):
         if (agent.inventory["food"] < 10):
             agent.survive = True
             return ["Look\n", "Inventory\n"]
-        call = self.call_for_another_incantation(agent)
-        if (call):
-            return call
+        call = agent.player_is_call()
+        if (call is True):
+            return ["Look\n"]
         if (agent.eject_players == True):
             agent.eject_players = False
             return ["Eject\n"]
@@ -33,21 +33,6 @@ class Evolution(Behavior):
             return conditions
         agent.is_incantation = True
         return ["Incantation\n"]
-        
-    def call_for_another_incantation(self, agent):
-        """This function is call and join another incantation
-        Args:
-            agent (class): Agent/IA
-        """
-        for i, msg in enumerate(agent.mailbox):
-            if (msg["action"] == "INVOCATION" and msg["level"] == agent.level and msg["team"] == agent.team_name):
-                direction = msg["direction"]
-                agent.mailbox.pop(i)
-                if (direction != 0):
-                    return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n"] + agent.follow_direction(direction) + ["Look\n"]
-                else:
-                    return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}\n"] + ["Look\n"]
-        return []
     
     def check_players_on_tile(self, agent):
         """This function is to check the allies or the ennemies on the tile of the Invocation
@@ -55,7 +40,7 @@ class Evolution(Behavior):
             agent (class): Agent/IA
         """
         nb_agent_comming = 0
-        for i, msg in enumerate(agent.mailbox):
+        for msg in agent.mailbox:
             if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name):
                 direction = msg["direction"]
                 if (direction == 0):
@@ -64,7 +49,6 @@ class Evolution(Behavior):
                     nb_agent_comming += 1
             elif (msg["action"] == "AVAILABLE" and msg["team"] != agent.team_name and msg["direction"] == 0):
                 agent.eject_players = True
-            agent.mailbox.pop(i)
         agent.mailbox.clear()
         return nb_agent_comming
     
@@ -80,7 +64,7 @@ class Evolution(Behavior):
         if (agent.teammate_same_level < nb_players_required):
             if ((agent.teammate_same_level + nb_coming_players) < nb_players_required and agent.unused_slots == 0):
                 return ["Fork\n"]
-            if (agent.tick % 15 == 0):
+            if (agent.tick % 5 == 0):
                 return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}\n"]
             return ["Look\n"]
         setup = self.prepare_resources_tile(agent, requirement)

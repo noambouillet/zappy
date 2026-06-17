@@ -24,8 +24,10 @@ def do_incantation(agent, response_server):
         print("The Incantation command was successful; the character has evolved to the following level: ", level)
         agent.level = level
         agent.is_incantation = False
+        agent.waiting = False
     elif (response_server == "ko"):
         logger.info("The Incantation command did not result in the elevation of the character")
         print("The Incantation command did not work; there was no noticeable change for the character.") 
         agent.is_incantation = False
+        agent.waiting = False
     return    
