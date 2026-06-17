@@ -38,6 +38,7 @@ class Server {
         unsigned int _nextEggId;
         std::chrono::time_point<std::chrono::steady_clock> _lastTick;
         bool _running;
+        bool _paused;
         InputParser _shell;
 
         void setup();
@@ -66,6 +67,8 @@ class Server {
         ~Server();
         void run();
         void stop();
+        void pause();
+        void resume();
         Socket &getSocket();
         unsigned int getWidth() const;
         unsigned int getHeight() const;

@@ -22,7 +22,8 @@ namespace ZappyServer {
 // 🚀 Server starting up !!!!
 
 Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
-    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height), _nextEggId(0), _running(true), _shell(*this)
+    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height),
+    _nextEggId(0), _running(true), _paused(false), _shell(*this)
 {}
 
 Server::~Server()
@@ -37,6 +38,21 @@ Socket &Server::getSocket() {
 void Server::stop()
 {
     _running = false;
+}
+
+void Server::pause()
+{
+    _paused = true;
+    std::cout << "The world is now paused.\n";
+}
+
+void Server::resume()
+{
+    if (_paused) {
+        _paused = false;
+        _lastTick = std::chrono::steady_clock::now();
+        std::cout << "The world is now back running.\n";
+    }
 }
 
 void Server::setup()
@@ -161,7 +177,7 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
     client.getPlayerData()->setDirection((rand() % 4) + 1);
     client.getPlayerData()->setLevel(1);
     client.getPlayerData()->setInventory(0, 10);
-    
+
     int remaining = computeAvailableSlots(requestedTeamName, aliveCount);
     std::string availableSlots  = std::to_string(remaining) + "\n";
     std::string worldDimensions = std::to_string(_width) + " " + std::to_string(_height) + "\n";
@@ -207,18 +223,18 @@ void Server::readClient(Client &client)
     client.getReadBuffer().append(readChunk, receivedBytes);
     std::string &readBuffer = client.getReadBuffer();
     std::size_t newlinePos;
-    
+
     while ((newlinePos = readBuffer.find('\n')) != std::string::npos) {
         std::string completeLine = readBuffer.substr(0, newlinePos);
         readBuffer.erase(0, newlinePos + 1);
-        
+
         if (!completeLine.empty() && completeLine.back() == '\r') {
             completeLine.pop_back();
         }
         if (completeLine.empty()) {
             continue;
         }
-        
+
         dispatchClientLine(client, completeLine);
     }
 }
@@ -230,7 +246,8 @@ void Server::closeClients()
             close(client.getFd());
     }
     _clients.clear();
-    close(_socket.getFd());
+    if (_socket.getFd() >= 0)
+        close(_socket.getFd());
 }
 
 void Server::readClients(const std::vector<pollfd> &fds)
@@ -271,7 +288,7 @@ void Server::processFoodDecay(Client &client, PlayerData &player)
     if (player.getFoodTicks() > 0) {
         player.setFoodTicks(player.getFoodTicks() - 1);
     }
-    
+
     if (player.getFoodTicks() == 0) {
         if (player.getInventory(0) > 0) {
             player.setInventory(0, player.getInventory(0) - 1);
@@ -290,7 +307,7 @@ void Server::processClientCommand(Client &client, PlayerData &player)
     if (client.isDead() || player.getCommandQueue().empty()) {
         return;
     }
-    
+
     QueuedCommand &cmd = player.getCommandQueue().front();
     if (cmd.remainingTicks > 0) {
         cmd.remainingTicks--;
@@ -312,6 +329,8 @@ void Server::processTicks(int ticks)
             PlayerData &player = client.getPlayerData().value();
 
             processFoodDecay(client, player);
+            if (client.isDead())
+                continue;
             processClientCommand(client, player);
         }
     }
@@ -325,7 +344,7 @@ int Server::calculateNextTimeout(double elapsedMs, double tickDurationMs)
             continue;
         }
         const PlayerData &player = client.getPlayerData().value();
-        
+
         if (player.getFoodTicks() > 0) {
             int eventTicks = player.getFoodTicks();
             if (minTicks == -1 || eventTicks < minTicks) {
@@ -377,21 +396,23 @@ void Server::run()
 {
     setup();
     while (_running) {
-        double tickDurationMs = 1000.0 / _freq;
-        auto now = std::chrono::steady_clock::now();
-        double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
-        int ticksToProcess = elapsedMs / tickDurationMs;
+        int timeout = -1;
+        if (!_paused) {
+            double tickDurationMs = 1000.0 / _freq;
+            auto now = std::chrono::steady_clock::now();
+            double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+            int ticksToProcess = elapsedMs / tickDurationMs;
 
-        if (ticksToProcess > 0) {
-            processTicks(ticksToProcess);
-            _lastTick += std::chrono::milliseconds((int)(ticksToProcess * tickDurationMs));
-            now = std::chrono::steady_clock::now();
-            elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+            if (ticksToProcess > 0) {
+                processTicks(ticksToProcess);
+                _lastTick += std::chrono::milliseconds((int)(ticksToProcess * tickDurationMs));
+                now = std::chrono::steady_clock::now();
+                elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+            }
+
+            timeout = calculateNextTimeout(elapsedMs, tickDurationMs);
         }
-
-        int timeout = calculateNextTimeout(elapsedMs, tickDurationMs);
         int ret = _poll.wait(timeout);
-
         if (ret > 0) {
             const std::vector<pollfd> &fds = _poll.getFds();
             acceptPendingClients(fds);
