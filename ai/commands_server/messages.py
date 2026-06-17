@@ -37,7 +37,7 @@ def receive_message(agent, response_server):
         agent.add_shared_ressource(ressource, direction)
         return
     if parts[0] in ["AVAILABLE", "INVOCATION"]:
-        if len(parts) != 3:
+        if len(parts) < 3:
             print("[MESSAGE] Invalid invocation message:", content)
             return
         try:
@@ -45,6 +45,12 @@ def receive_message(agent, response_server):
         except ValueError:
             print("[MESSAGE] Invalid level:", parts[1])
             return
-        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": agent.tick})
+        sender_id = None
+        if len(parts) >= 4:
+            try:
+                sender_id = int(parts[3])
+            except ValueError:
+                sender_id = None
+        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": agent.tick, "sender_id": sender_id})
         return
     print("[MESSAGE] Ignored message:", content)

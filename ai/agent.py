@@ -10,6 +10,7 @@ from behavior.survive import Survive
 from behavior.explore import Explore
 from behavior.evolution import Evolution
 from behavior.follower import Follower
+import os
     
 class Agent:
     """This class is to define the drone/agent/ia
@@ -35,6 +36,7 @@ class Agent:
         self.eject_players = False
         self.joining_invocation = False
         self.waiting = False
+        self.agent_id = os.getpid()
 
     def take_food_on_tile(self):
         """take all food available on current tile
@@ -197,28 +199,42 @@ class Agent:
         return can_level_up
     
     def player_is_call(self):
-        """This function is to check the call Invocation by another player
-        Returns:
-            bool: True or False
-        """
+        """Check if another player is calling an invocation.
+        If cannot evolve, join any valid leader.
+        If can evolve too, only join the leader with smaller id."""
         for msg in self.mailbox:
-            if (msg["action"] == "INVOCATION" and msg["level"] == self.level and msg["team"] == self.team_name):
-                self.joining_invocation = True
-                return True
+            if (msg.get("action") == "INVOCATION" and msg.get("level") == self.level and msg.get("team") == self.team_name):
+                sender_id = msg.get("sender_id")
+                if sender_id == self.agent_id:
+                    continue
+                if self.capable_of_evolving() == False:
+                    self.joining_invocation = True
+                    return True
+                if sender_id is not None and sender_id < self.agent_id:
+                    self.joining_invocation = True
+                    return True
         return False
-    
+
     def adapt_behavior(self):
         """This function is to adapt behavior during the life of the agent
         """
-        if ((self.prepare_incantation == True or self.is_incantation == True)):
+        if self.is_incantation == True:
             self.behavior = Evolution()
             return
-        if (self.inventory["food"] <= MIN_FOOD or self.survive == True):
+        if self.inventory["food"] <= MIN_FOOD or self.survive == True:
             self.survive = True
+            self.joining_invocation = False
+            self.waiting = False
+            self.prepare_incantation = False
             self.behavior = Survive()
-        elif (self.joining_invocation == True or self.waiting == True):
+            return
+        if self.joining_invocation == True or self.waiting == True or self.player_is_call() == True:
             self.behavior = Follower()
-        elif (self.capable_of_evolving() == False and self.prepare_incantation == False):
-            self.behavior = Explore()
-        else:
+            return
+        if self.prepare_incantation == True:
             self.behavior = Evolution()
+            return
+        if self.capable_of_evolving() == False:
+            self.behavior = Explore()
+            return
+        self.behavior = Evolution()

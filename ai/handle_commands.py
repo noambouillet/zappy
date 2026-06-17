@@ -75,19 +75,15 @@ def handle_commands(agent : Agent, all_responses_server):
         elif (response_server.startswith("message")):
             receive_message(agent, response_server)
         elif (response_server == "Elevation underway"):
-            if (command == "Incantation\n"):
-                launch_commands(agent, command, response_server)
-            else:
-                continue
-        elif ((response_server.startswith("Current level:") or (response_server == "ko"))):
+            do_incantation(agent, response_server)
+        elif (response_server.startswith("Current level:")):
+            do_incantation(agent, response_server)
+        elif (response_server == "ko"):
             if (command is None):
                 continue
-            if (command != "Incantation\n" and not command.startswith("Take") and not command.startswith("Set")):
-                do_incantation(agent, response_server)
-            else:
-                launch_commands(agent, command, response_server)
-                if (len(agent.list_commands) > 0):
-                    agent.list_commands.pop(0)
+            launch_commands(agent, command, response_server)
+            if (len(agent.list_commands) > 0):
+                agent.list_commands.pop(0)
         else:
             if (command is None):
                 continue
@@ -104,6 +100,8 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         socket_connection (socket.socket): the socket connection between ia and server
         agent (Agent): Agent IA
     """
+    if agent.is_incantation == True:
+        return
     if (len(agent.list_commands) == 0):
         agent.adapt_behavior()
         tab_commands = agent.behavior.execute(agent)

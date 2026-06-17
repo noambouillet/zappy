@@ -46,7 +46,7 @@ class Explore(Behavior):
             return broadcast_commands + chosen_commands
         print("[EXPLORE] Nothing useful -> Forward + Look")
         print("=============================\n")
-        return broadcast_commands + ["Forward\n", "Look\n"]
+        return broadcast_commands + ["Forward\n", "Inventory\n", "Look\n"]
 
     def get_needed_ressources(self, agent):
         requirements = requirement_for_progress[agent.level - 1]
@@ -63,6 +63,8 @@ class Explore(Behavior):
 
     def find_best_ressource(self, agent, needed_ressources):
         for index, tile in enumerate(agent.vision):
+            if agent.inventory["food"] <= 12 and index > 3:
+                continue
             print("[EXPLORE] Tile", index, "contains:", tile)
             for ressource in tile:
                 if ressource in needed_ressources:
