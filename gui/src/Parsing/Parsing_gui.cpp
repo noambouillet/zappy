@@ -17,7 +17,7 @@ Parsing_gui::Parsing_gui()
 
 void Parsing_gui::print_help()
 {
-    std::cout << "USAGE: ./zappy_gui -p port -h machine" << std::endl;
+    std::cout << "USAGE: ./zappy_gui -p port -h machine [-3d]" << std::endl;
 }
 
 bool Parsing_gui::is_ipv4(char* addr)
@@ -61,21 +61,28 @@ networkData_t Parsing_gui::check_args(char *addr, char *port)
 
 networkData_t Parsing_gui::parse_args(int ac, char **av)
 {
-    if ((ac == 2 && std::string(av[1]) == "--help") || ac != 5) {
+    if (ac == 2 && std::string(av[1]) == "--help") {
         print_help();
         exit(0);
     }
     std::string port = "";
     std::string addr = "";
-    for (int i = 1; i < ac; i += 2) {
+    bool use3D = false;
+    for (int i = 1; i < ac; i++) {
         std::string flag = av[i];
+        if (flag == "-3d") {
+            use3D = true;
+            continue;
+        }
         if (i + 1 >= ac) {
             throw GuiException("Missing value for flag " + flag);
         }
         if (flag == "-p") {
             port = av[i + 1];
+            i++;
         } else if (flag == "-h") {
             addr = av[i + 1];
+            i++;
         } else {
             throw GuiException("Unknown flag: " + flag);
         }
@@ -86,5 +93,7 @@ networkData_t Parsing_gui::parse_args(int ac, char **av)
     if (addr.empty()) {
         throw GuiException("Missing mandatory flag: -h <machine>");
     }
-    return check_args(const_cast<char*>(addr.c_str()), const_cast<char*>(port.c_str()));
+    networkData_t data = check_args(const_cast<char*>(addr.c_str()), const_cast<char*>(port.c_str()));
+    data.use3D = use3D;
+    return data;
 }

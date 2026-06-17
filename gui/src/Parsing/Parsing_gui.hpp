@@ -17,6 +17,7 @@
 typedef struct networkData_s {
     int port;
     std::string ip;
+    bool use3D;
 } networkData_t;
 
 class Parsing_gui
