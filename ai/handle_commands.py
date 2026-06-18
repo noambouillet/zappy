@@ -6,6 +6,7 @@
 ##
 
 from parsing import sys, logger, socket
+from constant import REGULARLY_INVENTORY
 from commands_ia.forward import do_forward
 from commands_ia.left import do_left
 from commands_ia.right import do_right
@@ -93,6 +94,17 @@ def handle_commands(agent : Agent, all_responses_server):
         print("List commands:", agent.list_commands)
     return all_responses_server
 
+def check_inventory_regularly(agent, tab_commands):
+    """_summary_
+
+    Args:
+        agent (_type_): _description_
+    """
+    if ((agent.tick - agent.last_inventory) >= REGULARLY_INVENTORY):
+        agent.last_inventory = agent.tick
+        tab_commands.append("Inventory\n")
+    return tab_commands
+
 def send_commands(socket_connection : socket.socket, agent : Agent):
     """Send the commands to server from the execute behavior (class)
 
@@ -105,6 +117,7 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
     if (len(agent.list_commands) == 0):
         agent.adapt_behavior()
         tab_commands = agent.behavior.execute(agent)
+        tab_commands = check_inventory_regularly(agent, tab_commands)
         if not tab_commands:
             return
         for command in tab_commands:

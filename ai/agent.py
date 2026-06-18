@@ -29,7 +29,6 @@ class Agent:
         self.behavior = Explore()
         self.size_map = (0, 0)
         self.team_name = ""
-        self.shared_ressources = []
         self.tick = 0
         self.teammate_same_level = 1
         self.mailbox = []
@@ -37,6 +36,7 @@ class Agent:
         self.joining_invocation = False
         self.waiting = False
         self.agent_id = os.getpid()
+        self.last_inventory = 0
 
     def take_food_on_tile(self):
         """take all food available on current tile

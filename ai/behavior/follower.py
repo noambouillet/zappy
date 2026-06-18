@@ -20,7 +20,7 @@ class Follower(Behavior):
             agent.joining_invocation = False
             agent.waiting = False
             agent.survive = True
-            return ["Inventory\n", "Look\n"]
+            return ["Look\n"]
         if agent.vision == [[]]:
             return ["Look\n"]
         food_commands = agent.take_food_on_tile()
@@ -32,10 +32,10 @@ class Follower(Behavior):
                 invocations_same_team.append((index, msg))
         if not invocations_same_team:
             if (agent.waiting == True):
-                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Inventory\n", "Look\n"]
+                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
             agent.joining_invocation = False
             agent.waiting = False
-            return ["Inventory\n", "Look\n"]
+            return ["Look\n"]
         _, recent_msg = min(invocations_same_team, key = lambda item: item[1].get("sender_id", 999999999))
         new_mailbox = []
         for msg in agent.mailbox:
@@ -47,6 +47,6 @@ class Follower(Behavior):
         if (direction == 0):
             agent.joining_invocation = False
             agent.waiting = True
-            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Inventory\n", "Look\n"]
+            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
         else:
-            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + agent.follow_direction(direction) + ["Inventory\n", "Look\n"]
+            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + agent.follow_direction(direction) + ["Look\n"]

@@ -26,12 +26,12 @@ class Evolution(Behavior):
             agent.is_incantation = False
             agent.joining_invocation = False
             agent.waiting = False
-            return ["Inventory\n", "Look\n"]
+            return ["Look\n"]
         if (agent.vision == [[]]):
             return ["Look\n"]
-        # if (agent.eject_players == True):
-        #     agent.eject_players = False
-        #     return ["Eject\n"]
+        if (agent.eject_players == True):
+            agent.eject_players = False
+            return ["Eject\n"]
         conditions = self.verif_conditions(agent)
         if (conditions):
             return conditions
@@ -68,8 +68,8 @@ class Evolution(Behavior):
             if ((agent.teammate_same_level + nb_coming_players) < nb_players_required and agent.unused_slots == 0):
                 return ["Fork\n"]
             if (agent.tick % 5 == 0):
-                return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Inventory\n", "Look\n"]
-            return ["Inventory\n", "Look\n"]
+                return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
+            return ["Look\n"]
         setup = self.prepare_resources_tile(agent, requirement)
         if (setup != ["Look\n"]):
             agent.prepare_incantation = True
@@ -103,7 +103,7 @@ class Evolution(Behavior):
                     if agent.inventory[resource] <= 0:
                         print("[EVOLUTION] Missing resource in inventory:", resource)
                         agent.prepare_incantation = False
-                        return ["Inventory\n", "Look\n"]
+                        return ["Look\n"]
                     list_command += [f"Set {resource}\n"]
         list_command += ["Look\n"]
         return list_command
