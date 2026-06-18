@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import requirement_for_progress, INVOCATION_FREQUENCE, FOOD_FOR_INCANTATION
+from constant import requirement_for_progress, INCANTATION_FREQUENCE, FOOD_FOR_INCANTATION
 
 class Evolution(Behavior):
     def execute(self, agent):
@@ -67,9 +67,12 @@ class Evolution(Behavior):
         if (agent.teammate_same_level < nb_players_required):
             if ((agent.teammate_same_level + nb_coming_players) < nb_players_required and agent.unused_slots == 0):
                 return ["Fork\n"]
-            if (agent.tick % 5 == 0):
-                return [f"Broadcast INVOCATION|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
-            return ["Look\n"]
+            list_command = []
+            if ((agent.tick - agent.last_incantation) >= INCANTATION_FREQUENCE):
+                agent.last_incantation = agent.tick
+                list_command.append(f"Broadcast INVOCATION|{agent.level}|{agent.team_name}|{agent.agent_id}\n")
+            list_command.append("Look\n")
+            return list_command
         setup = self.prepare_resources_tile(agent, requirement)
         if (setup != ["Look\n"]):
             agent.prepare_incantation = True

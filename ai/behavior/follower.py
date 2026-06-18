@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import FOOD_FOR_FOLLOW
+from constant import FOOD_FOR_FOLLOW, AVAILABLE_FREQUENCE
 
 class Follower(Behavior):
     def execute(self, agent):
@@ -49,4 +49,9 @@ class Follower(Behavior):
             agent.waiting = True
             return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
         else:
-            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + agent.follow_direction(direction) + ["Look\n"]
+            list_commands = []
+            if ((agent.tick - agent.last_available) >= AVAILABLE_FREQUENCE):
+                agent.last_available = agent.tick
+                list_commands.append(f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n")
+            list_commands += agent.follow_direction(direction) + ["Look\n"]
+            return list_commands

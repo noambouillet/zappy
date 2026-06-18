@@ -37,6 +37,8 @@ class Agent:
         self.waiting = False
         self.agent_id = os.getpid()
         self.last_inventory = 0
+        self.last_available = 0
+        self.last_incantation = 0
 
     def take_food_on_tile(self):
         """take all food available on current tile

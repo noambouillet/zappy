@@ -6,7 +6,7 @@
 ##
 
 from parsing import sys, logger, socket
-from constant import REGULARLY_INVENTORY
+from constant import INVENTORY_FREQUENCE
 from commands_ia.forward import do_forward
 from commands_ia.left import do_left
 from commands_ia.right import do_right
@@ -100,7 +100,7 @@ def check_inventory_regularly(agent, tab_commands):
     Args:
         agent (_type_): _description_
     """
-    if ((agent.tick - agent.last_inventory) >= REGULARLY_INVENTORY):
+    if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE):
         agent.last_inventory = agent.tick
         tab_commands.append("Inventory\n")
     return tab_commands
