@@ -144,7 +144,19 @@ void RaylibGui::drawTileContent(int x, int z)
 
     for (auto& [id, player] : tile.players) {
         (void)id;
-        (void)player;
-        DrawModel(_models["wizard"]->getModel(), (Vector3){ (float)x, 0.0f, (float)z }, 0.5f, WHITE);
+        float angle = 0.0f;
+        switch (player.orientation) {
+            case 1: angle = 180.0f;
+                break;
+            case 2: angle = 90.0f;
+                break;
+            case 3: angle = 0.0f;
+                break;
+            case 4: angle = 270.0f;
+                break;
+            default: angle = 0.0f;
+                break;
+        }
+        DrawModelEx(_models["wizard"]->getModel(), (Vector3){ (float)x, 0.0f, (float)z }, (Vector3){ 0.0f, 1.0f, 0.0f }, angle, (Vector3){ 0.5f, 0.5f, 0.5f }, WHITE);
     }
 }
