@@ -8,7 +8,7 @@
 #include "RayCamera.hpp"
 #include <cmath>
 
-RayCamera::RayCamera() : _angle(0.785f), _radius(20.0f), _height(15.0f)
+RayCamera::RayCamera() : _yaw(0.785f), _pitch(0.785f), _radius(20.0f)
 {
     _camera.position = (Vector3){ 15.0f, 15.0f, 15.0f };
     _camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
@@ -26,36 +26,35 @@ void RayCamera::setTarget(float x, float z)
 void RayCamera::update(float deltaTime)
 {
     if (IsKeyDown(KEY_Q) || IsKeyDown(KEY_LEFT))
-        _angle -= 2.0f * deltaTime;
+        _yaw -= 2.0f * deltaTime;
     if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))
-        _angle += 2.0f * deltaTime;
+        _yaw += 2.0f * deltaTime;
 
-    if (IsKeyDown(KEY_UP)) {
+    if (IsKeyDown(KEY_UP))
         _radius -= 15.0f * deltaTime;
-        _height -= 10.0f * deltaTime;
-    }
-    if (IsKeyDown(KEY_DOWN)) {
+    if (IsKeyDown(KEY_DOWN))
         _radius += 15.0f * deltaTime;
-        _height += 10.0f * deltaTime;
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        Vector2 mouseDelta = GetMouseDelta();
+        _yaw += mouseDelta.x * 0.005f;
+        _pitch += mouseDelta.y * 0.005f;
     }
 
     float wheel = GetMouseWheelMove();
-    if (wheel != 0.0f) {
+    if (wheel != 0.0f)
         _radius -= wheel * 3.0f;
-        _height -= wheel * 2.0f;
-        if (_radius < 5.0f)
-            _radius = 5.0f;
-        if (_height < 2.0f)
-            _height = 2.0f;
-        if (_radius > 100.0f)
-            _radius = 100.0f;
-        if (_height > 100.0f)
-            _height = 100.0f;
-    }
+    if (_radius < 5.0f)
+        _radius = 5.0f;
+    if (_radius > 60.0f)
+        _radius = 60.0f;
+    if (_pitch > 1.5f)
+        _pitch = 1.5f;
+    if (_pitch < -1.5f)
+        _pitch = -1.5f;
 
-    _camera.position.x = _camera.target.x + std::cos(_angle) * _radius;
-    _camera.position.z = _camera.target.z + std::sin(_angle) * _radius;
-    _camera.position.y = _camera.target.y + _height;
+    _camera.position.x = _camera.target.x + _radius * std::cos(_pitch) * std::cos(_yaw);
+    _camera.position.y = _camera.target.y + _radius * std::sin(_pitch);
+    _camera.position.z = _camera.target.z + _radius * std::cos(_pitch) * std::sin(_yaw);
 }
 
 void RayCamera::beginMode3D()

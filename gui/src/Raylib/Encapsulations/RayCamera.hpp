@@ -22,7 +22,7 @@ class RayCamera {
 
     private:
         Camera3D _camera;
-        float _angle;
+        float _yaw;
+        float _pitch;
         float _radius;
-        float _height;
 };
