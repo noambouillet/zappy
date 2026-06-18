@@ -31,7 +31,7 @@ static unsigned int parsePositiveInt(const std::string &value, const std::string
 
     if (value.empty() || end == nullptr || *end != '\0' || parsed <= 0) {
         printHelpShell();
-        throw ServerException("Invalid " + label + ": '" + value + "'. Must be a positive integer.");
+        throw ParsingException("Invalid " + label + ": '" + value + "'. Must be a positive integer.");
     }
     return static_cast<unsigned int>(parsed);
 }
@@ -122,7 +122,7 @@ void InputParser::processCommand(const std::string& command)
     } else if (command == "/map") {
         printMap();
     } else {
-        throw ServerException("Invalid command.");
+        throw ParsingException("Invalid command.");
     }
 }
 

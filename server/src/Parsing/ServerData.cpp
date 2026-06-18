@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <array>
 #include <iostream>
+#include "Logger.hpp"
 
 namespace ZappyServer {
 
@@ -48,7 +49,7 @@ static unsigned int parsePositiveInt(const std::string &value, const std::string
 
     if (value.empty() || end == nullptr || *end != '\0' || parsed <= 0) {
         printHelp();
-        throw ServerException("Invalid " + label + ": '" + value + "'. Must be a positive integer.");
+        throw ParsingException("Invalid " + label + ": '" + value + "'. Must be a positive integer.");
     }
     return static_cast<unsigned int>(parsed);
 }
@@ -59,16 +60,19 @@ static unsigned int parseBoundedInt(const std::string &value, const std::string 
 
     if (parsed < min || parsed > max) {
         printHelp();
-        throw ServerException("Invalid " + label + ": must be between " + std::to_string(min) + " and " + std::to_string(max) + ".");
+        throw ParsingException("Invalid " + label + ": must be between " + std::to_string(min) + " and " + std::to_string(max) + ".");
     }
     return parsed;
 }
 
 static bool isKnownOption(const std::string &value)
 {
-    std::array<std::string, 7> options = {"-p", "-x", "-y", "-n", "-c", "-f", "--help"};
+    const std::array<std::string, 17> options = {
+        "-p", "--port", "-x", "--width", "-y", "--height", "-n", "--teams", "-c",
+        "--clientnbr", "-f", "--freq", "-s", "--seed", "--help", "-v", "--verbose"
+    };
 
-    for (std::string &option : options) {
+    for (const std::string &option : options) {
         if (option == value) {
             return true;
         }
@@ -79,7 +83,7 @@ static bool isKnownOption(const std::string &value)
 static std::string requireValue(int argc, char **argv, int &index, const std::string &option)
 {
     if (index + 1 >= argc) {
-        throw ServerException("Unknown or incomplete argument: " + option + ".");
+        throw ParsingException("Unknown or incomplete argument: " + option + ".");
     }
     index++;
     return argv[index];
@@ -93,14 +97,14 @@ static void parseTeamNames(std::vector<std::string> &teamNames, int argc, char *
     while (index < argc && !isKnownOption(argv[index])) {
         const std::string teamName = argv[index];
         if (teamName.empty()) {
-            throw ServerException("Team name cannot be empty.");
+            throw ParsingException("Team name cannot be empty.");
         }
         if (teamName == "GRAPHIC") {
-            throw ServerException("Team name GRAPHIC is reserved.");
+            throw ParsingException("Team name GRAPHIC is reserved.");
         }
         for (const std::string &existingName : teamNames) {
             if (existingName == teamName) {
-                throw ServerException("Duplicate team name: " + teamName + ".");
+                throw ParsingException("Duplicate team name: " + teamName + ".");
             }
         }
         teamNames.push_back(teamName);
@@ -108,7 +112,7 @@ static void parseTeamNames(std::vector<std::string> &teamNames, int argc, char *
     }
     index--;
     if (teamNames.size() == initialCount) {
-        throw ServerException("Missing team names after -n.");
+        throw ParsingException("Missing team names after -n.");
     }
 }
 
@@ -144,7 +148,11 @@ void ServerData::parseArgs(char **argv, int argc, int &index)
         _seed = parsePositiveInt(requireValue(argc, argv, index, option), "seed");
         return;
     }
-    throw ServerException("Unknown or incomplete argument: " + option + ".");
+    if (option == "-v" || option == "--verbose") {
+        _verbose = true;
+        return;
+    }
+    throw ParsingException("Unknown or incomplete argument: " + option + ".");
 }
 
 void ServerData::parse(int argc, char **argv)
@@ -158,7 +166,7 @@ void ServerData::parse(int argc, char **argv)
     }
     if (_teamNames.empty()) {
         printHelp();
-        throw ServerException("Missing required arguments. Team names must be provided with -n.");
+        throw ParsingException("Missing required arguments. Team names must be provided with -n.");
     }
 }
 
@@ -177,12 +185,15 @@ void ServerData::printServerData() const
     std::cout << "------------------\n";
 }
 
-ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), _freq(100), _seed(0)
+ServerData::ServerData() : _port(4242), _width(10), _height(10), _clientsNb(3), _freq(100), _seed(0), _verbose(false)
 {
 }
 
 void ServerData::run()
 {
+    if (_verbose) {
+        logger.setVerbose(true);
+    }
     if (_seed == 0)
         _seed = std::random_device{}();
     printServerData();

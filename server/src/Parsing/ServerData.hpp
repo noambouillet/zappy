@@ -21,6 +21,7 @@ class ServerData {
         unsigned int _clientsNb;
         unsigned int _freq;
         unsigned int _seed;
+        bool _verbose;
         std::vector<std::string> _teamNames;
 
         void parseArgs(char **argv, int argc, int &index);

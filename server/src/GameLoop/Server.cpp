@@ -10,6 +10,7 @@
 #include "Logger.hpp"
 #include "GuiCommands.hpp"
 #include "AiCommands.hpp"
+#include "ServerExceptions.hpp"
 #include <algorithm>
 #include <csignal>
 
@@ -43,7 +44,7 @@ void Server::stop()
 void Server::pause()
 {
     _paused = true;
-    std::cout << "The world is now paused.\n";
+    logger.write("The world is now paused.");
 }
 
 void Server::resume()
@@ -51,7 +52,7 @@ void Server::resume()
     if (_paused) {
         _paused = false;
         _lastTick = std::chrono::steady_clock::now();
-        std::cout << "The world is now back running.\n";
+        logger.write("The world is now back running.");
     }
 }
 
@@ -102,7 +103,7 @@ void Server::killClient(int fd)
         if (client.getFd() != fd)
             continue;
         if (client.getState() != ClientState::AI) {
-            std::cout << "Only AI clients can be killed.\n";
+            logger.write("Only AI clients can be killed.");
             return;
         }
         GuiCommands::pdi(*this, fd);
@@ -111,7 +112,7 @@ void Server::killClient(int fd)
         logger.write("Murdered AI client " + std::to_string(fd) + ".");
         return;
     }
-    std::cout << "Client not found.\n";
+    logger.write("Client not found.");
 }
 
 void Server::handleGuiHandshake(Client &client)
@@ -406,11 +407,11 @@ void Server::readShellCommands(const std::vector<pollfd>& fds)
             }
             try {
                 _shell.processCommand(line);
-            } catch (const std::exception &e) {
-                std::cerr << e.what() << '\n';
+            } catch (const ParsingException &e) {
+                logger.warn(e.what());
             }
             if (_running)
-                std::cout << "> " << std::flush;
+                logger.write("> ");
         }
     }
 }
@@ -437,11 +438,15 @@ void Server::run()
         }
         int ret = _poll.wait(timeout);
         if (ret > 0) {
-            const std::vector<pollfd> &fds = _poll.getFds();
-            acceptPendingClients(fds);
-            readClients(fds);
-            readShellCommands(fds);
-            removeDeadClients();
+            try {
+                const std::vector<pollfd> &fds = _poll.getFds();
+                acceptPendingClients(fds);
+                readClients(fds);
+                readShellCommands(fds);
+                removeDeadClients();
+            } catch (const MinorServerException &e) {
+                logger.warn(e.what());
+            }
         }
     }
 }
