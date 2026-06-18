@@ -14,6 +14,8 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1920, 1080, "Zappy 3
 {
     _backgroundTexture = std::make_unique<RayTexture>("gui/assets/3D/backgrounds/background.png");
     _textures["ground"] = std::make_unique<RayTexture>("gui/assets/3D/textures/ground.png");
+    _models["donut"] = std::make_unique<RayModel>("gui/assets/3D/models/donut.glb");
+    _models["wizard"] = std::make_unique<RayModel>("gui/assets/3D/models/wizard.glb");
 }
 
 bool RaylibGui::isOpen() const
@@ -90,6 +92,7 @@ void RaylibGui::displayWindow()
         for (size_t x = 0; x < width; x++) {
             for (size_t z = 0; z < height; z++) {
                 drawCubeTexture(_textures["ground"]->getTexture(), (Vector3){ (float)x, -0.5f, (float)z }, 1.0f, 1.0f, 1.0f, WHITE);
+                drawTileContent(x, z);
             }
         }
     } else {
@@ -111,8 +114,11 @@ void RaylibGui::setPlayerActionBubble(int id, const std::string &textureKey, flo
 
 void RaylibGui::triggerPlayerDeath(int id)
 {
-    (void)id;
     // TODO: Implement 3D death animation
+    try {
+        _world.removeTrantorian(id);
+    } catch (const std::exception &e) {
+    }
 }
 
 void RaylibGui::setPlayerIncanting(int id, bool state)
@@ -127,4 +133,18 @@ void RaylibGui::stopIncantationAt(int x, int y)
     (void)x;
     (void)y;
     // TODO: Implement stopping incantation
+}
+
+void RaylibGui::drawTileContent(int x, int z)
+{
+    auto& tile = _world.getTileData(x, z);
+    if (!tile.ressources.empty() && tile.ressources[0] > 0) {
+        DrawModel(_models["donut"]->getModel(), (Vector3){ (float)x - 0.3f, 0.05f, (float)z - 0.3f }, 0.35f, WHITE);
+    }
+
+    for (auto& [id, player] : tile.players) {
+        (void)id;
+        (void)player;
+        DrawModel(_models["wizard"]->getModel(), (Vector3){ (float)x, 0.0f, (float)z }, 0.5f, WHITE);
+    }
 }

@@ -5,12 +5,14 @@
 ** RaylibGui
 */
 
-#pragma once
+#ifndef RAYLIBGUI_HPP_
+#define RAYLIBGUI_HPP_
 
 #include "Interfaces/IGui.hpp"
 #include "Encapsulations/RayWindow.hpp"
 #include "Encapsulations/RayCamera.hpp"
 #include "Encapsulations/RayTexture.hpp"
+#include "Encapsulations/RayModel.hpp"
 #include "World.hpp"
 #include <memory>
 #include <unordered_map>
@@ -36,5 +38,9 @@ class RaylibGui : public IGui {
         RayCamera _camera;
         std::unique_ptr<RayTexture> _backgroundTexture;
         std::unordered_map<std::string, std::unique_ptr<RayTexture>> _textures;
+        std::unordered_map<std::string, std::unique_ptr<RayModel>> _models;
         void drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color);
+        void drawTileContent(int x, int z);
 };
+
+#endif /* !RAYLIBGUI_HPP_ */
