@@ -441,6 +441,21 @@ void AiCommands::incantation(Client &client, Server &server, const std::string &
         GuiCommands::plv(server, fd);
     }
     GuiCommands::bct_broadcast(server, client.getPlayerData()->getX(), client.getPlayerData()->getY());
+
+    for (const std::string &teamName : server.getTeamNames()) {
+        unsigned int level8Count = 0;
+        for (const Client &c : server.getClients()) {
+            if (!c.isDead() && c.getState() == ClientState::AI && c.getTeamName() == teamName && c.getPlayerData()->getLevel() == 8) {
+                level8Count++;
+            }
+        }
+        if (level8Count >= 6) {
+            GuiCommands::seg(server, teamName);
+            logger.write("Team " + teamName + " has won the game!");
+            server.stop();
+            break;
+        }
+    }
 }
 
 }
