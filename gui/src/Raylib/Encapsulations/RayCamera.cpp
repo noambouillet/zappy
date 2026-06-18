@@ -43,8 +43,8 @@ void RayCamera::update(float deltaTime)
     float wheel = GetMouseWheelMove();
     if (wheel != 0.0f)
         _radius -= wheel * 3.0f;
-    if (_radius < 5.0f)
-        _radius = 5.0f;
+    if (_radius < 10.0f)
+        _radius = 10.0f;
     if (_radius > 60.0f)
         _radius = 60.0f;
     if (_pitch > 1.5f)

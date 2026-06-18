@@ -5,7 +5,8 @@
 ** RayCamera
 */
 
-#pragma once
+#ifndef RAYCAMERA_HPP_
+#define RAYCAMERA_HPP_
 
 #include <raylib.h>
 
@@ -26,3 +27,5 @@ class RayCamera {
         float _pitch;
         float _radius;
 };
+
+#endif /* !RAYCAMERA_HPP_ */
