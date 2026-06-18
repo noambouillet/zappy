@@ -5,7 +5,9 @@
 ** World
 */
 
-#pragma once
+#ifndef WORLD_HPP_
+#define WORLD_HPP_
+
 #include <vector>
 #include <string>
 #include <map>
@@ -55,3 +57,5 @@ class World {
         std::vector<std::string> _teams;
         int _timeUnit = 0;
 };
+
+#endif /* !WORLD_HPP_ */

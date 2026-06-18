@@ -5,7 +5,8 @@
 ** Sfml
 */
 
-#pragma once
+#ifndef SFML_HPP_
+#define SFML_HPP_
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -57,3 +58,5 @@ class Sfml : public IGui {
         float _offsetX = 0.0f;
         float _offsetY = 0.0f;
 };
+
+#endif /* !SFML_HPP_ */

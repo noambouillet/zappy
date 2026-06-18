@@ -5,7 +5,8 @@
 ** RayWindow
 */
 
-#pragma once
+#ifndef RAYWINDOW_HPP_
+#define RAYWINDOW_HPP_
 
 #include <string>
 #include <raylib.h>
@@ -23,3 +24,5 @@ class RayWindow {
         void endDrawing();
         void clearBackground(Color color);
 };
+
+#endif /* !RAYWINDOW_HPP_ */

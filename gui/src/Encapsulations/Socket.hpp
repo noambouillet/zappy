@@ -5,7 +5,8 @@
 ** Socket
 */
 
-#pragma once
+#ifndef SOCKET_HPP_
+#define SOCKET_HPP_
 
 #include <string>
 #include <sys/socket.h>
@@ -31,3 +32,5 @@ class Socket {
     private:
         int _fd;
 };
+
+#endif /* !SOCKET_HPP_ */

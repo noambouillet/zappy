@@ -5,7 +5,8 @@
 ** RayTexture
 */
 
-#pragma once
+#ifndef RAYTEXTURE_HPP_
+#define RAYTEXTURE_HPP_
 
 #include <raylib.h>
 #include <string>
@@ -23,3 +24,5 @@ class RayTexture {
     private:
         Texture2D _texture;
 };
+
+#endif /* !RAYTEXTURE_HPP_ */

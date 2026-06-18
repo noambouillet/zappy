@@ -5,7 +5,8 @@
 ** EventHandler
 */
 
-#pragma once
+#ifndef EVENTHANDLER_HPP_
+#define EVENTHANDLER_HPP_
 #include <SFML/Graphics.hpp>
 
 class EventHandler {
@@ -23,3 +24,5 @@ class EventHandler {
         float _windowWidth;
 };
 
+
+#endif /* !EVENTHANDLER_HPP_ */

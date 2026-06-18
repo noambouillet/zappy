@@ -5,7 +5,8 @@
 ** CommandHandler
 */
 
-#pragma once
+#ifndef COMMANDHANDLER_HPP_
+#define COMMANDHANDLER_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -38,3 +39,5 @@ class CommandHandler {
         void handle_pic(std::stringstream &ss);
         void handle_pie(std::stringstream &ss);
 };
+
+#endif /* !COMMANDHANDLER_HPP_ */
