@@ -32,43 +32,41 @@ void RaylibGui::drawCubeTexture(Texture2D texture, Vector3 position, float width
     float y = position.y;
     float z = position.z;
 
-    // Set desired texture to be enabled while drawing following vertex data
     rlSetTexture(texture.id);
-
     rlBegin(RL_QUADS);
         rlColor4ub(color.r, color.g, color.b, color.a);
-        // Front Face
+
         rlNormal3f(0.0f, 0.0f, 1.0f);
         rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);
         rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);
         rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);
         rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);
-        // Back Face
-        rlNormal3f(0.0f, 0.0f, - 1.0f);
+
+        rlNormal3f(0.0f, 0.0f, -1.0f);
         rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);
         rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);
         rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);
         rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);
-        // Top Face
+
         rlNormal3f(0.0f, 1.0f, 0.0f);
         rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);
         rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);
         rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);
         rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);
-        // Bottom Face
-        rlNormal3f(0.0f, - 1.0f, 0.0f);
+
+        rlNormal3f(0.0f, -1.0f, 0.0f);
         rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);
         rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);
         rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);
         rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);
-        // Right face
+
         rlNormal3f(1.0f, 0.0f, 0.0f);
         rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);
         rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);
         rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);
         rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);
-        // Left Face
-        rlNormal3f( - 1.0f, 0.0f, 0.0f);
+
+        rlNormal3f(-1.0f, 0.0f, 0.0f);
         rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);
         rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);
         rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);
@@ -88,7 +86,7 @@ void RaylibGui::displayWindow()
     
     auto [width, height] = _world.getMapSize();
     if (width > 0 && height > 0) {
-        _camera.setTarget(width / 2.0f, height / 2.0f);
+        _camera.setTarget((width - 1) / 2.0f, (height - 1) / 2.0f);
         for (size_t x = 0; x < width; x++) {
             for (size_t z = 0; z < height; z++) {
                 drawCubeTexture(_textures["ground"]->getTexture(), (Vector3){ (float)x, -0.5f, (float)z }, 1.0f, 1.0f, 1.0f, WHITE);
