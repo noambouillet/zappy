@@ -4,3 +4,5 @@ test
 linux
 __pycache__
 *.txt
+*.pdf
+.vscode/
