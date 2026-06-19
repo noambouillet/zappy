@@ -197,7 +197,8 @@ void RaylibGui::stopIncantationAt(int x, int y)
 
 void RaylibGui::drawBubble(const RayPlayerAnim_t &anim, Vector3 position)
 {
-    if (anim.bubbleQueue.empty()) return;
+    if (anim.bubbleQueue.empty())
+        return;
     std::string texKey = anim.bubbleQueue.front().first;
     if (_textures.find(texKey) != _textures.end()) {
         DrawBillboard(_camera.getCamera(), _textures[texKey]->getTexture(), position, 0.5f, WHITE);
