@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <rlgl.h>
 #include <filesystem>
+#include <cmath>
 
 RaylibGui::RaylibGui(World &world) : _world(world), _window(1920, 1080, "Zappy 3D - Raylib")
 {
@@ -27,6 +28,11 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1920, 1080, "Zappy 3
         if (entry.is_regular_file()) {
             std::string name = entry.path().stem().string();
             _models[name] = std::make_unique<RayModel>(entry.path().string());
+            
+            BoundingBox box = GetModelBoundingBox(_models[name]->getModel());
+            float maxSize = std::max({box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z});
+            _modelScales[name] = (maxSize > 0.0f) ? (0.20f / maxSize) : 0.20f;
+
             std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
         }
     }
@@ -40,6 +46,41 @@ bool RaylibGui::isOpen() const
 void RaylibGui::handleEvent()
 {
     _camera.update(GetFrameTime());
+    updateAnimations(GetFrameTime());
+}
+
+void RaylibGui::updateAnimations(float deltaTime)
+{
+    for (auto it = _playerAnims.begin(); it != _playerAnims.end();) {
+        RayPlayerAnim_t &anim = it->second;
+
+        if (anim.isDying) {
+            anim.deathTimer += deltaTime;
+            if (anim.deathTimer >= 1.0f) {
+                anim.isDeadAndGone = true;
+                try {
+                    _world.removeTrantorian(anim.id);
+                } catch (...) {}
+                it = _playerAnims.erase(it);
+                continue;
+            }
+        }
+
+        if (anim.isIncanting) {
+            anim.incantTimer += deltaTime;
+        }
+
+        if (anim.bubbleTimer > 0.0f) {
+            anim.bubbleTimer -= deltaTime;
+            if (anim.bubbleTimer <= 0.0f && !anim.bubbleQueue.empty()) {
+                anim.bubbleQueue.erase(anim.bubbleQueue.begin());
+                if (!anim.bubbleQueue.empty()) {
+                    anim.bubbleTimer = anim.bubbleQueue.front().second;
+                }
+            }
+        }
+        it++;
+    }
 }
 
 void RaylibGui::drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color)
@@ -120,44 +161,78 @@ void RaylibGui::displayWindow()
 
 void RaylibGui::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
 {
-    (void)id;
-    (void)textureKey;
-    (void)duration;
-    // TODO: Implement 3D bubbles
+    RayPlayerAnim_t &anim = _playerAnims[id];
+    anim.id = id;
+    anim.bubbleQueue.push_back({textureKey, duration});
+    if (anim.bubbleTimer <= 0.0f)
+        anim.bubbleTimer = duration;
 }
 
 void RaylibGui::triggerPlayerDeath(int id)
 {
-    // TODO: Implement 3D death animation
-    try {
-        _world.removeTrantorian(id);
-    } catch (const std::exception &e) {
-    }
+    RayPlayerAnim_t &anim = _playerAnims[id];
+    anim.id = id;
+    anim.isDying = true;
+    anim.deathTimer = 0.0f;
 }
 
 void RaylibGui::setPlayerIncanting(int id, bool state)
 {
-    (void)id;
-    (void)state;
-    // TODO: Implement 3D incantation
+    RayPlayerAnim_t &anim = _playerAnims[id];
+    anim.id = id;
+    anim.isIncanting = state;
+    if (state)
+        anim.incantTimer = 0.0f;
 }
 
 void RaylibGui::stopIncantationAt(int x, int y)
 {
-    (void)x;
-    (void)y;
-    // TODO: Implement stopping incantation
+    auto& tile = _world.getTileData(x, y);
+    for (auto& [id, player] : tile.players) {
+        if (_playerAnims.find(id) != _playerAnims.end()) {
+            _playerAnims[id].isIncanting = false;
+        }
+    }
+}
+
+void RaylibGui::drawBubble(const RayPlayerAnim_t &anim, Vector3 position)
+{
+    if (anim.bubbleQueue.empty()) return;
+    std::string texKey = anim.bubbleQueue.front().first;
+    if (_textures.find(texKey) != _textures.end()) {
+        DrawBillboard(_camera.getCamera(), _textures[texKey]->getTexture(), position, 0.5f, WHITE);
+    }
 }
 
 void RaylibGui::drawTileContent(int x, int z)
 {
     auto& tile = _world.getTileData(x, z);
     if (!tile.ressources.empty() && tile.ressources[0] > 0) {
-        DrawModel(_models["donut"]->getModel(), Vector3{static_cast<float>(x) - 0.3f, 0.05f, static_cast<float>(z) - 0.3f}, 0.35f, WHITE);
+        if (_models.find("donut") != _models.end()) {
+            DrawModel(_models["donut"]->getModel(), Vector3{static_cast<float>(x) - 0.3f, 0.05f, static_cast<float>(z) - 0.3f}, 0.35f, WHITE);
+        }
+    }
+
+    std::string ressourceNames[] = {"", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"};
+    Vector3 offsets[] = {
+        {0.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, -0.3f},
+        {0.3f, 0.0f, -0.3f},
+        {-0.3f, 0.0f, 0.3f},
+        {0.0f, 0.0f, 0.3f},
+        {0.3f, 0.0f, 0.3f},
+        {0.0f, 0.0f, 0.0f}
+    };
+
+    for (size_t i = 1; i < 7; ++i) {
+        if (tile.ressources.size() > i && tile.ressources[i] > 0) {
+            if (_models.find(ressourceNames[i]) != _models.end()) {
+                DrawModel(_models[ressourceNames[i]]->getModel(), Vector3{static_cast<float>(x) + offsets[i].x, 0.15f, static_cast<float>(z) + offsets[i].z}, _modelScales[ressourceNames[i]], WHITE);
+            }
+        }
     }
 
     for (auto& [id, player] : tile.players) {
-        (void)id;
         float angle = 0.0f;
         switch (player.orientation) {
             case 1: angle = 180.0f;
@@ -171,6 +246,22 @@ void RaylibGui::drawTileContent(int x, int z)
             default: angle = 0.0f;
                 break;
         }
-        DrawModelEx(_models["wizard"]->getModel(), Vector3{static_cast<float>(x), 0.0f, static_cast<float>(z)}, Vector3{0.0f, 1.0f, 0.0f}, angle, Vector3{0.5f, 0.5f, 0.5f}, WHITE);
+        RayPlayerAnim_t &anim = _playerAnims[id];
+        anim.id = id;
+
+        rlPushMatrix();
+        float yOffset = 0.0f;
+        if (anim.isIncanting)
+            yOffset = std::sin(anim.incantTimer * 5.0f) * 0.2f;
+        rlTranslatef(static_cast<float>(x), yOffset, static_cast<float>(z));
+        rlRotatef(angle, 0.0f, 1.0f, 0.0f);
+        if (anim.isIncanting)
+            rlRotatef(anim.incantTimer * 180.0f, 0.0f, 1.0f, 0.0f);
+        if (anim.isDying)
+            rlRotatef(std::min(anim.deathTimer * 90.0f, 90.0f), 1.0f, 0.0f, 0.0f);
+        rlScalef(0.5f, 0.5f, 0.5f);
+        DrawModel(_models["wizard"]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
+        rlPopMatrix();
+        drawBubble(anim, Vector3{static_cast<float>(x), yOffset + 1.2f, static_cast<float>(z)});
     }
 }
