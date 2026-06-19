@@ -153,7 +153,7 @@ class Agent:
             self.prepare_incantation = False
             self.behavior = Survive()
             return
-        if self.joining_incantation == True or self.waiting == True or self.player_is_call() == True:
+        if self.joining_incantation == True:
             self.behavior = Follower()
             return
         if self.prepare_incantation == True:
