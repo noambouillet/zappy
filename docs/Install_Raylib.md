@@ -1,6 +1,6 @@
 # Raylib Setup Guide for Ubuntu
 
-This is a quick-start guide to installing the Raylib library from source on Ubuntu Linux and compiling your first 3D application. (If you're not on Ubuntu, you need to lurn how to have friends, but good luck!)
+This is a quick-start guide to installing the Raylib library from source on Ubuntu Linux and compiling your first 3D application. (If you're not on Ubuntu, you need to learn how to have friends, but good luck!)
 
 ---
 
