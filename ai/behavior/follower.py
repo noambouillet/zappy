@@ -20,7 +20,7 @@ class Follower(Behavior):
         msg_leader = None
         msg_leader_tick = 0
         for msg in agent.mailbox:
-            if (msg["action"] == "INVOCATION" and msg["sender_id"] == agent.leader_id):
+            if (msg["action"] == "INCANTATION" and msg["sender_id"] == agent.leader_id):
                 msg_tick = msg["tick"]
                 if (msg_leader is None or msg_tick > msg_leader_tick):
                     msg_leader = msg
@@ -46,7 +46,7 @@ class Follower(Behavior):
             if (agent.direction_to_follow != 0):
                 return agent.follow_direction(agent.direction_to_follow)
             else:
-                return [f"Brodcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
+                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
         else:
             if ((agent.tick - agent.last_send_leader) > WAIT_MSG):
                 agent.leader_id = None

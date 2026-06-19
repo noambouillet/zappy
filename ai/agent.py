@@ -30,7 +30,7 @@ class Agent:
         self.size_map = (0, 0)
         self.team_name = ""
         self.tick = 0
-        self.teammate_same_level = 1
+        self.teammate_on_tile = 1
         self.mailbox = []
         self.eject_players = False
         self.joining_incantation = False

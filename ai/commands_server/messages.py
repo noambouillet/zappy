@@ -45,6 +45,6 @@ def receive_message(agent, response_server):
                 sender_id = int(parts[4])
             except ValueError:
                 sender_id = None
-        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": agent.tick, "sender_id": sender_id})
+        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": parts[3], "sender_id": sender_id})
         return
     print("[MESSAGE] Ignored message:", content)
