@@ -52,8 +52,9 @@ class HandleTrantorians {
         void updatePlayerBubble(PlayerAnim_t &anim, float deltaTime);
         void updatePlayerDeath(PlayerAnim_t &anim, float deltaTime);
         void updatePlayerIncantation(PlayerAnim_t &anim, float deltaTime);
-        void drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet);
+        void drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet, int currentFrame);
         void displayBubble(const PlayerAnim_t &anim);
+        void drawBaseIndicator(const sf::Vector2f &pos);
 
         std::map<int, PlayerAnim_t> _playerAnims;
         TextureManager &_textureManager;
