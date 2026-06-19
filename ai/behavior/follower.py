@@ -2,56 +2,49 @@
 ## EPITECH PROJECT, 2026
 ## zappy-mirror
 ## File description:
-## follower
+## Follower
 ##
 
+from constant import AVAILABLE_FREQUENCE, MIN_FOOD, WAIT_MSG
 from .class_behavior import Behavior
-from constant import FOOD_FOR_FOLLOW, AVAILABLE_FREQUENCE
 
 class Follower(Behavior):
     def execute(self, agent):
-        """this function is to execute
-        Args:
-            agent (class): Agent/IA
-        """
-        print("[FOLLOWER]", agent.waiting)
         agent.tick += 1
-        if agent.inventory["food"] <= FOOD_FOR_FOLLOW:
-            agent.joining_invocation = False
-            agent.waiting = False
+        if agent.inventory["food"] < MIN_FOOD:
             agent.survive = True
-            return ["Look\n"]
-        if agent.vision == [[]]:
-            return ["Look\n"]
-        food_commands = agent.take_food_on_tile()
-        if food_commands:
-            return food_commands
-        invocations_same_team = []
+            agent.joining_incantation = False
+            agent.leader_id = None
+            return []
+        mail_incantation_same_team = []
         for index, msg in enumerate(agent.mailbox):
-            if (msg.get("action") == "INVOCATION" and msg.get("level") == agent.level and msg.get("team") == agent.team_name):
-                invocations_same_team.append((index, msg))
-        if not invocations_same_team:
-            if (agent.waiting == True):
-                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
-            agent.joining_invocation = False
-            agent.waiting = False
-            return ["Look\n"]
-        _, recent_msg = min(invocations_same_team, key = lambda item: item[1].get("sender_id", 999999999))
+            if (msg["action"] == "INCANTATION" and msg["level"] == agent.level and msg["team"] == agent.team_name):
+                mail_incantation_same_team.append((index, msg))
+        if (not mail_incantation_same_team):
+            if ((agent.tick - agent.last_send_leader) > WAIT_MSG):
+                agent.last_send_leader = agent.tick
+                agent.leader_id = None
+                agent.joining_incantation = False
+                return []
+            else:
+                return agent.follow_direction(agent.direction_to_follow)
+        for _, msg in mail_incantation_same_team:
+            if (msg["sender_id"] == agent.leader_id):
+                direction = msg["direction"]
+                agent.last_send_leader = agent.tick
+                agent.direction_to_follow = direction
+                if (direction == 0):
+                    return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
+                else:
+                    return agent.follow_direction(agent.direction_to_follow)
         new_mailbox = []
         for msg in agent.mailbox:
-            if (msg.get("action") == "INVOCATION" and msg.get("level") == agent.level and msg.get("team") == agent.team_name):
-                continue
-            new_mailbox.append(msg)
+            if (msg["action"] != "INCANTATION" and msg["action"] != "AVAILABLE"):
+                new_mailbox.append(msg)
         agent.mailbox = new_mailbox.copy()
-        direction = recent_msg["direction"]
-        if (direction == 0):
-            agent.joining_invocation = False
-            agent.waiting = True
-            return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n"] + ["Look\n"]
-        else:
-            list_commands = []
-            if ((agent.tick - agent.last_available) >= AVAILABLE_FREQUENCE):
-                agent.last_available = agent.tick
-                list_commands.append(f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.agent_id}\n")
-            list_commands += agent.follow_direction(direction) + ["Look\n"]
-            return list_commands
+        if ((agent.tick - agent.last_send_leader) > WAIT_MSG):
+            agent.last_send_leader = agent.tick
+            agent.leader_id = None
+            agent.joining_incantation = False
+            return []
+        return []

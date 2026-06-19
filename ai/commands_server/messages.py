@@ -30,15 +30,9 @@ def receive_message(agent, response_server):
     if len(parts) < 2:
         print("[MESSAGE] Invalid content:", content)
         return
-    if parts[0] == "RES":
-        ressource = parts[1]
-        print("[MESSAGE] Ressource info received:", ressource)
-        print("[MESSAGE] Direction:", direction)
-        agent.add_shared_ressource(ressource, direction)
-        return
-    if parts[0] in ["AVAILABLE", "INVOCATION"]:
+    if parts[0] in ["AVAILABLE", "INCANTATION"]:
         if len(parts) < 3:
-            print("[MESSAGE] Invalid invocation message:", content)
+            print("[MESSAGE] Invalid incantation message:", content)
             return
         try:
             level = int(parts[1])

@@ -22,7 +22,7 @@ from commands_ia.incantation import do_incantation
 from commands_server.dead import receive_dead
 from commands_server.ejects import receive_eject
 from commands_server.messages import receive_message
-from agent import *
+from agent import Agent
     
 def launch_commands(agent, command, response_server):
     """This function allows you to determine which command to use to launch them.
@@ -100,7 +100,7 @@ def check_inventory_regularly(agent, tab_commands):
     Args:
         agent (_type_): _description_
     """
-    if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE):
+    if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE and agent.is_incantation != True):
         agent.last_inventory = agent.tick
         tab_commands.append("Inventory\n")
     return tab_commands
@@ -112,14 +112,22 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         socket_connection (socket.socket): the socket connection between ia and server
         agent (Agent): Agent IA
     """
+    need_look = ["Forward\n", "Left\n", "Right\n", "Eject\n"]
     if agent.is_incantation == True:
         return
     if (len(agent.list_commands) == 0):
         agent.adapt_behavior()
-        tab_commands = agent.behavior.execute(agent)
-        tab_commands = check_inventory_regularly(agent, tab_commands)
+        tab_commands = []
+        if agent.vision == [[]]:
+            tab_commands.append("Look\n")
+        tab_commands += agent.behavior.execute(agent)
         if not tab_commands:
             return
+        for command in tab_commands:
+            if command in need_look or command.startswith("Take") or command.startswith("Set"):
+                tab_commands.append("Look\n")
+                break
+        tab_commands = check_inventory_regularly(agent, tab_commands)
         for command in tab_commands:
             if (len(agent.list_commands) < 10):
                 agent.list_commands.append(command)

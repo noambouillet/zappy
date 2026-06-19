@@ -20,9 +20,7 @@ class Survive(Behavior):
         agent.tick += 1
         if (agent.inventory["food"] >= FOOD_TO_REACH):
             agent.survive = False
-            return ["Look\n"]
-        if (agent.vision == [[]]):
-            return ["Look\n"]
+            return []
         try:
             food_commands = agent.take_food_on_tile()   
             if food_commands:
@@ -31,8 +29,8 @@ class Survive(Behavior):
                 if "food" in infos:
                     commands = agent.go_to(pos)
                     if agent.inventory["food"] <= 5 and agent.movement_cost(commands) > 2:
-                        return ["Forward\n", "Look\n"]
-                    return commands + ["Take food\n", "Look\n"]
+                        return ["Forward\n"]
+                    return commands + ["Take food\n"]
         except (IndexError, TypeError):
-            return ["Forward\n", "Look\n"]
-        return ["Forward\n", "Look\n"]
+            return ["Forward\n"]
+        return ["Forward\n"]

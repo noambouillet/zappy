@@ -26,11 +26,11 @@ def do_incantation(agent, response_server):
         list_level = response_server.split(':')
         level = int(list_level[1])
         logger.info(f"The Incantation command was successful. Player level {agent.level} to {level}")
-        print("The Incantation command was successful; the character has evolved to the following level: ", level)
+        print("The Incantation command was successful; the character has done incantation to the following level: ", level)
         agent.level = level
         agent.is_incantation = False
         agent.prepare_incantation = False
-        agent.joining_invocation = False
+        agent.joining_incantation = False
         agent.waiting = False
         agent.mailbox.clear()
         remove_incantation_command(agent)
@@ -39,7 +39,7 @@ def do_incantation(agent, response_server):
         print("The Incantation command did not work; there was no noticeable change for the character.")
         agent.is_incantation = False
         agent.prepare_incantation = False
-        agent.joining_invocation = False
+        agent.joining_incantation = False
         agent.waiting = False
         remove_incantation_command(agent)
     return   
