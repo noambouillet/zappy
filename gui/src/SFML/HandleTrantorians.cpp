@@ -110,7 +110,7 @@ void HandleTrantorians::updateAnimations(float deltaTime)
             _world.removeTrantorian(it->second.id);
             it = _playerAnims.erase(it);
         } else {
-            ++it;
+            it++;
         }
     }
 }

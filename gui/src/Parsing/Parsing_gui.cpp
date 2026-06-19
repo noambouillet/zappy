@@ -20,7 +20,7 @@ void Parsing_gui::print_help()
     std::cout << "USAGE: ./zappy_gui -p port -h machine [-3d]" << std::endl;
 }
 
-bool Parsing_gui::is_ipv4(char* addr)
+bool Parsing_gui::is_ipv4(const std::string &addr)
 {
     int a;
     int b;
@@ -28,11 +28,11 @@ bool Parsing_gui::is_ipv4(char* addr)
     int d;
     char end;
 
-    if (!addr || addr[0] == '\0')
+    if (addr.empty())
         return false;
-    if (std::string(addr) == "localhost")
+    if (addr == "localhost")
         return true;
-    if (sscanf(addr, "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4)
+    if (sscanf(addr.c_str(), "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4)
         return false;
     if (a < 0 || a > 255)
         return false;
@@ -45,18 +45,18 @@ bool Parsing_gui::is_ipv4(char* addr)
     return true;
 }
 
-networkData_t Parsing_gui::check_args(char *addr, char *port)
+networkData_t Parsing_gui::check_args(const std::string &addr, const std::string &port)
 {
     networkData_t data;
     if (!is_ipv4(addr))
-        throw GuiException("The address: '" + std::string(addr) + "' does not feat the ipv4 format");
-    for (std::size_t i = 0; port[i] != '\0'; i++)
+        throw GuiException("The address: '" + addr + "' does not feat the ipv4 format");
+    for (std::size_t i = 0; i < port.length(); i++)
         if (port[i] < '0' || port[i] > '9')
-            throw GuiException("The port: '" + std::string(port) + "' is not a number");
+            throw GuiException("The port: '" + port + "' is not a number");
     data.port = std::stoi(port);
     if (data.port < 1 || data.port > 65535)
-        throw GuiException("The port: '" + std::string(port) + "' is out of range (port must be between 1 and 65535)");
-    if (std::string(addr) == "localhost")
+        throw GuiException("The port: '" + port + "' is out of range (port must be between 1 and 65535)");
+    if (addr == "localhost")
         data.ip = "127.0.0.1";
     else
         data.ip = addr;
@@ -97,7 +97,7 @@ networkData_t Parsing_gui::parse_args(int ac, char **av)
     if (addr.empty()) {
         throw GuiException("Missing mandatory flag: -h <machine>");
     }
-    networkData_t data = check_args(const_cast<char*>(addr.c_str()), const_cast<char*>(port.c_str()));
+    networkData_t data = check_args(addr, port);
     data.use3D = use3D;
     return data;
 }
