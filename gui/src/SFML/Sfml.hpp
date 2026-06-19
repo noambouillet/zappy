@@ -21,6 +21,7 @@
 #include "RenderMap.hpp"
 #include "HandleTrantorians.hpp"
 #include "Interfaces/IGui.hpp"
+#include "UIRender.hpp"
 
 constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
@@ -46,6 +47,7 @@ class Sfml : public IGui {
         EventHandler _eventHandler;
         TextureManager _textureManager;
         RenderMap _renderMap;
+        UIRender _uiRender;
         sf::Clock _clock;
 
         void updateDimensions();

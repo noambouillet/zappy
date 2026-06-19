@@ -22,7 +22,8 @@ GUI_SRC = src/Raylib/RaylibGui.cpp \
 		  src/SFML/Sfml.cpp \
 		  src/SFML/EventHandler.cpp \
 		  src/SFML/RenderMap.cpp \
-		  src/SFML/HandleTrantorians.cpp
+		  src/SFML/HandleTrantorians.cpp \
+      src/SFML/UIRender.cpp
 
 SRC     = main.cpp \
 		  src/Parsing/Parsing_gui.cpp \
