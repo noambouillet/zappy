@@ -10,7 +10,7 @@
 #include <cmath>
 #include "GuiExceptions.hpp"
 
-Sfml::Sfml(World &world): _window(sf::VideoMode::getDesktopMode(), "trantor", sf::Style::Titlebar | sf::Style::Close), _world(world), _eventHandler(_window, _camera), _renderMap(_textureManager, _window, _world)
+Sfml::Sfml(World &world): _window(sf::VideoMode({WIDTH, HEIGHT}), "trantor", sf::Style::Default), _world(world), _eventHandler(_window, _camera), _renderMap(_textureManager, _window, _world), _uiRender(_world, _window, _textureManager)
 {
     _window.setFramerateLimit(60);
     _textureManager.loadAllTextures();
@@ -27,7 +27,7 @@ sf::RenderWindow &Sfml::getWindow()
 
 void Sfml::handleEvent()
 {
-    _eventHandler.update(_limitWindowWidth);
+    _eventHandler.update(WIDTH, HEIGHT, _uiRender);
 }
 
 void Sfml::displayWindow()
@@ -36,6 +36,7 @@ void Sfml::displayWindow()
 
     if (_tileSize == 0.0f && _world.getMapSize().first != 0)
         updateDimensions();
+    _world.updateGameTime(deltaTime);
     _renderMap.getHandleTrantorians().updateAnimations(deltaTime);
 
     _window.clear(sf::Color::Black);
@@ -43,7 +44,8 @@ void Sfml::displayWindow()
     _renderMap.drawBackground();
     _renderMap.drawMap();
 
-    //_window.setView(_window.getDefaultView()); // et ça c'est pour le UI
+    _window.setView(_window.getDefaultView()); // et ça c'est pour le UI
+    _uiRender.displayUI();
     _window.display();
 }
 
@@ -51,16 +53,14 @@ void Sfml::updateDimensions()
 {
     if (_world.getMapSize().first == 0 || _world.getMapSize().second == 0)
         return;
-    float currentWindowWidth = static_cast<float>(_window.getSize().x);
-    float currentWindowHeight = static_cast<float>(_window.getSize().y);
-    float mapAreaHeight = currentWindowHeight * 0.80f;
+    float mapAreaHeight = HEIGHT * 0.80f;
     _tileSize = mapAreaHeight / _world.getMapSize().second;
     float finalMapWidth = _tileSize * _world.getMapSize().first;
-    _offsetY = (currentWindowHeight - mapAreaHeight) / 2.0f;
-    _offsetX = (currentWindowWidth - finalMapWidth) / 2.0f;
-    _limitWindowWidth = currentWindowWidth;
-    _camera.setSize(currentWindowWidth, currentWindowHeight);
-    _camera.setCenter(currentWindowWidth / 2.0f, currentWindowHeight / 2.0f);
+    _offsetY = (HEIGHT - mapAreaHeight) / 2.0f;
+    _offsetX = (WIDTH - finalMapWidth) / 2.0f;
+    _limitWindowWidth = WIDTH;
+    _camera.setSize(WIDTH, HEIGHT);
+    _camera.setCenter(WIDTH / 2.0f, HEIGHT / 2.0f);
     _renderMap.update(_tileSize, _offsetX, _offsetY);
 }
 

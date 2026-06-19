@@ -23,7 +23,8 @@ SRC     = main.cpp \
 		  src/Encapsulations/Poll.cpp \
 		  src/Data/TextureManager.cpp \
 		  src/SFML/RenderMap.cpp\
-		  src/SFML/HandleTrantorians.cpp
+		  src/SFML/HandleTrantorians.cpp \
+		  src/SFML/UIRender.cpp
 
 OBJ     = $(SRC:.cpp=.o)
 

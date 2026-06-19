@@ -188,19 +188,40 @@ void HandleTrantorians::drawTrantorians(const TileData_t &tile)
     float trantorianSize = _tileSize * 0.95f; 
     const sf::Texture &texture = _textureManager.getTexture("benoit");
     sf::Sprite &playerSprite = _textureManager.getSprite("benoit");
-
     playerSprite.setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
-    playerSprite.setScale(trantorianSize / texture.getSize().x, trantorianSize / texture.getSize().y);
+    std::string activeTeam = _world.getSelectedTeam();
     for (const auto &animPair : _playerAnims) {
         const PlayerAnim_t &anim = animPair.second;
         auto playerInTileIt = tile.players.find(anim.id);
         bool isPlayerInTile = (playerInTileIt != tile.players.end());
         if (isPlayerInTile || anim.isDying) {
-            if (anim.isDying)
-                drawAnimation(anim, trantorianSize, 32,"spritesheetDeath");
-            else if (anim.isIncanting)
+            bool isTargetTeam = false;
+            if (!activeTeam.empty()) {
+                std::string playerTeam = isPlayerInTile ? playerInTileIt->second.teamName : "";
+                if (playerTeam == activeTeam) {
+                    isTargetTeam = true;
+                }
+            }
+            if (!activeTeam.empty()) {
+                if (isTargetTeam) {
+                    sf::CircleShape baseIndicator(_tileSize * 0.4f);
+                    baseIndicator.setOrigin(baseIndicator.getRadius(), baseIndicator.getRadius());
+                    baseIndicator.setPosition(anim.visualPos.x, anim.visualPos.y + _tileSize * 0.2f);
+                    baseIndicator.setFillColor(sf::Color(178, 102, 180));
+                    baseIndicator.setOutlineColor(sf::Color(76, 0, 153));
+                    baseIndicator.setOutlineThickness(1.5f);
+                    _window.draw(baseIndicator);
+
+                }
+            } else {
+                playerSprite.setScale(trantorianSize / texture.getSize().x, trantorianSize / texture.getSize().y);
+            }
+
+            if (anim.isDying) {
+                drawAnimation(anim, trantorianSize, 32, "spritesheetDeath");
+            } else if (anim.isIncanting) {
                 drawAnimation(anim, trantorianSize, 6, "incantation");
-            else {
+            } else {
                 playerSprite.setPosition(anim.visualPos);
                 if (anim.isMoving) {
                     float angle = 15.0f * std::sin(anim.walkTimer * 18.0f);
@@ -208,12 +229,14 @@ void HandleTrantorians::drawTrantorians(const TileData_t &tile)
                 } else {
                     playerSprite.setRotation(0.0f);
                 }
+                
                 _window.draw(playerSprite);                
                 displayBubble(anim);
             }
         }
     }
     playerSprite.setRotation(0.0f);
+    playerSprite.setColor(sf::Color::White);
 }
 
 void HandleTrantorians::drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet)

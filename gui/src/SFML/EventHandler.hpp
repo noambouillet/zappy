@@ -7,12 +7,13 @@
 
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "UIRender.hpp"
 
 class EventHandler {
     public:
         EventHandler(sf::RenderWindow &window, sf::View &camera);
         ~EventHandler() = default;
-        void update(float windowWidth);
+        void update(float windowWidth, float windowHeight, UIRender &uiRender);
     private:
         void handleMove();
         void handleZoom();
@@ -21,5 +22,6 @@ class EventHandler {
         sf::RenderWindow &_window;
         sf::View &_camera;
         float _windowWidth;
+        float _windowHeight;
 };
 

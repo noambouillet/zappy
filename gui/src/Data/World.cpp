@@ -23,9 +23,16 @@ void World::setMapSize(size_t width, size_t height)
     }
 }
 
-void World::setTile(int x, int y, const std::vector<int> &ressources)
+void World::setTile(int x, int y, const std::vector<int> &newResources)
 {
-    _map[y][x].ressources = ressources;
+    TileData_t &tile = _map[y][x];
+
+    if (!tile.ressources.empty())
+        for (size_t i = 0; i < 7; ++i)
+            _totalRessources[i] -= tile.ressources[i];
+    tile.ressources = newResources;
+    for (size_t i = 0; i < 7; ++i)
+        _totalRessources[i] += tile.ressources[i];
 }
 
 void World::addEgg(int eggNB, int playerID, int x, int y)
@@ -140,4 +147,53 @@ TileData_t &World::getTileData(int x, int y)
 int World::getTime() const
 {
     return _timeUnit;
+}
+
+const std::vector<int> &World::getTotalRessources()
+{
+    return _totalRessources;
+}
+
+const std::vector<std::string> &World::getTeams()
+{
+    return _teams;
+}
+
+void World::updateGameTime(float deltaTime)
+{
+    if (getTime() > 0) {
+        _internalGameTime += deltaTime * getTime();
+    }
+}
+
+std::string World::getFormattedGameTime() const
+{
+    long long totalSeconds = static_cast<long long>(_internalGameTime);
+    long long hours = totalSeconds / 3600;
+    long long minutes = (totalSeconds % 3600) / 60;
+    long long seconds = totalSeconds % 60;
+
+    char buffer[32];
+    std::snprintf(buffer, sizeof(buffer), "%02lld:%02lld:%02lld", hours, minutes, seconds);
+    return std::string(buffer);
+}
+
+void World::setSelectedTeam(const std::string teamName)
+{
+    _selectedTeamName = teamName;
+}
+
+const std::string &World::getSelectedTeam() const
+{
+    return _selectedTeamName;
+}
+
+void World::setselectedPlayerId(int id)
+{
+    _selectedPlayerId = id;
+}
+
+int World::getselectedPlayerId() const
+{
+    return _selectedPlayerId;
 }
