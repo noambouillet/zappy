@@ -5,7 +5,9 @@
 ** TextureManager
 */
 
-#pragma once
+#ifndef TEXTUREMANAGER_HPP_
+#define TEXTUREMANAGER_HPP_
+
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
 #include <string>
@@ -24,3 +26,5 @@ class TextureManager {
         std::unordered_map<std::string, sf::Sprite> _sprites;
 };
 
+
+#endif /* !TEXTUREMANAGER_HPP_ */

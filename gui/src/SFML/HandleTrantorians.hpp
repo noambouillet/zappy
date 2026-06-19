@@ -5,7 +5,8 @@
 ** HandleTrantorians
 */
 
-#pragma once
+#ifndef HANDLETRANTORIANS_HPP_
+#define HANDLETRANTORIANS_HPP_
 #include <SFML/Graphics.hpp>
 #include "World.hpp"
 #include "TextureManager.hpp"
@@ -63,3 +64,5 @@ class HandleTrantorians {
         float _offsetX;
         float _offsetY;
 };
+
+#endif /* !HANDLETRANTORIANS_HPP_ */

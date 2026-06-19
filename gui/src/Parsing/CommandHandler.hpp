@@ -5,7 +5,8 @@
 ** CommandHandler
 */
 
-#pragma once
+#ifndef COMMANDHANDLER_HPP_
+#define COMMANDHANDLER_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -13,18 +14,17 @@
 #include <vector>
 #include <iostream>
 #include "World.hpp"
-#include "Sfml.hpp"
-#include "HandleTrantorians.hpp"
+#include "Interfaces/IGui.hpp"
 
 class CommandHandler {
     public:
-        CommandHandler(World &world, Sfml &gui);
+        CommandHandler(World &world, IGui &gui);
         ~CommandHandler() = default;
         void handle(const std::string &line);
     private:
         std::unordered_map<std::string, void (CommandHandler::*)(std::stringstream &)> _commands;
         World &_world;
-        HandleTrantorians &_handleTrantorians;
+        IGui &_gui;
         void handle_msz(std::stringstream &ss);
         void handle_bct(std::stringstream &ss);
         void handle_sgt(std::stringstream &ss);
@@ -39,3 +39,5 @@ class CommandHandler {
         void handle_pic(std::stringstream &ss);
         void handle_pie(std::stringstream &ss);
 };
+
+#endif /* !COMMANDHANDLER_HPP_ */

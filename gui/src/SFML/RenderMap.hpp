@@ -5,7 +5,8 @@
 ** RenderMap
 */
 
-#pragma once
+#ifndef RENDERMAP_HPP_
+#define RENDERMAP_HPP_
 #include "World.hpp"
 #include "TextureManager.hpp"
 #include "HandleTrantorians.hpp"
@@ -33,3 +34,4 @@ class RenderMap {
         float _offsetX;
         float _offsetY;
 };
+#endif /* !RENDERMAP_HPP_ */

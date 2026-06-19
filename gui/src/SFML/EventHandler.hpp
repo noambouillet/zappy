@@ -5,7 +5,8 @@
 ** EventHandler
 */
 
-#pragma once
+#ifndef EVENTHANDLER_HPP_
+#define EVENTHANDLER_HPP_
 #include <SFML/Graphics.hpp>
 #include "UIRender.hpp"
 
@@ -25,3 +26,5 @@ class EventHandler {
         float _windowHeight;
 };
 
+
+#endif /* !EVENTHANDLER_HPP_ */

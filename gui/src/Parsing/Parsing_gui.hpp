@@ -5,7 +5,8 @@
 ** Parsing_gui
 */
 
-#pragma once
+#ifndef PARSING_GUI_HPP_
+#define PARSING_GUI_HPP_
 
 #include <iostream>
 #include <string>
@@ -17,6 +18,7 @@
 typedef struct networkData_s {
     int port;
     std::string ip;
+    bool use3D;
 } networkData_t;
 
 class Parsing_gui
@@ -28,3 +30,5 @@ class Parsing_gui
         networkData_t check_args(char *addr, char *port);
         bool is_ipv4(char *addr);
 };
+
+#endif /* !PARSING_GUI_HPP_ */

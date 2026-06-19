@@ -5,11 +5,12 @@
 ** World
 */
 
-#pragma once
+#ifndef WORLD_HPP_
+#define WORLD_HPP_
+
 #include <vector>
 #include <string>
 #include <map>
-#include <SFML/Graphics.hpp>
 
 struct Player_t {
     int id;
@@ -67,3 +68,5 @@ class World {
         std::string _selectedTeamName = "";
         int _selectedPlayerId = -1;
 };
+
+#endif /* !WORLD_HPP_ */
