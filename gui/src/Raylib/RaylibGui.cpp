@@ -83,15 +83,15 @@ void RaylibGui::displayWindow()
     _window.beginDrawing();
     _window.clearBackground(RAYWHITE);
 
-    DrawTexturePro(_backgroundTexture->getTexture(), (Rectangle){0, 0, (float)_backgroundTexture->getTexture().width, (float)_backgroundTexture->getTexture().height},(Rectangle){0, 0, 1920, 1080},(Vector2){0, 0}, 0.0f, WHITE);
+    DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, 1920, 1080}, Vector2{0, 0}, 0.0f, WHITE);
     _camera.beginMode3D();
-    
+
     auto [width, height] = _world.getMapSize();
     if (width > 0 && height > 0) {
         _camera.setTarget((width - 1) / 2.0f, (height - 1) / 2.0f);
         for (size_t x = 0; x < width; x++) {
             for (size_t z = 0; z < height; z++) {
-                drawCubeTexture(_textures["ground"]->getTexture(), (Vector3){ (float)x, -0.5f, (float)z }, 1.0f, 1.0f, 1.0f, WHITE);
+                drawCubeTexture(_textures["ground"]->getTexture(), Vector3{static_cast<float>(x), -0.5f, static_cast<float>(z)}, 1.0f, 1.0f, 1.0f, WHITE);
                 drawTileContent(x, z);
             }
         }
@@ -139,7 +139,7 @@ void RaylibGui::drawTileContent(int x, int z)
 {
     auto& tile = _world.getTileData(x, z);
     if (!tile.ressources.empty() && tile.ressources[0] > 0) {
-        DrawModel(_models["donut"]->getModel(), (Vector3){ (float)x - 0.3f, 0.05f, (float)z - 0.3f }, 0.35f, WHITE);
+        DrawModel(_models["donut"]->getModel(), Vector3{static_cast<float>(x) - 0.3f, 0.05f, static_cast<float>(z) - 0.3f}, 0.35f, WHITE);
     }
 
     for (auto& [id, player] : tile.players) {
@@ -157,6 +157,6 @@ void RaylibGui::drawTileContent(int x, int z)
             default: angle = 0.0f;
                 break;
         }
-        DrawModelEx(_models["wizard"]->getModel(), (Vector3){ (float)x, 0.0f, (float)z }, (Vector3){ 0.0f, 1.0f, 0.0f }, angle, (Vector3){ 0.5f, 0.5f, 0.5f }, WHITE);
+        DrawModelEx(_models["wizard"]->getModel(), Vector3{static_cast<float>(x), 0.0f, static_cast<float>(z)}, Vector3{0.0f, 1.0f, 0.0f}, angle, Vector3{0.5f, 0.5f, 0.5f}, WHITE);
     }
 }
