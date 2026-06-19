@@ -42,7 +42,7 @@ def receive_message(agent, response_server):
         sender_id = None
         if len(parts) >= 4:
             try:
-                sender_id = int(parts[3])
+                sender_id = int(parts[4])
             except ValueError:
                 sender_id = None
         agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": agent.tick, "sender_id": sender_id})

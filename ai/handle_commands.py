@@ -124,7 +124,7 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         if not tab_commands:
             return
         for command in tab_commands:
-            if command in need_look or command.startswith("Take") or command.startswith("Set"):
+            if (command in need_look or command.startswith("Take") or command.startswith("Set")) and agent.joining_incantation == False:
                 tab_commands.append("Look\n")
                 break
         tab_commands = check_inventory_regularly(agent, tab_commands)

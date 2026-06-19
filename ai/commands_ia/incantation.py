@@ -31,7 +31,6 @@ def do_incantation(agent, response_server):
         agent.is_incantation = False
         agent.prepare_incantation = False
         agent.joining_incantation = False
-        agent.waiting = False
         agent.mailbox.clear()
         remove_incantation_command(agent)
     elif (response_server == "ko"):
@@ -40,6 +39,5 @@ def do_incantation(agent, response_server):
         agent.is_incantation = False
         agent.prepare_incantation = False
         agent.joining_incantation = False
-        agent.waiting = False
         remove_incantation_command(agent)
     return   

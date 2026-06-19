@@ -34,7 +34,6 @@ class Agent:
         self.mailbox = []
         self.eject_players = False
         self.joining_incantation = False
-        self.waiting = False
         self.agent_id = os.getpid()
         self.last_inventory = 0
         self.last_available = 0
@@ -141,23 +140,6 @@ class Agent:
                 can_level_up = False
                 break
         return can_level_up
-    
-    def player_is_call(self):
-        """Check if another player is calling an incantation.
-        If cannot do incantation, join any valid leader.
-        If can do incantation too, only join the leader with smaller id."""
-        for msg in self.mailbox:
-            if (msg.get("action") == "INCANTATION" and msg.get("level") == self.level and msg.get("team") == self.team_name):
-                sender_id = msg.get("sender_id")
-                if sender_id == self.agent_id:
-                    continue
-                if self.capable_of_incantation() == False:
-                    self.joining_incantation = True
-                    return True
-                if sender_id is not None and sender_id < self.agent_id:
-                    self.joining_incantation = True
-                    return True
-        return False
 
     def adapt_behavior(self):
         """This function is to adapt behavior during the life of the agent
@@ -168,7 +150,6 @@ class Agent:
         if self.inventory["food"] <= MIN_FOOD or self.survive == True:
             self.survive = True
             self.joining_incantation = False
-            self.waiting = False
             self.prepare_incantation = False
             self.behavior = Survive()
             return
@@ -180,6 +161,6 @@ class Agent:
             return
         if self.capable_of_incantation() == False:
             self.behavior = Explore()
-            return
-        self.behavior = Incantation()
+        else:
+            self.behavior = Incantation()
     

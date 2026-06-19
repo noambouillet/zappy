@@ -11,40 +11,50 @@ from .class_behavior import Behavior
 class Follower(Behavior):
     def execute(self, agent):
         agent.tick += 1
+        print("FOLLOWER ", agent.tick)
         if agent.inventory["food"] < MIN_FOOD:
             agent.survive = True
             agent.joining_incantation = False
             agent.leader_id = None
             return []
-        mail_incantation_same_team = []
-        for index, msg in enumerate(agent.mailbox):
-            if (msg["action"] == "INCANTATION" and msg["level"] == agent.level and msg["team"] == agent.team_name):
-                mail_incantation_same_team.append((index, msg))
-        if (not mail_incantation_same_team):
+        msg_leader = None
+        msg_leader_tick = 0
+        for msg in agent.mailbox:
+            if (msg["action"] == "INVOCATION" and msg["sender_id"] == agent.leader_id):
+                msg_tick = msg["tick"]
+                if (msg_leader is None or msg_tick > msg_leader_tick):
+                    msg_leader = msg
+                    msg_leader_tick = msg_tick
+        if (msg_leader is not None):
+            print("FOLLOWER SEND", msg_leader["sender_id"])
+            print("FOLLOWER DIRECTION", msg_leader["sender_id"])
+            print("FOLLOWER TICK", msg_leader["sender_id"])
+            print("FOLLOWER MAILBOX", agent.mailbox)
+        agent.mailbox.clear()
+        return self.verif_msg_leader(agent, msg_leader)
+            
+    def verif_msg_leader(self, agent, msg_leader):
+        """_summary_
+
+        Args:
+            agent (_type_): _description_
+        """
+        if (msg_leader):
+            agent.direction_to_follow = msg_leader["direction"]
+            agent.leader_id = msg_leader["sender_id"]
+            agent.joining_incantation = True
+            if (agent.direction_to_follow != 0):
+                return agent.follow_direction(agent.direction_to_follow)
+            else:
+                return [f"Brodcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
+        else:
             if ((agent.tick - agent.last_send_leader) > WAIT_MSG):
-                agent.last_send_leader = agent.tick
                 agent.leader_id = None
+                agent.last_send_leader = None
+                agent.direction_to_follow = None
                 agent.joining_incantation = False
                 return []
-            else:
-                return agent.follow_direction(agent.direction_to_follow)
-        for _, msg in mail_incantation_same_team:
-            if (msg["sender_id"] == agent.leader_id):
-                direction = msg["direction"]
-                agent.last_send_leader = agent.tick
-                agent.direction_to_follow = direction
-                if (direction == 0):
-                    return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
-                else:
-                    return agent.follow_direction(agent.direction_to_follow)
-        new_mailbox = []
-        for msg in agent.mailbox:
-            if (msg["action"] != "INCANTATION" and msg["action"] != "AVAILABLE"):
-                new_mailbox.append(msg)
-        agent.mailbox = new_mailbox.copy()
-        if ((agent.tick - agent.last_send_leader) > WAIT_MSG):
             agent.last_send_leader = agent.tick
-            agent.leader_id = None
-            agent.joining_incantation = False
-            return []
-        return []
+            agent.joining_incantation = True
+            return agent.follow_direction(agent.direction_to_follow)
+            
