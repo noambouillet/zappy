@@ -9,13 +9,27 @@
 #include <iostream>
 #include <algorithm>
 #include <rlgl.h>
+#include <filesystem>
 
 RaylibGui::RaylibGui(World &world) : _world(world), _window(1920, 1080, "Zappy 3D - Raylib")
 {
     _backgroundTexture = std::make_unique<RayTexture>("gui/assets/3D/backgrounds/background.png");
-    _textures["ground"] = std::make_unique<RayTexture>("gui/assets/3D/textures/ground.png");
-    _models["donut"] = std::make_unique<RayModel>("gui/assets/3D/models/donut.glb");
-    _models["wizard"] = std::make_unique<RayModel>("gui/assets/3D/models/wizard.glb");
+    
+    for (const auto & entry : std::filesystem::directory_iterator("gui/assets/3D/textures")) {
+        if (entry.is_regular_file()) {
+            std::string name = entry.path().stem().string();
+            _textures[name] = std::make_unique<RayTexture>(entry.path().string());
+            std::cout << "Loaded texture: " << name << " from " << entry.path() << std::endl;
+        }
+    }
+
+    for (const auto & entry : std::filesystem::directory_iterator("gui/assets/3D/models")) {
+        if (entry.is_regular_file()) {
+            std::string name = entry.path().stem().string();
+            _models[name] = std::make_unique<RayModel>(entry.path().string());
+            std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
+        }
+    }
 }
 
 bool RaylibGui::isOpen() const
