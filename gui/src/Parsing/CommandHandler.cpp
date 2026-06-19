@@ -175,10 +175,11 @@ void CommandHandler::handle_pdi(std::stringstream &ss)
 void CommandHandler::handle_pic(std::stringstream &ss)
 {
     int x, y, level, id;
+    char sharp;
     
     if (!(ss >> x >> y >> level))
         return;
-    while (ss >> id) {
+    while (ss >> sharp >> id) {
         _gui.setPlayerIncanting(id, true);
     }
 }
