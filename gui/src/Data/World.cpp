@@ -188,12 +188,12 @@ const std::string &World::getSelectedTeam() const
     return _selectedTeamName;
 }
 
-void World::setselectedPlayerId(int id)
+void World::setSelectedPlayerId(int id)
 {
     _selectedPlayerId = id;
 }
 
-int World::getselectedPlayerId() const
+int World::getSelectedPlayerId() const
 {
     return _selectedPlayerId;
 }

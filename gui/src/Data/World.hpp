@@ -54,8 +54,8 @@ class World {
         const std::vector<int> &getTotalRessources();
         void setSelectedTeam(const std::string teamName);
         const std::string &getSelectedTeam() const;
-        void setselectedPlayerId(int id) { _selectedPlayerId = id; }
-        int getselectedPlayerId() const { return _selectedPlayerId; }
+        void setSelectedPlayerId(int id);
+        int getSelectedPlayerId() const;
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};
