@@ -28,10 +28,10 @@ void World::setTile(int x, int y, const std::vector<int> &newResources)
     TileData_t &tile = _map[y][x];
 
     if (!tile.ressources.empty())
-        for (size_t i = 0; i < 7; ++i)
+        for (size_t i = 0; i < 7; i++)
             _totalRessources[i] -= tile.ressources[i];
     tile.ressources = newResources;
-    for (size_t i = 0; i < 7; ++i)
+    for (size_t i = 0; i < 7; i++)
         _totalRessources[i] += tile.ressources[i];
 }
 
@@ -161,9 +161,7 @@ const std::vector<std::string> &World::getTeams()
 
 void World::updateGameTime(float deltaTime)
 {
-    if (getTime() > 0) {
-        _internalGameTime += deltaTime * getTime();
-    }
+    _internalGameTime += deltaTime;
 }
 
 std::string World::getFormattedGameTime() const
