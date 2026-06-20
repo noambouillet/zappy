@@ -14,11 +14,32 @@ RayUI::RayUI(World &world, const std::unordered_map<std::string, std::unique_ptr
 
 void RayUI::drawResourceLine(int x, int y, const std::string &iconKey, const std::string &name, int count)
 {
+    Color textColor = RAYWHITE;
+    if (name == "Linemate")
+        textColor = PINK;
+    else if (name == "Deraumere")
+        textColor = GREEN;
+    else if (name == "Sibur")
+        textColor = YELLOW;
+    else if (name == "Mendiane")
+        textColor = RED;
+    else if (name == "Phiras")
+        textColor = PURPLE;
+    else if (name == "Thystame")
+        textColor = SKYBLUE;
+
     if (_textures.find(iconKey) != _textures.end()) {
-        DrawTexture(_textures.at(iconKey)->getTexture(), x, y, WHITE);
-        DrawText(TextFormat("%s : %d", name.c_str(), count), x + 40, y + 5, 20, WHITE);
+        Texture2D tex = _textures.at(iconKey)->getTexture();
+        float srcSize = static_cast<float>(tex.height);
+        float srcX = (static_cast<float>(tex.width) - srcSize) / 2.0f;
+        Rectangle source = { srcX, 0.0f, srcSize, srcSize };
+        float iconSize = 30.0f;
+        Rectangle dest = { static_cast<float>(x), static_cast<float>(y - 5), iconSize, iconSize };
+
+        DrawTexturePro(tex, source, dest, Vector2{0.0f, 0.0f}, 0.0f, WHITE);
+        DrawText(TextFormat("%s : %d", name.c_str(), count), x + 40, y, 20, textColor);
     } else {
-        DrawText(TextFormat("%s : %d", name.c_str(), count), x, y, 20, WHITE);
+        DrawText(TextFormat("%s : %d", name.c_str(), count), x, y, 20, textColor);
     }
 }
 
@@ -83,8 +104,8 @@ void RayUI::drawTileInfo(int selectedX, int selectedZ, Vector2 mousePos)
     std::string resNames[] = {"Food", "Linemate", "Deraumere", "Sibur", "Mendiane", "Phiras", "Thystame"};
     std::string iconKeys[] = {"donut", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"};
 
-    for (int i = 0; i < 7; ++i) {
-        int count = (tile.ressources.size() > (size_t)i) ? tile.ressources[i] : 0;
+    for (int i = 0; i < 7; i++) {
+        int count = (tile.ressources.size() > static_cast<size_t>(i)) ? tile.ressources[i] : 0;
         drawResourceLine(posX + 10, yOffset, iconKeys[i], resNames[i], count);
         yOffset += 25;
     }
