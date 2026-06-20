@@ -20,7 +20,8 @@ class Survive(Behavior):
         agent.tick += 1
         if (agent.inventory["food"] >= FOOD_TO_REACH):
             agent.survive = False
-            return []
+            agent.adapt_behavior()
+            return agent.behavior.execute(agent)
         try:
             food_commands = agent.take_food_on_tile()   
             if food_commands:

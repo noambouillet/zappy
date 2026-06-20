@@ -18,9 +18,11 @@ class Explore(Behavior):
         if food_commands:
             return food_commands
         if (self.define_leader(agent) == True):
-            return []
-        needed_ressources = self.get_needed_ressources(agent)
-        best_ressource, tile_index = self.find_best_ressource(agent, needed_ressources)
+            agent.adapt_behavior()
+            return agent.behavior.execute(agent)
+        # needed_ressources = self.get_needed_ressources(agent)
+        # best_ressource, tile_index = self.find_best_ressource(agent, needed_ressources)
+        best_ressource, tile_index = self.find_first_ressource(agent)
         command_list = self.get_command(agent, best_ressource, tile_index)
         if command_list:
             return command_list
@@ -44,6 +46,14 @@ class Explore(Behavior):
         for index, tile in enumerate(agent.vision):
             for ressource in tile:
                 if ressource in needed_ressources and needed_ressources[ressource] > 0:
+                    return ressource, index
+        return None, None
+    
+    def find_first_ressource(self, agent):
+        valid = {"food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"}
+        for index, tile in enumerate(agent.vision):
+            for ressource in tile:
+                if ressource in valid:
                     return ressource, index
         return None, None
 

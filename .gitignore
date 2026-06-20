@@ -2,3 +2,6 @@
 linux
 __pycache__
 *.txt
+zappy_ai
+zappy_gui
+zappy_server

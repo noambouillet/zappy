@@ -22,13 +22,13 @@ class Agent:
         self.mailbox = []
         self.vision = [[]]
         self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
-        self.survive = False
+        self.survive = True
         self.eject_players = False
         self.joining_incantation = False
         self.prepare_incantation = False
         self.is_incantation = False
         self.direction = Direction.Up
-        self.behavior = Explore()
+        self.behavior = Survive()
         self.size_map = (0, 0)
         self.unused_slots = 0
         self.tick = 0

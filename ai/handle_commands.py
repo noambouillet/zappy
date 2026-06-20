@@ -80,11 +80,12 @@ def handle_commands(agent : Agent, all_responses_server):
         elif (response_server.startswith("Current level:")):
             do_incantation(agent, response_server)
         elif (response_server == "ko"):
-            if (command is None):
-                continue
-            launch_commands(agent, command, response_server)
-            if (len(agent.list_commands) > 0):
-                agent.list_commands.pop(0)
+            if agent.is_incantation:
+                do_incantation(agent, response_server)
+            elif command is not None:
+                launch_commands(agent, command, response_server)
+                if (len(agent.list_commands) > 0):
+                    agent.list_commands.pop(0)
         else:
             if (command is None):
                 continue
