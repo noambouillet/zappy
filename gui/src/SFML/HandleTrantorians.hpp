@@ -42,6 +42,7 @@ class HandleTrantorians {
         void setPlayerActionBubble(int id, const std::string &textureKey, float duration);
         void setPlayerIncanting(int id, bool state);
         void triggerPlayerDeath(int id);
+        void triggerPlayerBroadcast(int id, const std::string &message);
         void stopIncantationAt(int x, int y);
         void updateAnimations(float deltaTime);
     private:

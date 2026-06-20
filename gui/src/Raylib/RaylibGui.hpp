@@ -26,6 +26,8 @@ struct RayPlayerAnim_t {
     bool isDeadAndGone = false;
     bool isIncanting = false;
     float incantTimer = 0.0f;
+    bool isBroadcasting = false;
+    float broadcastTimer = 0.0f;
     std::vector<std::pair<std::string, float>> bubbleQueue;
     float bubbleTimer = 0.0f;
 };
@@ -41,6 +43,7 @@ class RaylibGui : public IGui {
         
         void setPlayerActionBubble(int id, const std::string &textureKey, float duration) override;
         void triggerPlayerDeath(int id) override;
+        void triggerPlayerBroadcast(int id, const std::string &message) override;
         void setPlayerIncanting(int id, bool state) override;
         void stopIncantationAt(int x, int y) override;
 

@@ -124,6 +124,13 @@ void HandleTrantorians::triggerPlayerDeath(int id)
     }
 }
 
+void HandleTrantorians::triggerPlayerBroadcast(int id, const std::string &message)
+{
+    (void)id;
+    (void)message;
+    // No implementation for SFML cause already done in another branch
+}
+
 void HandleTrantorians::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
 {
     if (!anim.isDying)

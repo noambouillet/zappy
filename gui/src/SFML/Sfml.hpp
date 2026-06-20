@@ -36,6 +36,7 @@ class Sfml : public IGui {
         void displayWindow() override;
         void setPlayerActionBubble(int id, const std::string &textureKey, float duration) override;
         void triggerPlayerDeath(int id) override;
+        void triggerPlayerBroadcast(int id, const std::string &message) override;
         void setPlayerIncanting(int id, bool state) override;
         void stopIncantationAt(int x, int y) override;
         HandleTrantorians &getHandleTrantorians();

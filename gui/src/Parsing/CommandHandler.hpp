@@ -38,6 +38,7 @@ class CommandHandler {
         void handle_pdi(std::stringstream &ss);
         void handle_pic(std::stringstream &ss);
         void handle_pie(std::stringstream &ss);
+        void handle_pbc(std::stringstream &ss);
 };
 
 #endif /* !COMMANDHANDLER_HPP_ */

@@ -70,6 +70,13 @@ void RaylibGui::updateAnimations(float deltaTime)
             anim.incantTimer += deltaTime;
         }
 
+        if (anim.isBroadcasting) {
+            anim.broadcastTimer += deltaTime;
+            if (anim.broadcastTimer >= 1.5f) {
+                anim.isBroadcasting = false;
+            }
+        }
+
         if (anim.bubbleTimer > 0.0f) {
             anim.bubbleTimer -= deltaTime;
             if (anim.bubbleTimer <= 0.0f && !anim.bubbleQueue.empty()) {
@@ -176,6 +183,15 @@ void RaylibGui::triggerPlayerDeath(int id)
     anim.deathTimer = 0.0f;
 }
 
+void RaylibGui::triggerPlayerBroadcast(int id, const std::string &message)
+{
+    (void)message;
+    RayPlayerAnim_t &anim = _playerAnims[id];
+    anim.id = id;
+    anim.isBroadcasting = true;
+    anim.broadcastTimer = 0.0f;
+}
+
 void RaylibGui::setPlayerIncanting(int id, bool state)
 {
     RayPlayerAnim_t &anim = _playerAnims[id];
@@ -263,6 +279,16 @@ void RaylibGui::drawTileContent(int x, int z)
         rlScalef(0.5f, 0.5f, 0.5f);
         DrawModel(_models["wizard"]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
         rlPopMatrix();
+
+        if (anim.isBroadcasting) {
+            float radius = anim.broadcastTimer * 5.0f;
+            float alpha = 1.0f - (anim.broadcastTimer / 1.5f);
+            if (alpha < 0.0f)
+                alpha = 0.0f;
+            Color waveColor = Color{0, 121, 241, static_cast<unsigned char>(255 * alpha)};
+            DrawCircle3D(Vector3{static_cast<float>(x), 0.5f, static_cast<float>(z)}, radius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, waveColor);
+        }
+
         drawBubble(anim, Vector3{static_cast<float>(x), yOffset + 1.2f, static_cast<float>(z)});
     }
 }

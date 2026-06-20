@@ -22,6 +22,7 @@ CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gu
     _commands["pdi"] = &CommandHandler::handle_pdi;
     _commands["pic"] = &CommandHandler::handle_pic;
     _commands["pie"] = &CommandHandler::handle_pie;
+    _commands["pbc"] = &CommandHandler::handle_pbc;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -191,4 +192,18 @@ void CommandHandler::handle_pie(std::stringstream &ss)
     if (!(ss >> x >> y >> result))
         return;
     _gui.stopIncantationAt(x, y);
+}
+
+void CommandHandler::handle_pbc(std::stringstream &ss)
+{
+    int id;
+    char sharp;
+    std::string message;
+
+    if (!(ss >> sharp >> id))
+        return;
+    std::getline(ss, message);
+    if (!message.empty() && message[0] == ' ')
+        message = message.substr(1);
+    _gui.triggerPlayerBroadcast(id, message);
 }

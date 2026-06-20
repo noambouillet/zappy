@@ -84,6 +84,11 @@ void Sfml::triggerPlayerDeath(int id)
     _renderMap.getHandleTrantorians().triggerPlayerDeath(id);
 }
 
+void Sfml::triggerPlayerBroadcast(int id, const std::string &message)
+{
+    _renderMap.getHandleTrantorians().triggerPlayerBroadcast(id, message);
+}
+
 void Sfml::setPlayerIncanting(int id, bool state)
 {
     _renderMap.getHandleTrantorians().setPlayerIncanting(id, state);

@@ -20,6 +20,7 @@ class IGui {
 
         virtual void setPlayerActionBubble(int id, const std::string &textureKey, float duration) = 0;
         virtual void triggerPlayerDeath(int id) = 0;
+        virtual void triggerPlayerBroadcast(int id, const std::string &message) = 0;
         virtual void setPlayerIncanting(int id, bool state) = 0;
         virtual void stopIncantationAt(int x, int y) = 0;
 };
