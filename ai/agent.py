@@ -16,31 +16,28 @@ class Agent:
     """This class is to define the drone/agent/ia
     """
     def __init__(self):
-        self.alive = True
+        self.agent_id = os.getpid()
+        self.team_name = ""
+        self.list_commands = []
+        self.mailbox = []
+        self.vision = [[]]
         self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
         self.survive = False
-        self.list_commands = []
-        self.level = 1
-        self.direction = Direction.Up
-        self.vision = [[]]
-        self.unused_slots = 0
-        self.prepare_incantation = False
-        self.is_incantation = False
-        self.behavior = Explore()
-        self.size_map = (0, 0)
-        self.team_name = ""
-        self.tick = 0
-        self.teammate_on_tile = 1
-        self.mailbox = []
         self.eject_players = False
         self.joining_incantation = False
-        self.agent_id = os.getpid()
+        self.prepare_incantation = False
+        self.is_incantation = False
+        self.direction = Direction.Up
+        self.behavior = Explore()
+        self.size_map = (0, 0)
+        self.unused_slots = 0
+        self.tick = 0
         self.last_inventory = 0
-        self.last_available = 0
-        self.last_incantation = 0
         self.last_send_leader = 0
         self.leader_id = 0
         self.direction_to_follow = 0
+        self.level = 1
+        self.teammate_on_tile = 1
 
     def take_food_on_tile(self):
         """take all food available on current tile

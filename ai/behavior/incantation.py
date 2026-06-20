@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import MIN_FOOD, INCANTATION_FREQUENCE, requirement_for_progress, MAX_AVAILABLE
+from constant import MIN_FOOD, requirement_for_progress
 
 class Incantation(Behavior):
     def execute(self, agent):
@@ -25,6 +25,7 @@ class Incantation(Behavior):
         agent.leader_id = agent.agent_id 
         agent.teammate_on_tile = 1
         is_eject = self.count_follower(agent)
+        print("EVOLUTION NB AGENT TEAMMATE", agent.teammate_on_tile)
         if (is_eject == True):
             return ["Eject\n"]
         (is_prepare, list_command) = self.verif_incantation(agent)
@@ -56,7 +57,7 @@ class Incantation(Behavior):
         eject_players = False
         new_mailbox = []
         for msg in agent.mailbox:
-            if agent.tick - msg.get("tick", 0) > MAX_AVAILABLE:
+            if (msg["sender_id"] == agent.agent_id):
                 continue
             if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name):
                 direction = msg["direction"]
@@ -72,10 +73,9 @@ class Incantation(Behavior):
     def verif_incantation(self, agent):
         nb_required_players = requirement_for_progress[agent.level - 1]["nb_players"]
         if nb_required_players > agent.teammate_on_tile:
-            if (agent.tick - agent.last_incantation) > INCANTATION_FREQUENCE:
-                agent.last_incantation = agent.tick
+            if (agent.tick % 2 == 0):
                 return False, [f"Broadcast INCANTATION|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
-            return False, []
+            return False, ["Look\n"]
         commands, can_start = self.prepare_tile_resources(agent)
         if commands:
             agent.prepare_incantation = True

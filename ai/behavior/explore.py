@@ -7,11 +7,13 @@
 
 from .class_behavior import Behavior
 from constant import requirement_for_progress
+import math
 
 class Explore(Behavior):
     def execute(self, agent):
         agent.tick += 1
-        print("EXPLORE TICK", agent.tick)
+        print("=====================================")
+        print("EXPLORE : TICK", agent.tick)
         food_commands = agent.take_food_on_tile()
         if food_commands:
             return food_commands
@@ -51,28 +53,31 @@ class Explore(Behavior):
         if tile_index == 0:
             return [f"Take {ressource}\n"]
         return agent.go_to(tile_index) + [f"Take {ressource}\n"]
-        
+    
     def define_leader(self, agent):
         """This function is for see if we can help a leader
         Args:
             agent (class): Agent/IA
         """
         msg_leader = None
-        msg_leader_tick = 0
+        msg_leader_id = math.inf
         for msg in agent.mailbox:
-            if (msg["action"] == "INCANTATION" and msg["team"] == agent.team_name and msg["level"] == agent.level):
-                msg_tick = msg["tick"]
-                if (msg_leader is None or msg_tick < msg_leader_tick):
+            if msg["sender_id"] == agent.agent_id:
+                print("EXPLORE : YOU ARE THE SENDER OF THE MSG")
+                continue
+            if (msg["action"] == "INCANTATION" and msg["level"] == agent.level and msg["team"] == agent.team_name):
+                agent_sender_id = msg["sender_id"]
+                print(f"EXPLORE : MSG RECEIVE FROM THIS AGENT {agent_sender_id} with the action {msg["action"]}")
+                if (msg_leader is None or agent_sender_id < msg_leader_id):
+                    print("EXPLORE : NEW LEADER FOR THE AGENT IS", msg)
                     msg_leader = msg
-                    msg_leader_tick = msg_tick
+                    msg_leader_id = agent_sender_id
         if (msg_leader):
+            print("EXPLORE : AGENT LEADER FOR THE INCANTATION", msg_leader["sender_id"])
             agent.leader_id = msg_leader["sender_id"]
             agent.direction_to_follow = msg_leader["direction"]
             agent.joining_incantation = True
-            agent.mailbox.clear()
-            print("EXPLORE AGENT LEADER", agent.leader_id)
-            print("EXPLORE AGENT DIRECTION", agent.direction_to_follow)
-            print("EXPLORE AGENT MAILBOX", agent.mailbox)
             return True
+        print("EXPLORE : NO LEADER FOR THE INCANTATION FOR THE MOMENT")
         agent.joining_incantation = False
         return False
