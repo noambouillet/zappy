@@ -15,6 +15,7 @@ GREEN   =   \033[38;2;80;220;120m
 GUI_FLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
 
 GUI_SRC = src/Raylib/RaylibGui.cpp \
+		  src/Raylib/RayUI.cpp \
 		  src/Raylib/Encapsulations/RayWindow.cpp \
 		  src/Raylib/Encapsulations/RayCamera.cpp \
 		  src/Raylib/Encapsulations/RayTexture.cpp \

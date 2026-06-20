@@ -36,6 +36,7 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1920, 1080, "Zappy 3
             std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
         }
     }
+    _ui = std::make_unique<RayUI>(_world, _textures);
 }
 
 bool RaylibGui::isOpen() const
@@ -47,6 +48,27 @@ void RaylibGui::handleEvent()
 {
     _camera.update(GetFrameTime());
     updateAnimations(GetFrameTime());
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        Ray ray = GetScreenToWorldRay(GetMousePosition(), _camera.getCamera());
+        float t = (-0.25f - ray.position.y) / ray.direction.y;
+        if (t >= 0.0f) {
+            float intersectX = ray.position.x + t * ray.direction.x;
+            float intersectZ = ray.position.z + t * ray.direction.z;
+            
+            int x = static_cast<int>(std::round(intersectX));
+            int z = static_cast<int>(std::round(intersectZ));
+            
+            auto mapSize = _world.getMapSize();
+            if (x >= 0 && x < static_cast<int>(mapSize.first) && z >= 0 && z < static_cast<int>(mapSize.second)) {
+                _selectedTileX = x;
+                _selectedTileZ = z;
+            } else {
+                _selectedTileX = -1;
+                _selectedTileZ = -1;
+            }
+        }
+    }
 }
 
 void RaylibGui::updateAnimations(float deltaTime)
@@ -148,12 +170,15 @@ void RaylibGui::displayWindow()
     DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, 1920, 1080}, Vector2{0, 0}, 0.0f, WHITE);
     _camera.beginMode3D();
 
-    auto [width, height] = _world.getMapSize();
-    if (width > 0 && height > 0) {
-        _camera.setTarget((width - 1) / 2.0f, (height - 1) / 2.0f);
-        for (size_t x = 0; x < width; x++) {
-            for (size_t z = 0; z < height; z++) {
+    auto mapSize = _world.getMapSize();
+    if (mapSize.first > 0 && mapSize.second > 0) {
+        _camera.setTarget((mapSize.first - 1) / 2.0f, (mapSize.second - 1) / 2.0f);
+        for (size_t x = 0; x < mapSize.first; ++x) {
+            for (size_t z = 0; z < mapSize.second; ++z) {
                 drawCubeTexture(_textures["ground"]->getTexture(), Vector3{static_cast<float>(x), -0.5f, static_cast<float>(z)}, 1.0f, 1.0f, 1.0f, WHITE);
+                if (static_cast<int>(x) == _selectedTileX && static_cast<int>(z) == _selectedTileZ) {
+                    DrawCubeWires(Vector3{static_cast<float>(x), -0.5f, static_cast<float>(z)}, 1.05f, 1.05f, 1.05f, GREEN);
+                }
                 drawTileContent(x, z);
             }
         }
@@ -162,7 +187,9 @@ void RaylibGui::displayWindow()
     }
 
     _camera.endMode3D();
-    DrawFPS(10, 10);
+    _ui->drawGlobalInfo();
+    _ui->drawTileInfo(_selectedTileX, _selectedTileZ, GetMousePosition());
+    DrawFPS(GetScreenWidth() - 100, 10);
     _window.endDrawing();
 }
 

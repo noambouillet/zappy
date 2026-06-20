@@ -14,6 +14,7 @@
 #include "Encapsulations/RayTexture.hpp"
 #include "Encapsulations/RayModel.hpp"
 #include "World.hpp"
+#include "RayUI.hpp"
 #include <memory>
 #include <unordered_map>
 #include <string>
@@ -56,6 +57,9 @@ class RaylibGui : public IGui {
         std::unordered_map<std::string, std::unique_ptr<RayModel>> _models;
         std::unordered_map<std::string, float> _modelScales;
         std::unordered_map<int, RayPlayerAnim_t> _playerAnims;
+        std::unique_ptr<RayUI> _ui;
+        int _selectedTileX = -1;
+        int _selectedTileZ = -1;
 
         void drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color);
         void drawTileContent(int x, int z);

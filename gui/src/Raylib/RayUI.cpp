@@ -1,0 +1,104 @@
+/*
+** EPITECH PROJECT, 2026
+** zappy-mirror
+** File description:
+** RayUI
+*/
+
+#include "RayUI.hpp"
+#include <iostream>
+
+RayUI::RayUI(World &world, const std::unordered_map<std::string, std::unique_ptr<RayTexture>> &textures): _world(world), _textures(textures)
+{
+}
+
+void RayUI::drawResourceLine(int x, int y, const std::string &iconKey, const std::string &name, int count)
+{
+    if (_textures.find(iconKey) != _textures.end()) {
+        DrawTexture(_textures.at(iconKey)->getTexture(), x, y, WHITE);
+        DrawText(TextFormat("%s : %d", name.c_str(), count), x + 40, y + 5, 20, WHITE);
+    } else {
+        DrawText(TextFormat("%s : %d", name.c_str(), count), x, y, 20, WHITE);
+    }
+}
+
+void RayUI::drawGlobalInfo()
+{
+    int width = 300;
+    int height = 400;
+
+    DrawRectangle(10, 10, width, height, ColorAlpha(BLACK, 0.7f));
+    DrawRectangleLines(10, 10, width, height, RAYWHITE);
+    DrawText("GLOBAL INFO", 20, 20, 20, RAYWHITE);
+    DrawText(TextFormat("Time: %s", _world.getFormattedGameTime().c_str()), 20, 50, 20, LIGHTGRAY);
+    DrawText("Teams:", 20, 80, 20, RAYWHITE);
+    const auto &teams = _world.getTeams();
+    int yOffset = 100;
+    for (const auto &team : teams) {
+        DrawText(TextFormat("- %s", team.c_str()), 30, yOffset, 20, LIGHTGRAY);
+        yOffset += 20;
+    }
+
+    yOffset += 20;
+    DrawText("Global Resources:", 20, yOffset, 20, RAYWHITE);
+    yOffset += 30;
+
+    const auto &res = _world.getTotalRessources();
+    std::string resNames[] = {"Food", "Linemate", "Deraumere", "Sibur", "Mendiane", "Phiras", "Thystame"};
+    std::string iconKeys[] = {"donut", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"};
+
+    for (int i = 0; i < 7; i++) {
+        if (res.size() > static_cast<size_t>(i)) {
+            drawResourceLine(20, yOffset, iconKeys[i], resNames[i], res[i]);
+            yOffset += 25;
+        }
+    }
+}
+
+void RayUI::drawTileInfo(int selectedX, int selectedZ, Vector2 mousePos)
+{
+    if (selectedX < 0 || selectedZ < 0)
+        return;
+
+    auto mapSize = _world.getMapSize();
+    if (selectedX >= static_cast<int>(mapSize.first) || selectedZ >= static_cast<int>(mapSize.second))
+        return;
+
+    auto &tile = _world.getTileData(selectedX, selectedZ);
+
+    int panelWidth = 250;
+    int panelHeight = 350;
+    int posX = mousePos.x + 20;
+    int posY = mousePos.y + 20;
+
+    if (posX + panelWidth > GetScreenWidth())
+        posX = GetScreenWidth() - panelWidth - 10;
+    if (posY + panelHeight > GetScreenHeight())
+        posY = GetScreenHeight() - panelHeight - 10;
+
+    DrawRectangle(posX, posY, panelWidth, panelHeight, ColorAlpha(BLACK, 0.8f));
+    DrawRectangleLines(posX, posY, panelWidth, panelHeight, GREEN);
+    DrawText(TextFormat("TILE [%d, %d]", selectedX, selectedZ), posX + 10, posY + 10, 20, GREEN);
+    int yOffset = posY + 40;
+    std::string resNames[] = {"Food", "Linemate", "Deraumere", "Sibur", "Mendiane", "Phiras", "Thystame"};
+    std::string iconKeys[] = {"donut", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"};
+
+    for (int i = 0; i < 7; ++i) {
+        int count = (tile.ressources.size() > (size_t)i) ? tile.ressources[i] : 0;
+        drawResourceLine(posX + 10, yOffset, iconKeys[i], resNames[i], count);
+        yOffset += 25;
+    }
+
+    yOffset += 20;
+    DrawText("Players on Tile:", posX + 10, yOffset, 20, GREEN);
+    yOffset += 25;
+
+    for (const auto &[id, player] : tile.players) {
+        DrawText(TextFormat("ID %d (Lvl %d) %s", player.id, player.level, player.teamName.c_str()), posX + 15, yOffset, 15, LIGHTGRAY);
+        yOffset += 20;
+        if (yOffset > posY + panelHeight - 20) {
+            DrawText("...", posX + 15, yOffset, 15, LIGHTGRAY);
+            break;
+        }
+    }
+}
