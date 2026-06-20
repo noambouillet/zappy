@@ -46,8 +46,10 @@ bool RaylibGui::isOpen() const
 
 void RaylibGui::handleEvent()
 {
-    _camera.update(GetFrameTime());
-    updateAnimations(GetFrameTime());
+    float dt = GetFrameTime();
+    _camera.update(dt);
+    updateAnimations(dt);
+    _world.updateGameTime(dt);
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Ray ray = GetScreenToWorldRay(GetMousePosition(), _camera.getCamera());
@@ -173,8 +175,8 @@ void RaylibGui::displayWindow()
     auto mapSize = _world.getMapSize();
     if (mapSize.first > 0 && mapSize.second > 0) {
         _camera.setTarget((mapSize.first - 1) / 2.0f, (mapSize.second - 1) / 2.0f);
-        for (size_t x = 0; x < mapSize.first; ++x) {
-            for (size_t z = 0; z < mapSize.second; ++z) {
+        for (size_t x = 0; x < mapSize.first; x++) {
+            for (size_t z = 0; z < mapSize.second; z++) {
                 drawCubeTexture(_textures["ground"]->getTexture(), Vector3{static_cast<float>(x), -0.5f, static_cast<float>(z)}, 1.0f, 1.0f, 1.0f, WHITE);
                 if (static_cast<int>(x) == _selectedTileX && static_cast<int>(z) == _selectedTileZ) {
                     DrawCubeWires(Vector3{static_cast<float>(x), -0.5f, static_cast<float>(z)}, 1.05f, 1.05f, 1.05f, GREEN);
@@ -240,8 +242,9 @@ void RaylibGui::stopIncantationAt(int x, int y)
 
 void RaylibGui::drawBubble(const RayPlayerAnim_t &anim, Vector3 position)
 {
-    if (anim.bubbleQueue.empty())
+    if (anim.bubbleQueue.empty()) {
         return;
+    }
     std::string texKey = anim.bubbleQueue.front().first;
     if (_textures.find(texKey) != _textures.end()) {
         DrawBillboard(_camera.getCamera(), _textures[texKey]->getTexture(), position, 0.5f, WHITE);
@@ -268,7 +271,7 @@ void RaylibGui::drawTileContent(int x, int z)
         {0.0f, 0.0f, 0.0f}
     };
 
-    for (size_t i = 1; i < 7; ++i) {
+    for (size_t i = 1; i < 7; i++) {
         if (tile.ressources.size() > i && tile.ressources[i] > 0) {
             if (_models.find(ressourceNames[i]) != _models.end()) {
                 DrawModel(_models[ressourceNames[i]]->getModel(), Vector3{static_cast<float>(x) + offsets[i].x, 0.15f, static_cast<float>(z) + offsets[i].z}, _modelScales[ressourceNames[i]], WHITE);
