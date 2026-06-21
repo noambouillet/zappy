@@ -11,7 +11,7 @@
 #include "World.hpp"
 #include "TextureManager.hpp"
 
-struct PlayerAnim_t {
+struct TrantorianAnim_t {
     int id;
     sf::Vector2f visualPos = {0.0f, 0.0f};
     sf::Vector2f targetPos = {0.0f, 0.0f};
@@ -33,36 +33,48 @@ struct PlayerAnim_t {
     float incantTimer = 0.0f;
 };
 
+struct BroadcastWave {
+    sf::Vector2f centerPos;
+    float radius = 0.0f;
+};
+
+constexpr float MAX_RADIUS = 100.0f;
+constexpr float SPEED = 250.0f;
+
 class HandleTrantorians {
     public:
         HandleTrantorians(TextureManager &textureManager, sf::RenderWindow  &window, World &world);
         ~HandleTrantorians();
         void update(float tileSize, float offsetX, float offsetY);
         void drawTrantorians(const TileData_t &tile);
-        void setPlayerActionBubble(int id, const std::string &textureKey, float duration);
-        void setPlayerIncanting(int id, bool state);
-        void triggerPlayerDeath(int id);
+        void setTrantorianActionBubble(int id, const std::string &textureKey, float duration);
+        void setTrantorianIncanting(int id, bool state);
+        void triggerTrantorianDeath(int id);
         void stopIncantationAt(int x, int y);
         void updateAnimations(float deltaTime);
+        void addBroadcast(int x, int y);
+        void handleEvent(const sf::Event &event);
     private:
         sf::Vector2f convertToPixels(int x, int y) const;
-        void updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, float deltaTime, float maxWidth, float maxHeight);
-        void initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::Vector2f &pixelPos);
-        void updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight);
-        void updatePlayerBubble(PlayerAnim_t &anim, float deltaTime);
-        void updatePlayerDeath(PlayerAnim_t &anim, float deltaTime);
-        void updatePlayerIncantation(PlayerAnim_t &anim, float deltaTime);
-        void drawAnimation(const PlayerAnim_t &anim, float size, int NbFrame, std::string spritesheet, int currentFrame);
-        void displayBubble(const PlayerAnim_t &anim);
+        void updateTrantorianAnimation(TrantorianAnim_t &anim, const Trantorian_t &trantorian, float deltaTime, float maxWidth, float maxHeight);
+        void initTrantorianAnim(TrantorianAnim_t &anim, const Trantorian_t &trantorian, const sf::Vector2f &pixelPos);
+        void updateTrantorianPosition(TrantorianAnim_t &anim, float deltaTime, float maxWidth, float maxHeight);
+        void updateTrantorianBubble(TrantorianAnim_t &anim, float deltaTime);
+        void updateTrantorianDeath(TrantorianAnim_t &anim, float deltaTime);
+        void updateTrantorianIncantation(TrantorianAnim_t &anim, float deltaTime);
+        void drawAnimation(const TrantorianAnim_t &anim, float size, int NbFrame, std::string spritesheet, int currentFrame);
+        void displayBubble(const TrantorianAnim_t &anim);
         void drawBaseIndicator(const sf::Vector2f &pos);
+        void updateAndDrawWaves(sf::RenderWindow &window);
 
-        std::map<int, PlayerAnim_t> _playerAnims;
+        std::map<int, TrantorianAnim_t> _trantorianAnims;
         TextureManager &_textureManager;
-        sf::RenderWindow  &_window;
+        sf::RenderWindow &_window;
         World &_world;
+        std::vector<BroadcastWave> _waves;
         float _tileSize;
         float _offsetX;
         float _offsetY;
+        sf::Clock _clock;
+        bool _displayBroadcast;
 };
-
-#endif /* !HANDLETRANTORIANS_HPP_ */

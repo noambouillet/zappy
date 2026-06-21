@@ -12,21 +12,24 @@
 #include <string>
 #include <map>
 
-struct Player_t {
+struct Trantorian_t {
     int id;
     int x;
     int y;
     int orientation;
     int level;
     std::string teamName;
+    std::string Name;
+    std::vector<int> inventory;
 };
 
-constexpr int NB_RESSOURCE = 7;
 struct TileData_t {
-    std::map<int, Player_t> players;
+    std::map<int, Trantorian_t> trantorians;
     std::map<int, int> eggs;
     std::vector<int> ressources;
 };
+
+constexpr int NB_RESSOURCE = 7;
 
 class World {
     public:
@@ -35,19 +38,19 @@ class World {
 
         void setMapSize(size_t width, size_t height);
         void setTile(int x, int y, const std::vector<int> &newRessources);
+        void setTrantorianLvl(int TrantorianID, int lvl);
+        void setTrantorianInventory(int x, int y, int TrantorianID, const std::vector<int> &newRessources);
         void addTeam(const std::string& teamName);
         void setTimeUnit(int timeUnit);
         void updateGameTime(float deltaTime);
         std::string getFormattedGameTime() const;
-        void addEgg(int EggNB, int playerID, int x, int y);
-        void addPlayer(Player_t player);
+        void addEgg(int EggNB, int TrantorianID, int x, int y);
+        void addTrantorian(Trantorian_t Trantorian);
         void removeEgg(int eggNB);
         void removeTrantorian(int id);
-        
-        void movePlayer(int id, int newX, int newY, int orientation);
-        
+        void moveTrantorian(int id, int newX, int newY, int orientation);
         int getTime() const;
-        Player_t &getTrantorian(int id);
+        Trantorian_t &getTrantorian(int id);
         const std::vector<std::vector<TileData_t>>& getMap() const;
         std::pair<size_t, size_t> getMapSize() const;
         TileData_t &getTileData(int x, int y);
@@ -55,8 +58,12 @@ class World {
         const std::vector<int> &getTotalRessources();
         void setSelectedTeam(const std::string teamName);
         const std::string &getSelectedTeam() const;
-        void setSelectedPlayerId(int id);
-        int getSelectedPlayerId() const;
+        void setSelectedTrantorianId(int id);
+        int getSelectedTrantorianId() const;
+        void setHoveredTile(int x, int y);
+        std::pair<int, int> getHoveredTile() const;
+        void setSelectedTile(int x, int y);
+        std::pair<int, int> getSelectedTile() const;
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};
@@ -66,7 +73,7 @@ class World {
         int _timeUnit = 0;
         float _internalGameTime = 0.0f;
         std::string _selectedTeamName = "";
-        int _selectedPlayerId = -1;
+        int _selectedTrantorianId = -1;
+        std::pair<int, int> _hoveredTile = {-1, -1};
+        std::pair<int, int> _selectedTile = {-1, -1};
 };
-
-#endif /* !WORLD_HPP_ */
