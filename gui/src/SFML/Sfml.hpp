@@ -5,7 +5,8 @@
 ** Sfml
 */
 
-#pragma once
+#ifndef SFML_HPP_
+#define SFML_HPP_
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -19,14 +20,16 @@
 #include "TextureManager.hpp"
 #include "RenderMap.hpp"
 #include "HandleTrantorians.hpp"
+#include "Interfaces/IGui.hpp"
 #include "UIRender.hpp"
 
 constexpr size_t WIDTH = 1920;
 constexpr size_t HEIGHT = 1080;
-class Sfml {
+
+class Sfml : public IGui {
     public:
         Sfml(World &world);
-        ~Sfml();
+        ~Sfml() override;
         sf::RenderWindow &getWindow();
         void handleEvent();
         void displayWindow();
@@ -55,3 +58,5 @@ class Sfml {
         float _offsetX = 0.0f;
         float _offsetY = 0.0f;
 };
+
+#endif /* !SFML_HPP_ */

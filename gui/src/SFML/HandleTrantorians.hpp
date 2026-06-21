@@ -5,7 +5,8 @@
 ** HandleTrantorians
 */
 
-#pragma once
+#ifndef HANDLETRANTORIANS_HPP_
+#define HANDLETRANTORIANS_HPP_
 #include <SFML/Graphics.hpp>
 #include "World.hpp"
 #include "TextureManager.hpp"

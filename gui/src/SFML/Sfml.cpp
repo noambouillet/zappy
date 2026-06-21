@@ -25,6 +25,11 @@ sf::RenderWindow &Sfml::getWindow()
     return _window;
 }
 
+bool Sfml::isOpen() const
+{
+    return _window.isOpen();
+}
+
 void Sfml::handleEvent()
 {
     _eventHandler.update(WIDTH, HEIGHT, _uiRender, getHandleTrantorians(), _world, _tileSize, _offsetX, _offsetY);
@@ -65,3 +70,22 @@ HandleTrantorians &Sfml::getHandleTrantorians()
     return _renderMap.getHandleTrantorians();
 }
 
+void Sfml::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+{
+    _renderMap.getHandleTrantorians().setPlayerActionBubble(id, textureKey, duration);
+}
+
+void Sfml::triggerPlayerDeath(int id)
+{
+    _renderMap.getHandleTrantorians().triggerPlayerDeath(id);
+}
+
+void Sfml::setPlayerIncanting(int id, bool state)
+{
+    _renderMap.getHandleTrantorians().setPlayerIncanting(id, state);
+}
+
+void Sfml::stopIncantationAt(int x, int y)
+{
+    _renderMap.getHandleTrantorians().stopIncantationAt(x, y);
+}
