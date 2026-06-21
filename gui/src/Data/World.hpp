@@ -5,7 +5,8 @@
 ** World
 */
 
-#pragma once
+#ifndef WORLD_HPP_
+#define WORLD_HPP_
 #include <vector>
 #include <string>
 #include <map>
@@ -81,3 +82,4 @@ class World {
         std::string _winningTeam = "";
 };
 
+#endif

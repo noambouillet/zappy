@@ -48,3 +48,5 @@ class CommandHandler {
         void handle_smg(std::stringstream &ss);
         void handle_plv(std::stringstream &ss);
 };
+
+#endif

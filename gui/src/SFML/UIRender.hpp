@@ -5,7 +5,8 @@
 ** UIRender
 */
 
-#pragma once
+#ifndef UIRENDER_HPP_
+#define UIRENDER_HPP_
 #include "World.hpp"
 #include <SFML/Graphics.hpp>
 #include "TextureManager.hpp"
@@ -38,3 +39,4 @@ class UIRender {
         void displayTileData(int x, int y);
         void displayGameOver();
 };
+#endif
