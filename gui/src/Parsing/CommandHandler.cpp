@@ -8,7 +8,7 @@
 #include "CommandHandler.hpp"
 #include <random>
 
-CommandHandler::CommandHandler(World &world, Sfml &gui) : _world(world), _handleTrantorians(gui.getHandleTrantorians())
+CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gui)
 {
     _commands["msz"] = &CommandHandler::handle_msz;
     _commands["bct"] = &CommandHandler::handle_bct;

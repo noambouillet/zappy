@@ -5,7 +5,8 @@
 ** NetworkHandler
 */
 
-#pragma once
+#ifndef NETWORKHANDLER_HPP_
+#define NETWORKHANDLER_HPP_
 
 #include <string>
 #include <exception>
@@ -27,3 +28,5 @@ class NetworkHandler {
         std::string _ip;
         Socket _socket;
 };
+
+#endif /* !NETWORKHANDLER_HPP_ */

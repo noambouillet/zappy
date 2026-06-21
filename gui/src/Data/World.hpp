@@ -9,7 +9,6 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <SFML/Graphics.hpp>
 
 struct Trantorian_t {
     int id;
@@ -81,3 +80,4 @@ class World {
         bool _isGameOver = false;
         std::string _winningTeam = "";
 };
+
