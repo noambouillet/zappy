@@ -22,6 +22,7 @@ class RayUI {
 
         void drawGlobalInfo();
         void drawTileInfo(int selectedX, int selectedZ, Vector2 mousePos);
+        static Color getTeamColor(const std::string& teamName);
 
     private:
         World &_world;

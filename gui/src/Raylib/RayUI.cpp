@@ -12,6 +12,17 @@ RayUI::RayUI(World &world, const std::unordered_map<std::string, std::unique_ptr
 {
 }
 
+Color RayUI::getTeamColor(const std::string& teamName)
+{
+    static const Color palette[] = {
+        RED, BLUE, GREEN, YELLOW, ORANGE, PINK, PURPLE, SKYBLUE, MAGENTA, LIME, GOLD, VIOLET
+    };
+    unsigned int hash = 0;
+    for (char c : teamName)
+        hash += static_cast<unsigned int>(c);
+    return palette[hash % 12];
+}
+
 void RayUI::drawResourceLine(int x, int y, const std::string &iconKey, const std::string &name, int count)
 {
     Color textColor = RAYWHITE;
@@ -65,7 +76,8 @@ void RayUI::drawGlobalInfo()
         int totalPlayers = 0;
         for (const auto &[level, count] : teamStats[team])
             totalPlayers += count;
-        DrawText(TextFormat("- %s (Total: %d)", team.c_str(), totalPlayers), 30, yOffset, 20, GREEN);
+        Color teamColor = getTeamColor(team);
+        DrawText(TextFormat("- %s (Total: %d)", team.c_str(), totalPlayers), 30, yOffset, 20, teamColor);
         yOffset += 20;
         for (const auto &[level, count] : teamStats[team]) {
             DrawText(TextFormat("   Lvl %d: %d AI", level, count), 40, yOffset, 15, LIGHTGRAY);

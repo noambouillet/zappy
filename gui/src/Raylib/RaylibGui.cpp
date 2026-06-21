@@ -307,7 +307,8 @@ void RaylibGui::drawTileContent(int x, int z)
         if (anim.isDying)
             rlRotatef(std::min(anim.deathTimer * 90.0f, 90.0f), 1.0f, 0.0f, 0.0f);
         rlScalef(0.5f, 0.5f, 0.5f);
-        DrawModel(_models["wizard"]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
+        Color wizardColor = RayUI::getTeamColor(player.teamName);
+        DrawModel(_models["wizard"]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 1.0f, wizardColor);
         rlPopMatrix();
 
         if (anim.isBroadcasting) {
