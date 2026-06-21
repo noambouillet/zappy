@@ -25,27 +25,25 @@ void TextureManager::loadAllTextures()
             _textures[entry.path().stem().string()] = std::move(texture);
             sprite.setTexture(_textures[entry.path().stem().string()]);
             _sprites[entry.path().stem().string()] = std::move(sprite);
-            std::cout << "texture loaded : " << entry.path().stem().string() << std::endl;
         }
-    } else {
+    } else
         throw GuiException("file assets dosen't exist");
-    }
 }
 
 const sf::Texture &TextureManager::getTexture(const std::string &key) const
 {
     auto it = _textures.find(key);
-    if (it == _textures.end()) {
+
+    if (it == _textures.end())
         throw GuiException("Texture '" + key + "' not found in TextureManager");
-    }
     return it->second;
 }
 
 sf::Sprite &TextureManager::getSprite(const std::string &key)
 {
     auto it = _sprites.find(key);
-    if (it == _sprites.end()) {
+
+    if (it == _sprites.end())
         throw GuiException("Texture '" + key + "' not found in TextureManager");
-    }
     return it->second;
 }

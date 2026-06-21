@@ -28,17 +28,7 @@ bool Parsing_gui::is_ipv4(char* addr)
     int d;
     char end;
 
-    if (!addr || addr[0] == '\0')
-        return false;
-    if (sscanf(addr, "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4)
-        return false;
-    if (a < 0 || a > 255)
-        return false;
-    if (b < 0 || b > 255)
-        return false;
-    if (c < 0 || c > 255)
-        return false;
-    if (d < 0 || d > 255)
+    if (!addr || addr[0] == '\0' || sscanf(addr, "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4 || (a < 0 || a > 255) || (b < 0 || b > 255) || (c < 0 || c > 255) || (d < 0 || d > 255))
         return false;
     return true;
 }
@@ -47,6 +37,7 @@ bool Parsing_gui::is_ipv4(char* addr)
 networkData_t Parsing_gui::check_args(char *addr, char *port)
 {
     networkData_t data;
+    
     if (!is_ipv4(addr))
         throw GuiException("The address: '" + std::string(addr) + "' does not feat the ipv4 format");
     for (std::size_t i = 0; port[i] != '\0'; i++)

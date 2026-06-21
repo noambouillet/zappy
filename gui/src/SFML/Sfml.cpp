@@ -27,7 +27,7 @@ sf::RenderWindow &Sfml::getWindow()
 
 void Sfml::handleEvent()
 {
-    _eventHandler.update(WIDTH, HEIGHT, _uiRender);
+    _eventHandler.update(WIDTH, HEIGHT, _uiRender, getHandleTrantorians(), _world, _tileSize, _offsetX, _offsetY);
 }
 
 void Sfml::displayWindow()
@@ -38,13 +38,11 @@ void Sfml::displayWindow()
         updateDimensions();
     _world.updateGameTime(deltaTime);
     _renderMap.getHandleTrantorians().updateAnimations(deltaTime);
-
     _window.clear(sf::Color::Black);
-    _window.setView(_camera); //c'est pour afficher les éléments
+    _window.setView(_camera);
     _renderMap.drawBackground();
     _renderMap.drawMap();
-
-    _window.setView(_window.getDefaultView()); // et ça c'est pour le UI
+    _window.setView(_window.getDefaultView());
     _uiRender.displayUI();
     _window.display();
 }
@@ -53,11 +51,9 @@ void Sfml::updateDimensions()
 {
     if (_world.getMapSize().first == 0 || _world.getMapSize().second == 0)
         return;
-    float mapAreaHeight = HEIGHT * 0.80f;
-    _tileSize = mapAreaHeight / _world.getMapSize().second;
-    float finalMapWidth = _tileSize * _world.getMapSize().first;
-    _offsetY = (HEIGHT - mapAreaHeight) / 2.0f;
-    _offsetX = (WIDTH - finalMapWidth) / 2.0f;
+    _tileSize = HEIGHT * 0.80f / _world.getMapSize().second;
+    _offsetY = (HEIGHT - HEIGHT * 0.80f) / 2.0f;
+    _offsetX = (WIDTH - _tileSize * _world.getMapSize().first) / 2.0f;
     _limitWindowWidth = WIDTH;
     _camera.setSize(WIDTH, HEIGHT);
     _camera.setCenter(WIDTH / 2.0f, HEIGHT / 2.0f);

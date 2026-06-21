@@ -11,6 +11,7 @@
 #include <exception>
 #include "Socket.hpp"
 
+constexpr int BUFFER_SIZE = 4096;
 class NetworkHandler {
     public:
         NetworkHandler(int port, std::string ip);

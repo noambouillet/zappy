@@ -30,12 +30,11 @@ class Sfml {
         sf::RenderWindow &getWindow();
         void handleEvent();
         void displayWindow();
-        void setPlayerActionBubble(int id, const std::string &textureKey, float duration);
-        void triggerPlayerDeath(int id);
-        void setPlayerIncanting(int id, bool state);
+        void setTrantorianActionBubble(int id, const std::string &textureKey, float duration);
+        void triggerTrantorianDeath(int id);
+        void setTrantorianIncanting(int id, bool state);
         void stopIncantationAt(int x, int y);
         HandleTrantorians &getHandleTrantorians();
-
     private:
         sf::RenderWindow  _window;
         World &_world;
