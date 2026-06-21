@@ -46,18 +46,31 @@ void RayUI::drawResourceLine(int x, int y, const std::string &iconKey, const std
 void RayUI::drawGlobalInfo()
 {
     int width = 300;
-    int height = 400;
+    const auto &teams = _world.getTeams();
+    auto teamStats = _world.getTeamStats();
+
+    int dynamicHeight = 325 + teams.size() * 20;
+    for (const auto &[team, levels] : teamStats)
+        dynamicHeight += levels.size() * 18;
+    int height = (dynamicHeight > 400) ? dynamicHeight : 400;
 
     DrawRectangle(10, 10, width, height, ColorAlpha(BLACK, 0.7f));
     DrawRectangleLines(10, 10, width, height, RAYWHITE);
     DrawText("GLOBAL INFO", 20, 20, 20, RAYWHITE);
     DrawText(TextFormat("Time: %s", _world.getFormattedGameTime().c_str()), 20, 50, 20, LIGHTGRAY);
     DrawText("Teams:", 20, 80, 20, RAYWHITE);
-    const auto &teams = _world.getTeams();
+
     int yOffset = 100;
     for (const auto &team : teams) {
-        DrawText(TextFormat("- %s", team.c_str()), 30, yOffset, 20, LIGHTGRAY);
+        int totalPlayers = 0;
+        for (const auto &[level, count] : teamStats[team])
+            totalPlayers += count;
+        DrawText(TextFormat("- %s (Total: %d)", team.c_str(), totalPlayers), 30, yOffset, 20, GREEN);
         yOffset += 20;
+        for (const auto &[level, count] : teamStats[team]) {
+            DrawText(TextFormat("   Lvl %d: %d AI", level, count), 40, yOffset, 15, LIGHTGRAY);
+            yOffset += 18;
+        }
     }
 
     yOffset += 20;
