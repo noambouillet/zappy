@@ -36,4 +36,5 @@ class UIRender {
         void displayTrantorianData(int trantorianId);
         void drawPanel(float x, float y, float width, float height);
         void displayTileData(int x, int y);
+        void displayGameOver();
 };

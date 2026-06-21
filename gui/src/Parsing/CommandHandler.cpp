@@ -317,6 +317,7 @@ void CommandHandler::handle_seg(std::stringstream &ss)
 
     if (!(ss >> teamName))
         return;
+    _world.setGameOver(teamName);
     std::cout << "Team : " << teamName << " win.\nEnd of game" << std::endl;
 }
 

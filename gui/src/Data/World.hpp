@@ -63,6 +63,9 @@ class World {
         std::pair<int, int> getHoveredTile() const;
         void setSelectedTile(int x, int y);
         std::pair<int, int> getSelectedTile() const;
+        void setGameOver(const std::string &teamName);
+        bool isGameOver() const;
+        const std::string &getWinningTeam() const;
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};
@@ -75,4 +78,6 @@ class World {
         int _selectedTrantorianId = -1;
         std::pair<int, int> _hoveredTile = {-1, -1};
         std::pair<int, int> _selectedTile = {-1, -1};
+        bool _isGameOver = false;
+        std::string _winningTeam = "";
 };
