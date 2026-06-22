@@ -70,19 +70,19 @@ HandleTrantorians &Sfml::getHandleTrantorians()
     return _renderMap.getHandleTrantorians();
 }
 
-void Sfml::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+void Sfml::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
-    _renderMap.getHandleTrantorians().setPlayerActionBubble(id, textureKey, duration);
+    _renderMap.getHandleTrantorians().setTrantorianActionBubble(id, textureKey, duration);
 }
 
-void Sfml::triggerPlayerDeath(int id)
+void Sfml::triggerTrantorianDeath(int id)
 {
-    _renderMap.getHandleTrantorians().triggerPlayerDeath(id);
+    _renderMap.getHandleTrantorians().triggerTrantorianDeath(id);
 }
 
-void Sfml::setPlayerIncanting(int id, bool state)
+void Sfml::setTrantorianIncanting(int id, bool state)
 {
-    _renderMap.getHandleTrantorians().setPlayerIncanting(id, state);
+    _renderMap.getHandleTrantorians().setTrantorianIncanting(id, state);
 }
 
 void Sfml::stopIncantationAt(int x, int y)

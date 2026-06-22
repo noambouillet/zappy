@@ -18,9 +18,9 @@ class IGui {
         virtual void handleEvent() = 0;
         virtual void displayWindow() = 0;
 
-        virtual void setPlayerActionBubble(int id, const std::string &textureKey, float duration) = 0;
-        virtual void triggerPlayerDeath(int id) = 0;
-        virtual void setPlayerIncanting(int id, bool state) = 0;
+        virtual void setTrantorianActionBubble(int id, const std::string &textureKey, float duration) = 0;
+        virtual void triggerTrantorianDeath(int id) = 0;
+        virtual void setTrantorianIncanting(int id, bool state) = 0;
         virtual void stopIncantationAt(int x, int y) = 0;
 };
 

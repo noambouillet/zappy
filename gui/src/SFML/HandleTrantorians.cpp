@@ -23,7 +23,6 @@ sf::Vector2f HandleTrantorians::convertToPixels(int x, int y) const
 void HandleTrantorians::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
     TrantorianAnim_t &anim = _trantorianAnims[id];
-    
     anim.bubbleQueue.push_back({textureKey, duration});
     if (anim.bubbleTimer <= 0.0f)
         anim.bubbleTimer = duration;
@@ -127,8 +126,6 @@ void HandleTrantorians::triggerTrantorianDeath(int id)
 
 void HandleTrantorians::updateTrantorianDeath(TrantorianAnim_t &anim, float deltaTime)
 {
-    if (!anim.isDying)
-        return;
     anim.deathTimer += deltaTime;
     if (anim.deathTimer >= 0.1f) {
         anim.deathTimer = 0.0f;
@@ -224,7 +221,7 @@ void HandleTrantorians::drawAnimation(const TrantorianAnim_t &anim, float size, 
 
     sprite.setTextureRect(sf::IntRect(currentFrame * tex.getSize().x / nbFrame, 0, tex.getSize().x / nbFrame, tex.getSize().y));
     sprite.setOrigin(tex.getSize().x / nbFrame / 2.0f, tex.getSize().y / 2.0f);
-    sprite.setScale(size / tex.getSize().x / nbFrame, size / tex.getSize().y);
+    sprite.setScale(size / (tex.getSize().x / nbFrame), size / tex.getSize().y);
     sprite.setPosition(anim.visualPos);
     sprite.setRotation(0.0f);
     _window.draw(sprite);
