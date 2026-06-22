@@ -11,40 +11,24 @@ def receive_message(agent, response_server):
     Expected format from server:
     message K, text
 
-    Example:
-    message 4, RES|linemate
-
     Args:
         agent (_type_): _description_
         response_server (_type_): _description_
     """
-    print("[MESSAGE] Raw:", response_server)
     try:
         header, content = response_server.split(",", 1)
         direction = int(header.split()[1])
         content = content.strip()
     except (ValueError, IndexError):
-        print("[MESSAGE] Invalid message format")
         return
     parts = content.split("|")
-    if len(parts) < 2:
-        print("[MESSAGE] Invalid content:", content)
-        return
-    if parts[0] in ["AVAILABLE", "INCANTATION"]:
-        if len(parts) < 3:
-            print("[MESSAGE] Invalid incantation message:", content)
-            return
+    if parts[0] in ["AVAILABLE", "INCANTATION", "READY", "ALIVE?"]:
         try:
-            level = int(parts[1])
+            action = parts[0]
+            level = parts[1]
+            team = parts[2]
+            tick = parts[3]
+            sender_id = parts[4]
         except ValueError:
-            print("[MESSAGE] Invalid level:", parts[1])
             return
-        sender_id = None
-        if len(parts) >= 4:
-            try:
-                sender_id = int(parts[4])
-            except ValueError:
-                sender_id = None
-        agent.mailbox.append({"action": parts[0], "direction": direction, "level": level, "team": parts[2], "tick": (int)(parts[3]), "sender_id": sender_id})
-        return
-    print("[MESSAGE] Ignored message:", content)
+        agent.mailbox.append({"action": action, "direction": (int)(direction), "level": (int)(level), "team": team, "tick": (int)(tick), "sender_id": (int)(sender_id)})
