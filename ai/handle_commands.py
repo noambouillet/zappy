@@ -23,7 +23,8 @@ from commands_server.dead import receive_dead
 from commands_server.ejects import receive_eject
 from commands_server.messages import receive_message
 from agent import Agent
-    
+import select    
+
 def launch_commands(agent, command, response_server):
     """This function allows you to determine which command to use to launch them.
     Args:
@@ -137,25 +138,34 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         logger.info(f"New list of commands send by the client : {agent.list_commands}")
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
-    """This function is to juggle between send and receive commands (Ai/Server)
-    Args:
-        socket_connection (socket): the point of connection between server and ia
-        agent (class): Agent IA
-    """
-    all_responses_server = ""
-    socket_connection.setblocking(False)
-    while (True):
-        try:
-            response_server = socket_connection.recv(2048).decode('utf-8')
-            if (not response_server):
+        """This function is to juggle between send and receive commands (Ai/Server)
+        Args:
+            socket_connection (socket): the point of connection between server and ia
+            agent (class): Agent IA
+        """
+        all_responses_server = ""
+        socket_connection.setblocking(False)
+        while (True):
+            try:
+                result, _, exception = select.select([socket_connection], [], [socket_connection], 0.1)
+            except (select.error, OSError):
                 logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
-                sys.exit(0)
-            all_responses_server += response_server
-        except (BlockingIOError):
-            pass
-        except (socket.error, ConnectionError):
-            logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
-            sys.exit(84)
-        all_responses_server = handle_commands(agent, all_responses_server)
-        send_commands(socket_connection, agent)
-    return
+                sys.exit(84)
+            if exception:
+                logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                sys.exit(84)
+            if result:
+                try:
+                    response_server = socket_connection.recv(2048).decode('utf-8')
+                    if (not response_server):
+                        logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                        sys.exit(0)
+                    all_responses_server += response_server
+                except (BlockingIOError):
+                    pass
+                except (socket.error, ConnectionError):
+                    logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                    sys.exit(84)
+            all_responses_server = handle_commands(agent, all_responses_server)
+            send_commands(socket_connection, agent)
+        return

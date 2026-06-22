@@ -71,8 +71,8 @@ class Incantation(Behavior):
         return eject_players
     
     def verif_incantation(self, agent):
-        nb_required_players = requirement_for_progress[agent.level - 1]["nb_players"]
-        if nb_required_players > agent.teammate_on_tile:
+        #nb_required_players = requirement_for_progress[agent.level - 1]["nb_players"]
+        if 6 > agent.teammate_on_tile:
             if (agent.tick % 2 == 0):
                 return False, [f"Broadcast INCANTATION|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
             return False, ["Look\n"]
