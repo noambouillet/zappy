@@ -181,8 +181,8 @@ std::map<std::string, std::map<int, int>> World::getTeamStats() const
     std::map<std::string, std::map<int, int>> stats;
     for (size_t y = 0; y < _mapSize.second; y++) {
         for (size_t x = 0; x < _mapSize.first; x++) {
-            for (const auto &[id, player] : _map[y][x].players) {
-                stats[player.teamName][player.level]++;
+            for (const auto &[id, trantorian] : _map[y][x].trantorians) {
+                stats[trantorian.teamName][trantorian.level]++;
             }
         }
     }

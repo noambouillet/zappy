@@ -139,8 +139,8 @@ void RayUI::drawTileInfo(int selectedX, int selectedZ, Vector2 mousePos)
     DrawText("Players on Tile:", posX + 10, yOffset, 20, GREEN);
     yOffset += 25;
 
-    for (const auto &[id, player] : tile.players) {
-        DrawText(TextFormat("ID %d (Lvl %d) %s", player.id, player.level, player.teamName.c_str()), posX + 15, yOffset, 15, LIGHTGRAY);
+    for (const auto &[id, trantorian] : tile.trantorians) {
+        DrawText(TextFormat("ID %d (Lvl %d) %s", trantorian.id, trantorian.level, trantorian.teamName.c_str()), posX + 15, yOffset, 15, LIGHTGRAY);
         yOffset += 20;
         if (yOffset > posY + panelHeight - 20) {
             DrawText("...", posX + 15, yOffset, 15, LIGHTGRAY);
