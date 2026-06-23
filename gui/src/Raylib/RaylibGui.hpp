@@ -60,6 +60,7 @@ class RaylibGui : public IGui {
         std::unique_ptr<RayUI> _ui;
         int _selectedTileX = -1;
         int _selectedTileZ = -1;
+        int _selectedTrantorianId = -1;
 
         void drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color);
         void drawTileContent(int x, int z);

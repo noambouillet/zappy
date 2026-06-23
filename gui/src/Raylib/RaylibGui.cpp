@@ -15,25 +15,31 @@
 RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D - Raylib")
 {
     _backgroundTexture = std::make_unique<RayTexture>("gui/assets/3D/backgrounds/background.png");
-    
+
     for (const auto & entry : std::filesystem::directory_iterator("gui/assets/3D/textures")) {
         if (entry.is_regular_file()) {
             std::string name = entry.path().stem().string();
-            _textures[name] = std::make_unique<RayTexture>(entry.path().string());
-            std::cout << "Loaded texture: " << name << " from " << entry.path() << std::endl;
+            try {
+                _textures[name] = std::make_unique<RayTexture>(entry.path().string());
+                std::cout << "Loaded texture: " << name << " from " << entry.path() << std::endl;
+            } catch (const std::exception &e) {
+                std::cerr << "Warning: " << e.what() << std::endl;
+            }
         }
     }
 
     for (const auto & entry : std::filesystem::directory_iterator("gui/assets/3D/models")) {
         if (entry.is_regular_file()) {
             std::string name = entry.path().stem().string();
-            _models[name] = std::make_unique<RayModel>(entry.path().string());
-            
-            BoundingBox box = GetModelBoundingBox(_models[name]->getModel());
-            float maxSize = std::max({box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z});
-            _modelScales[name] = (maxSize > 0.0f) ? (0.20f / maxSize) : 0.20f;
-
-            std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
+            try {
+                _models[name] = std::make_unique<RayModel>(entry.path().string());
+                BoundingBox box = GetModelBoundingBox(_models[name]->getModel());
+                float maxSize = std::max({box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z});
+                _modelScales[name] = (maxSize > 0.0f) ? (0.20f / maxSize) : 0.20f;
+                std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
+            } catch (const std::exception &e) {
+                std::cerr << "Warning: " << e.what() << std::endl;
+            }
         }
     }
     _ui = std::make_unique<RayUI>(_world, _textures);
@@ -53,21 +59,54 @@ void RaylibGui::handleEvent()
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Ray ray = GetScreenToWorldRay(GetMousePosition(), _camera.getCamera());
-        float t = (-0.25f - ray.position.y) / ray.direction.y;
-        if (t >= 0.0f) {
-            float intersectX = ray.position.x + t * ray.direction.x;
-            float intersectZ = ray.position.z + t * ray.direction.z;
-            
-            int x = static_cast<int>(std::round(intersectX));
-            int z = static_cast<int>(std::round(intersectZ));
-            
-            auto mapSize = _world.getMapSize();
-            if (x >= 0 && x < static_cast<int>(mapSize.first) && z >= 0 && z < static_cast<int>(mapSize.second)) {
-                _selectedTileX = x;
-                _selectedTileZ = z;
-            } else {
-                _selectedTileX = -1;
-                _selectedTileZ = -1;
+        
+        bool hitTrantorian = false;
+        float closestDistance = 9999999.0f;
+        auto mapSize = _world.getMapSize();
+
+        if (_models.find("wizard") != _models.end()) {
+            Model wizardModel = _models["wizard"]->getModel();
+            BoundingBox originalBox = GetModelBoundingBox(wizardModel);
+
+            for (int z = 0; z < static_cast<int>(mapSize.second); z++) {
+                for (int x = 0; x < static_cast<int>(mapSize.first); x++) {
+                    auto &tile = _world.getTileData(x, z);
+                    for (const auto &[id, trantorian] : tile.trantorians) {
+                        BoundingBox shiftedBox = originalBox;
+                        shiftedBox.min.x += x; shiftedBox.max.x += x;
+                        shiftedBox.min.y += 0.0f; shiftedBox.max.y += 0.0f;
+                        shiftedBox.min.z += z; shiftedBox.max.z += z;
+
+                        RayCollision collision = GetRayCollisionBox(ray, shiftedBox);
+                        if (collision.hit && collision.distance < closestDistance) {
+                            closestDistance = collision.distance;
+                            _selectedTrantorianId = id;
+                            hitTrantorian = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (hitTrantorian) {
+            _selectedTileX = -1;
+            _selectedTileZ = -1;
+        } else {
+            _selectedTrantorianId = -1;
+            float t = (-0.25f - ray.position.y) / ray.direction.y;
+            if (t >= 0.0f) {
+                float intersectX = ray.position.x + t * ray.direction.x;
+                float intersectZ = ray.position.z + t * ray.direction.z;
+                int x = static_cast<int>(std::round(intersectX));
+                int z = static_cast<int>(std::round(intersectZ));
+
+                if (x >= 0 && x < static_cast<int>(mapSize.first) && z >= 0 && z < static_cast<int>(mapSize.second)) {
+                    _selectedTileX = x;
+                    _selectedTileZ = z;
+                } else {
+                    _selectedTileX = -1;
+                    _selectedTileZ = -1;
+                }
             }
         }
     }
@@ -169,6 +208,12 @@ void RaylibGui::displayWindow()
     _window.beginDrawing();
     _window.clearBackground(RAYWHITE);
 
+    if (_world.isGameOver()) {
+        _ui->drawGameOverScreen(_world.getWinningTeam());
+        _window.endDrawing();
+        return;
+    }
+
     DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, 1920, 1080}, Vector2{0, 0}, 0.0f, WHITE);
     _camera.beginMode3D();
 
@@ -187,10 +232,40 @@ void RaylibGui::displayWindow()
     } else {
         DrawGrid(20, 1.0f);
     }
-
     _camera.endMode3D();
+
+    if (mapSize.first > 0 && mapSize.second > 0) {
+        for (size_t z = 0; z < mapSize.second; z++) {
+            for (size_t x = 0; x < mapSize.first; x++) {
+                auto &tile = _world.getTileData(x, z);
+                for (const auto &[id, trantorian] : tile.trantorians) {
+                    if (_playerAnims.find(id) != _playerAnims.end()) {
+                        RayPlayerAnim_t &anim = _playerAnims[id];
+                        float yOffset = anim.isIncanting ? std::sin(anim.incantTimer * 5.0f) * 0.2f : 0.0f;
+                        Vector3 pos3D = {static_cast<float>(x), yOffset + 1.1f, static_cast<float>(z)};
+                        Vector2 pos2D = GetWorldToScreen(pos3D, _camera.getCamera());
+
+                        Color lvlColor = RayUI::getLevelColor(trantorian.level);
+                        std::string lvlText = "Lvl." + std::to_string(trantorian.level);
+                        int textWidth = MeasureText(lvlText.c_str(), 15);
+                        
+                        DrawRectangle(pos2D.x - textWidth/2 - 20, pos2D.y - 7, 15, 15, lvlColor);
+                        DrawRectangleLines(pos2D.x - textWidth/2 - 20, pos2D.y - 7, 15, 15, BLACK);
+                        
+                        DrawText(lvlText.c_str(), pos2D.x - textWidth/2, pos2D.y - 8, 15, BLACK);
+                        DrawText(lvlText.c_str(), pos2D.x - textWidth/2 - 1, pos2D.y - 9, 15, WHITE);
+                    }
+                }
+            }
+        }
+    }
+
     _ui->drawGlobalInfo();
-    _ui->drawTileInfo(_selectedTileX, _selectedTileZ, GetMousePosition());
+
+    if (_selectedTrantorianId != -1)
+        _ui->drawTrantorianInfo(_selectedTrantorianId, GetMousePosition());
+    else if (_selectedTileX != -1 && _selectedTileZ != -1)
+        _ui->drawTileInfo(_selectedTileX, _selectedTileZ, GetMousePosition());
     DrawFPS(GetScreenWidth() - 100, 10);
     _window.endDrawing();
 }
@@ -319,7 +394,7 @@ void RaylibGui::drawTileContent(int x, int z)
             DrawCircle3D(Vector3{static_cast<float>(x), 0.5f, static_cast<float>(z)}, radius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, waveColor);
         }
 
-        drawBubble(anim, Vector3{static_cast<float>(x), yOffset + 1.2f, static_cast<float>(z)});
+        drawBubble(anim, Vector3{static_cast<float>(x), yOffset + 1.6f, static_cast<float>(z)});
     }
 }
 
