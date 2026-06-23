@@ -206,7 +206,7 @@ void CommandHandler::handle_pgt(std::stringstream &ss)
     int id;
     int resourceId;
     char sharp;
-    static const std::string resourceTextures[] = {"donut", "linemate", "emeraude", "rubis", "diamond", "saphir", "amethyst"};
+    static const std::string resourceTextures[] = {"donut", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"};
 
     if (!(ss >> sharp >> id >> resourceId))
         return;

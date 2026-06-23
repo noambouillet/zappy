@@ -39,7 +39,7 @@ void UIRender::displayUI()
 void UIRender::displayRessources()
 {
     const std::vector<int> resources = _world.getTotalRessources();
-    const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"emeraude", "Deraumere : "}, {"rubis", "Sibur : "}, {"diamond", "Mendiane : "}, {"saphir", "Phiras : "}, {"amethyst", "Thystate : "}};
+    const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"deraumere", "Deraumere : "}, {"sibur", "Sibur : "}, {"mendiane", "Mendiane : "}, {"phiras", "Phiras : "}, {"thystame", "Thystame : "}};
     const std::vector<float> sizes = {1.5f, 18.0f, 36.0f, 30.0f, 30.0f, 40.0f, 27.0f};
     float y = 300.0f;
 
@@ -68,7 +68,7 @@ void UIRender::displayTileData(int x, int y)
         drawButton("X", 25, closeX, closeY, closeW, closeH);
         drawText("Tile X: " + std::to_string(x) + " Y: " + std::to_string(y), 35, boxX + 30.0f, boxY + 20.0f);
         drawText("Resources details :", 40, boxX + 30.0f, boxY + 90.0f);
-        const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"emeraude", "Deraumere : "}, {"rubis", "Sibur : "}, {"diamond", "Mendiane : "}, {"saphir", "Phiras : "}, {"amethyst", "Thystate : "}};
+        const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"deraumere", "Deraumere : "}, {"sibur", "Sibur : "}, {"mendiane", "Mendiane : "}, {"phiras", "Phiras : "}, {"thystame", "Thystame : "}};
         const std::vector<float> sizes = {0.75f, 9.0f, 18.0f, 15.0f, 15.0f, 20.0f, 13.0f};
         float deltaY = 180.0f + boxY;
         for (size_t i = 0; i < items.size() && i < tile.ressources.size(); i++) {
@@ -252,7 +252,7 @@ void UIRender::displayTrantorianData(int trantorianId)
         drawText("Position: X=" + std::to_string(trantorian.x) + " Y=" + std::to_string(trantorian.y), 40, boxX + 30.0f, boxY + 190.0f);
         drawText("Orientation: " + orientation, 40, boxX + 30.0f, boxY + 240.0f);
         drawText("Inventory: ", 40, boxX + 30.0f, boxY + 310.0f);
-        const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"emeraude", "Deraumere : "}, {"rubis", "Sibur : "}, {"diamond", "Mendiane : "}, {"saphir", "Phiras : "}, {"amethyst", "Thystate : "}};
+        const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"deraumere", "Deraumere : "}, {"sibur", "Sibur : "}, {"mendiane", "Mendiane : "}, {"phiras", "Phiras : "}, {"thystame", "Thystame : "}};
         const std::vector<float> sizes = {0.75f, 9.0f, 18.0f, 15.0f, 15.0f, 20.0f, 13.0f};
         float yText = 400.0f + boxY;
         float yIcon = 425.0f + boxY;
