@@ -93,7 +93,10 @@ class Incantation(Behavior):
         
     def prepare_tile_resources(self, agent):
         commands = []
-        required = requirement_for_progress[agent.level - 1]
+        level = agent.level - 1
+        if (level >= 7):
+            level = 6
+        required = requirement_for_progress[level]
         resources_on_tile = {"linemate" : 0, "deraumere" : 0, "sibur" :  0, "mendiane" : 0, "phiras" : 0, "thystame" : 0}
         for resource in agent.vision[0]:
             if (resources_on_tile.get(resource) is not None):

@@ -162,7 +162,10 @@ class Agent:
         Returns:
             bool: true or false for level up
         """
-        info_level_up = requirement_for_progress[self.level - 1]
+        level = self.level - 1
+        if (level >= 7):
+            level = 6
+        info_level_up = requirement_for_progress[level]
         can_level_up = True
         for item, valeur in info_level_up.items():
             if (item != "nb_players" and self.inventory[item] < valeur):
