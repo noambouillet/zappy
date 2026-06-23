@@ -159,7 +159,7 @@ void HandleTrantorians::updateTrantorianIncantation(TrantorianAnim_t &anim, floa
     anim.incantTimer += deltaTime;
     if (anim.incantTimer >= 0.05f) {
         anim.incantTimer = 0.0f;
-        anim.incantFrame = (anim.incantFrame + 1) % 32;
+        anim.incantFrame = (anim.incantFrame + 1) % 4;
     }
 }
 
