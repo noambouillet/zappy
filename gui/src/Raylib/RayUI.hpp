@@ -22,7 +22,10 @@ class RayUI {
 
         void drawGlobalInfo();
         void drawTileInfo(int selectedX, int selectedZ, Vector2 mousePos);
+        void drawTrantorianInfo(int trantorianId, Vector2 mousePos);
+        void drawGameOverScreen(const std::string &winningTeam);
         static Color getTeamColor(const std::string& teamName);
+        static Color getLevelColor(int level);
 
     private:
         World &_world;
