@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <cmath>
 
-RaylibGui::RaylibGui(World &world) : _world(world), _window(1920, 1080, "Zappy 3D - Raylib")
+RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D - Raylib")
 {
     _backgroundTexture = std::make_unique<RayTexture>("gui/assets/3D/backgrounds/background.png");
     
@@ -233,12 +233,20 @@ void RaylibGui::stopIncantationAt(int x, int y)
 
 void RaylibGui::drawBubble(const RayPlayerAnim_t &anim, Vector3 position)
 {
-    if (anim.bubbleQueue.empty()) {
+    if (anim.bubbleQueue.empty())
         return;
-    }
-    std::string texKey = anim.bubbleQueue.front().first;
-    if (_textures.find(texKey) != _textures.end()) {
-        DrawBillboard(_camera.getCamera(), _textures[texKey]->getTexture(), position, 0.5f, WHITE);
+    std::string key = anim.bubbleQueue.front().first;
+
+    if (_models.find(key) != _models.end()) {
+        rlPushMatrix();
+        float time = GetTime();
+        float yOffset = std::sin(time * 3.0f) * 0.1f;
+        rlTranslatef(position.x, position.y + yOffset, position.z);
+        rlRotatef(time * 90.0f, 0.0f, 1.0f, 0.0f);
+
+        float scale = _modelScales[key] * 1.5f;
+        DrawModel(_models[key]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, scale, WHITE);
+        rlPopMatrix();
     }
 }
 
