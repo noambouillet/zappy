@@ -5,7 +5,7 @@
 ## incantation
 ##
 
-from parsing import logger
+from logger import logger
 
 def remove_incantation_command(agent):
     if "Incantation\n" in agent.list_commands:

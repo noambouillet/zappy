@@ -5,7 +5,7 @@
 ## fork
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_fork(agent, response_server):
     """This function is to fork a player

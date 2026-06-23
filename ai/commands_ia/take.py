@@ -5,7 +5,7 @@
 ## take
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_take(agent, response_server, command):
     """This function is to know if the object is take from the tile

@@ -7,11 +7,12 @@
 
 from constant import MIN_FOOD, WAIT_MSG
 from .class_behavior import Behavior
+from logger import logger
 
 class Follower(Behavior):
             
     def execute(self, agent):
-        print("\n========== FOLLOWER ==========")
+        logger.debug("\n========== FOLLOWER ==========")
         agent.tick += 1
         agent.display_info()
         if agent.inventory["food"] < MIN_FOOD:

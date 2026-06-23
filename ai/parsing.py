@@ -5,19 +5,17 @@
 ## parsing
 ##
 
-import sys, argparse, socket, logging
+import sys, argparse, socket
+from logger import logger
 
-logger = logging.getLogger(__name__)
-
-def print_help(value_exit):
+def display_help(value_exit):
     """This function helps the user to use the settings correctly
     Args:
         value_exit (_type_): value for exit the code
     """
-    print("USAGE: ./zappy_ai -p port -n name -h machine")
+    logger.warning("USAGE: ./zappy_ai -p port -n name -h machine")
     if (value_exit == 84):
-        print("\nIncorrect number of arguments:\nYou need at least: -p num_port -n name_team\nAnd at most: -p num_port -n name_team -h name_machine")
-        logger.critical("\nIncorrect number of arguments:\nYou need at least: -p num_port -n name_team\nAnd at most: -p num_port -n name_team -h name_machine")
+        logger.error("\nIncorrect number of arguments:\nYou need at least: -p num_port -n name_team\nAnd at most: -p num_port -n name_team -h name_machine")
     sys.exit(value_exit)
 
 def parse_args():
@@ -25,13 +23,11 @@ def parse_args():
     Returns:
         _type_: port(int), name(str), machine(str)
     """
-    logging.basicConfig(filename='zappy_ai.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-    print("Launch of the program")
-    logger.info("Launch of the program")
+    logger.debug("Launch of the program")
     if (len(sys.argv) == 2 and sys.argv[1] == "--help"):
-        print_help(0)
+        display_help(0)
     if (len(sys.argv) < 5 or len(sys.argv) > 7 or len(sys.argv) % 2 == 0):
-        print_help(84)
+        display_help(84)
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-p", type=int, required=True, dest="port", help="The port of the machine")
     parser.add_argument("-n", type=str, required=True, dest="name_team", help="The name of the team")
@@ -43,11 +39,9 @@ def parse_args():
     if (args.name_machine is None):
         args.name_machine = socket.gethostname()
     if (args.port is None or args.name_team is None):
-        print("The port and the name of the machine are mandatory")
-        logger.critical("The port and the name of the machine are mandatory")
+        logger.error("The port and the name of the machine are mandatory")
         sys.exit(84)
     if (args.port < 1024 or args.port > 65535):
-        print("The machine port cannot be less than 1 or greater than 65535, the value now :", args.port)
-        logger.critical("The machine port cannot be less than 1 or greater than 65535, the value now :", args.port)
+        logger.error(f"The machine port cannot be less than 1 or greater than 65535, the value now : {args.port}")
         sys.exit(84)
     return args.port, args.name_team, args.name_machine

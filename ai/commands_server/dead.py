@@ -5,7 +5,7 @@
 ## dead
 ##
 
-from parsing import logger, sys
+from logger import logger, sys
 
 def receive_dead():
     """This function is to say the death of the player"""

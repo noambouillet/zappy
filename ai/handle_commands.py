@@ -5,7 +5,7 @@
 ## handle_commands
 ##
 
-from parsing import sys, logger, socket
+from parsing import sys, socket
 from constant import INVENTORY_FREQUENCE
 from commands_ia.forward import do_forward
 from commands_ia.left import do_left
@@ -23,7 +23,9 @@ from commands_server.dead import receive_dead
 from commands_server.ejects import receive_eject
 from commands_server.messages import receive_message
 from agent import Agent
-import select    
+import select
+from logger import logger
+
 
 def launch_commands(agent, command, response_server):
     """This function allows you to determine which command to use to launch them.
@@ -53,7 +55,7 @@ def launch_commands(agent, command, response_server):
     elif (command.startswith("Set")):
         do_set(agent, response_server, command)
     else:
-        print(f"Command uknown : {command}")
+        logger.debug(f"Command unknown : {command}")
     
 def handle_commands(agent : Agent, all_responses_server):
     """This function is to handle commands betwenn commands_ia and commands_server
@@ -69,7 +71,7 @@ def handle_commands(agent : Agent, all_responses_server):
             command = agent.list_commands[0]
         else:
             command = None
-        print(f"This is the server's current response : {response_server}")
+        logger.debug(f"This is the server's current response : {response_server}")
         if (response_server.startswith("dead")):
             receive_dead()
         elif (response_server.startswith("eject:")):
@@ -93,7 +95,7 @@ def handle_commands(agent : Agent, all_responses_server):
             launch_commands(agent, command, response_server)
             if (len(agent.list_commands) > 0):
                 agent.list_commands.pop(0)
-        print("List commands:", agent.list_commands)
+        logger.debug(f"List commands: {agent.list_commands}")
     return all_responses_server
 
 def check_inventory_regularly(agent, tab_commands):
@@ -134,8 +136,7 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
             if (len(agent.list_commands) < 10):
                 agent.list_commands.append(command)
                 socket_connection.sendall((command).encode('utf-8'))
-        print(f"New lisf of commands {agent.list_commands}")
-        logger.info(f"New list of commands send by the client : {agent.list_commands}")
+        logger.debug(f"New list of commands send by the client : {agent.list_commands}")
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
         """This function is to juggle between send and receive commands (Ai/Server)

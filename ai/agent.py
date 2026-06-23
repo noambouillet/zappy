@@ -11,6 +11,7 @@ from behavior.explore import Explore
 from behavior.incantation import Incantation
 from behavior.follower import Follower
 import os
+from logger import logger
 
 class Agent:
     """This class is to define the drone/agent/ia
@@ -40,30 +41,30 @@ class Agent:
         self.teammate_on_tile = 1
 
     def display_info(self):
-        print("AGENT INFO:")
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print("agent_id", self.agent_id)
-        print("team_name", self.team_name)
-        print("list_commands", self.list_commands)
-        print("mailbox", self.mailbox)
-        print("vision", self.vision)
-        print("inventory", self.inventory)
-        print("eject_players", self.eject_players)
-        print("joining_incantation", self.joining_incantation)
-        print("prepare_incantation", self.prepare_incantation)
-        print("is_incantation", self.is_incantation)
-        print("direction", self.direction)
-        print("behavior", self.behavior)
-        print("size_map", self.size_map)
-        print("unused_slots", self.unused_slots)
-        print("tick", self.tick)
-        print("last_inventory", self.last_inventory)
-        print("last_send_leader", self.last_send_leader)
-        print("leader_id", self.leader_id)
-        print("direction_to_follow", self.direction_to_follow)
-        print("level", self.level)
-        print("teammate_on_tile", self.teammate_on_tile)
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        logger.debug("AGENT INFO:")
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        logger.debug(f"agent_id {self.agent_id}")
+        logger.debug(f"team_name {self.team_name}")
+        logger.debug(f"list_commands {self.list_commands}")
+        logger.debug(f"mailbox {self.mailbox}")
+        logger.debug(f"vision {self.vision}")
+        logger.debug(f"inventory {self.inventory}")
+        logger.debug(f"eject_players {self.eject_players}")
+        logger.debug(f"joining_incantation {self.joining_incantation}")
+        logger.debug(f"prepare_incantation {self.prepare_incantation}")
+        logger.debug(f"is_incantation {self.is_incantation}")
+        logger.debug(f"direction {self.direction}")
+        logger.debug(f"behavior {self.behavior}")
+        logger.debug(f"size_map {self.size_map}")
+        logger.debug(f"unused_slots {self.unused_slots}")
+        logger.debug(f"tick {self.tick}")
+        logger.debug(f"last_inventory {self.last_inventory}")
+        logger.debug(f"last_send_leader {self.last_send_leader}")
+        logger.debug(f"leader_id {self.leader_id}")
+        logger.debug(f"direction_to_follow {self.direction_to_follow}")
+        logger.debug(f"level {self.level}")
+        logger.debug(f"teammate_on_tile {self.teammate_on_tile}")
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     def take_food_on_tile(self):
         """take all food available on current tile
@@ -125,7 +126,7 @@ class Agent:
         return commands
     
     def follow_direction(self, direction: int):
-        print("[FOLLOW_DIRECTION] Broadcast direction:", direction)
+        logger.debug(f"[FOLLOW_DIRECTION] Broadcast direction: {direction}")
         if direction == 0:
             return []
         if direction in [2, 1, 8]:

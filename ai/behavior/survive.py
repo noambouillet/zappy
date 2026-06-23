@@ -7,6 +7,7 @@
 
 from .class_behavior import Behavior
 from constant import FOOD_TO_REACH
+from logger import logger
 
 class Survive(Behavior):
     def execute(self, agent):
@@ -16,7 +17,7 @@ class Survive(Behavior):
         Returns:
             str: command for the agent
         """
-        print("\n========== SURVIVE ==========")
+        logger.debug("\n========== SURVIVE ==========")
         agent.tick += 1
         agent.display_info()
         if (agent.inventory["food"] >= FOOD_TO_REACH):

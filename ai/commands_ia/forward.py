@@ -5,7 +5,7 @@
 ## forward
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_forward(agent, response_server):
     """This function is to advance the character

@@ -5,7 +5,7 @@
 ## set
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_set(agent, response_server, command):
     """This function is to know if the object is set on a tile

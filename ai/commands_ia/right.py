@@ -5,7 +5,7 @@
 ## right
 ##
 
-from parsing import logger
+from logger import logger
 from constant import Direction
 
 def do_right(agent, response_server):

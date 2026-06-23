@@ -5,7 +5,7 @@
 ## inventory
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_inventory(agent, response_server):
     """This function is to change the get and change the inventory for the ia with info from the server

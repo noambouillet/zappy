@@ -5,7 +5,7 @@
 ## eject
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_eject(agent, response_server):
     """This function is to know if an egg or a player was eject from the tile 

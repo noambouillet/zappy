@@ -6,7 +6,7 @@
 ##
 
 import sys, socket
-from parsing import logger
+from logger import logger
 
 def connect_to_server(port, machine_name):
     """ This function is to start the connection with the server and recover the socket
@@ -19,19 +19,15 @@ def connect_to_server(port, machine_name):
     socket_connect = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         socket_connect.connect((machine_name, port))
-        print(f"Connect to the server at the {port} port and with the machine {machine_name}")
-        logger.info(f"Connect to the server at the {port} port and with the machine {machine_name}")
+        logger.debug(f"Connect to the server at the {port} port and with the machine {machine_name}")
         welcome_msg = socket_connect.recv(1024).decode('utf-8')
         if (welcome_msg != "WELCOME\n"):
-            print("The first protocol message received by the client is not WELCOME, here it is", welcome_msg)
-            logger.critical("The first protocol message received by the client is not WELCOME, here it is", welcome_msg)
+            logger.critical(f"The first protocol message received by the client is not WELCOME, here it is {welcome_msg}")
             sys.exit(84)
     except (socket.error, ConnectionRefusedError):
-        print("The connection to the server failed. The problem may be due to a faulty socket or incorrectly configured server settings.")
         logger.critical("The connection to the server failed. The problem may be due to a faulty socket or incorrectly configured server settings.")
         sys.exit(84)
-    print("The connection was successful with the departure protocol respected.")
-    logger.info("The connection was successful with the departure protocol respected.")
+    logger.debug("The connection was successful with the departure protocol respected.")
     return socket_connect
 
 def communication_server_client(socket_connection, team_name):
@@ -43,24 +39,20 @@ def communication_server_client(socket_connection, team_name):
         dict: a dictionnary with the values of the slot and dimensions
     """
     socket_connection.sendall((team_name + "\n").encode('utf-8'))
-    print(f"Send the team name information for the server, {team_name}")
-    logger.info(f"Send the team name information for the server, {team_name}")
+    logger.debug(f"Send the team name information for the server, {team_name}")
     msg = ""
     while msg.count("\n") < 2:
         msg += socket_connection.recv(2048).decode('utf-8')
         if (msg == "ko\n"):
-            print("The number of slots available on the server is invalid (more space to accommodate a new customer or the team_name does not exist)")
             logger.critical("The number of slots available on the server is invalid (more space to accommodate a new customer or the team_name does not exist)")
             sys.exit(84)
     tab = msg.split('\n')
     if (len(tab) < 2):
-        print("Sentence incomplete missing the number of slot or the value for the map (Server info incorrect)")
         logger.critical("Sentence incomplete missing the number of slot or the value for the map (Server info incorrect)")
         sys.exit(84)
     client_num = tab[0]
     X = tab[1].split()[0]
     Y = tab[1].split()[1]
-    print(f"Here is the information about the client/AI that just connected TEAM_NAME : {team_name}, CLIENT_NUM : {client_num}, MAP_SIZE : {X}/{Y}")
-    logger.info(f"Here is the information about the client/AI that just connected TEAM_NAME : {team_name}, CLIENT_NUM : {client_num}, MAP_SIZE : {X}/{Y}")
+    logger.debug(f"Here is the information about the client/AI that just connected TEAM_NAME : {team_name}, CLIENT_NUM : {client_num}, MAP_SIZE : {X}/{Y}")
     info_client = {"team_name" : team_name, "client_num" : client_num, 'X' : X, 'Y' : Y}
     return info_client

@@ -5,7 +5,7 @@
 ## connect
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_connection(agent, response_server):
     """This function is to get the number of slots available in the Team (From the server)

@@ -8,10 +8,11 @@
 from .class_behavior import Behavior
 from constant import requirement_for_progress, FOOD_TO_REACH
 import math
+from logger import logger
 
 class Explore(Behavior):
     def execute(self, agent):
-        print("\n========== EXPLORE ==========")
+        logger.debug("\n========== EXPLORE ==========")
         agent.tick += 1
         agent.display_info()
         if (self.define_leader(agent) == True):

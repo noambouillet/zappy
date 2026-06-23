@@ -7,10 +7,11 @@
 
 from .class_behavior import Behavior
 from constant import MIN_FOOD, requirement_for_progress, NB_PLAYERS_REQUIRED
+from logger import logger
 
 class Incantation(Behavior):
     def execute(self, agent):
-        print("\n========== INCANTATION ==========")
+        logger.debug("\n========== INCANTATION ==========")
         agent.tick += 1
         agent.display_info()
         if (agent.inventory["food"] < MIN_FOOD):

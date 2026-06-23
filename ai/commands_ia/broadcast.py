@@ -5,7 +5,7 @@
 ## broadcast
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_broadcast(agent, response_server):
     """This function is to confirm the Ok for broacast the message from server

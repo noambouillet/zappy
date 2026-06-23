@@ -5,7 +5,7 @@
 ## look
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_look(agent, response_server):
     """This function is to get and change the vision of the agent with info from the server
