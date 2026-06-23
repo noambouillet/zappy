@@ -5,13 +5,13 @@
 ## agent
 ##
 
-from constant import Direction, MIN_FOOD, requirement_for_progress
+from constant import Direction, MIN_FOOD, requirement_for_progress, FOOD_TO_REACH
 from behavior.survive import Survive
 from behavior.explore import Explore
 from behavior.incantation import Incantation
 from behavior.follower import Follower
 import os
-    
+
 class Agent:
     """This class is to define the drone/agent/ia
     """
@@ -39,6 +39,32 @@ class Agent:
         self.level = 1
         self.teammate_on_tile = 1
 
+    def display_info(self):
+        print("AGENT INFO:")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("agent_id", self.agent_id)
+        print("team_name", self.team_name)
+        print("list_commands", self.list_commands)
+        print("mailbox", self.mailbox)
+        print("vision", self.vision)
+        print("inventory", self.inventory)
+        print("eject_players", self.eject_players)
+        print("joining_incantation", self.joining_incantation)
+        print("prepare_incantation", self.prepare_incantation)
+        print("is_incantation", self.is_incantation)
+        print("direction", self.direction)
+        print("behavior", self.behavior)
+        print("size_map", self.size_map)
+        print("unused_slots", self.unused_slots)
+        print("tick", self.tick)
+        print("last_inventory", self.last_inventory)
+        print("last_send_leader", self.last_send_leader)
+        print("leader_id", self.leader_id)
+        print("direction_to_follow", self.direction_to_follow)
+        print("level", self.level)
+        print("teammate_on_tile", self.teammate_on_tile)
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
     def take_food_on_tile(self):
         """take all food available on current tile
 
@@ -49,6 +75,8 @@ class Agent:
         if not self.vision or self.vision == [[]]:
             return commands
         if len(self.vision) == 0:
+            return commands
+        if self.inventory["food"] >= FOOD_TO_REACH + 5:
             return commands
         for elem in self.vision[0]:
             if elem == "food":
@@ -144,7 +172,7 @@ class Agent:
         if self.is_incantation == True:
             self.behavior = Incantation()
             return
-        if self.inventory["food"] <= MIN_FOOD or self.survive == True:
+        if (self.inventory["food"] <= MIN_FOOD or self.survive == True) and self.joining_incantation == False:
             self.survive = True
             self.joining_incantation = False
             self.prepare_incantation = False

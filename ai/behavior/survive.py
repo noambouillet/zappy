@@ -18,13 +18,14 @@ class Survive(Behavior):
         """
         print("\n========== SURVIVE ==========")
         agent.tick += 1
+        agent.display_info()
         if (agent.inventory["food"] >= FOOD_TO_REACH):
             agent.survive = False
             agent.adapt_behavior()
             return agent.behavior.execute(agent)
         try:
-            food_commands = agent.take_food_on_tile()   
-            if food_commands:
+            food_commands = agent.take_food_on_tile()
+            if food_commands != []:
                 return food_commands
             for pos, infos in enumerate(agent.vision):
                 if "food" in infos:

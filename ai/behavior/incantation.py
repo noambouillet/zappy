@@ -10,7 +10,9 @@ from constant import MIN_FOOD, requirement_for_progress
 
 class Incantation(Behavior):
     def execute(self, agent):
+        print("\n========== INCANTATION ==========")
         agent.tick += 1
+        agent.display_info()
         if (agent.inventory["food"] < MIN_FOOD):
             agent.survive = True
             agent.prepare_incantation = False
@@ -25,7 +27,6 @@ class Incantation(Behavior):
         agent.leader_id = agent.agent_id 
         agent.teammate_on_tile = 1
         is_eject = self.count_follower(agent)
-        print("EVOLUTION NB AGENT TEAMMATE", agent.teammate_on_tile)
         if (is_eject == True):
             return ["Eject\n"]
         (is_prepare, list_command) = self.verif_incantation(agent)
