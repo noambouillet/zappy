@@ -195,7 +195,7 @@ void RaylibGui::displayWindow()
     _window.endDrawing();
 }
 
-void RaylibGui::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+void RaylibGui::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
     RayPlayerAnim_t &anim = _playerAnims[id];
     anim.id = id;
@@ -204,7 +204,7 @@ void RaylibGui::setPlayerActionBubble(int id, const std::string &textureKey, flo
         anim.bubbleTimer = duration;
 }
 
-void RaylibGui::triggerPlayerDeath(int id)
+void RaylibGui::triggerTrantorianDeath(int id)
 {
     RayPlayerAnim_t &anim = _playerAnims[id];
     anim.id = id;
@@ -221,7 +221,7 @@ void RaylibGui::triggerPlayerBroadcast(int id, const std::string &message)
     anim.broadcastTimer = 0.0f;
 }
 
-void RaylibGui::setPlayerIncanting(int id, bool state)
+void RaylibGui::setTrantorianIncanting(int id, bool state)
 {
     RayPlayerAnim_t &anim = _playerAnims[id];
     anim.id = id;
@@ -279,9 +279,9 @@ void RaylibGui::drawTileContent(int x, int z)
         }
     }
 
-    for (auto& [id, player] : tile.players) {
+    for (auto& [id, trantorian] : tile.trantorians) {
         float angle = 0.0f;
-        switch (player.orientation) {
+        switch (trantorian.orientation) {
             case 1: angle = 180.0f;
                 break;
             case 2: angle = 90.0f;
@@ -322,4 +322,9 @@ void RaylibGui::drawTileContent(int x, int z)
 
         drawBubble(anim, Vector3{static_cast<float>(x), yOffset + 1.2f, static_cast<float>(z)});
     }
+}
+
+void RaylibGui::addBroadcast(int x, int y)
+{
+    return;
 }

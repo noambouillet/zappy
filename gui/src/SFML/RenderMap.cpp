@@ -59,17 +59,24 @@ void RenderMap::drawMap()
     const sf::Texture &tex = _textureManager.getTexture("ground");
     tileShape.setTexture(&tex);
     tileShape.setFillColor(sf::Color::White);
-    for (size_t y = 0; y < _world.getMapSize().second; ++y) {
-        for (size_t x = 0; x < _world.getMapSize().first; ++x) {
+    for (size_t y = 0; y < _world.getMapSize().second; y++) {
+        for (size_t x = 0; x < _world.getMapSize().first; x++) {
             tileShape.setPosition(_offsetX + (x * _tileSize), _offsetY + (y * _tileSize));
             _window.draw(tileShape);
         }
     }
-    for (size_t y = 0; y < _world.getMapSize().second; ++y) {
-        for (size_t x = 0; x < _world.getMapSize().first; ++x) {
-            drawTileElements(x, y, _world.getTileData(x, y));
-        }
+    std::pair<int, int> hovered = _world.getHoveredTile();
+    if (hovered.first != -1 && hovered.second != -1) {
+        sf::RectangleShape hoverRect(sf::Vector2f(_tileSize, _tileSize));
+        hoverRect.setPosition(_offsetX + (hovered.first * _tileSize), _offsetY + (hovered.second * _tileSize));
+        hoverRect.setFillColor(sf::Color(255, 255, 255, 60));
+        hoverRect.setOutlineColor(sf::Color::White);
+        hoverRect.setOutlineThickness(1.5f);
+        _window.draw(hoverRect);
     }
+    for (size_t y = 0; y < _world.getMapSize().second; y++)
+        for (size_t x = 0; x < _world.getMapSize().first; x++)
+            drawTileElements(x, y, _world.getTileData(x, y));
 }
 
 void RenderMap::drawTileElements(int x, int y, const TileData_t &tile)
@@ -85,9 +92,7 @@ void RenderMap::drawBackground()
     const sf::Texture &texture = _textureManager.getTexture("background");
     sf::Sprite &sprite = _textureManager.getSprite("background");
     sprite.setPosition(0.0f, 0.0f);
-    float scaleX = static_cast<float>(_window.getSize().x) / texture.getSize().x;
-    float scaleY = static_cast<float>(_window.getSize().y) / texture.getSize().y;
-    sprite.setScale(scaleX, scaleY);
+    sprite.setScale(static_cast<float>(_window.getSize().x) / texture.getSize().x, static_cast<float>(_window.getSize().y) / texture.getSize().y);
     _window.draw(sprite);
 }
 
@@ -95,11 +100,9 @@ void RenderMap::drawSprite(std::string textureKey, float size, int x, int y, flo
 {
     const sf::Texture &texture = _textureManager.getTexture(textureKey);
     sf::Sprite &sprite = _textureManager.getSprite(textureKey);
-    float centerX = _offsetX + (x * _tileSize) + (_tileSize / offsetX);
-    float centerY = _offsetY + (y * _tileSize) + (_tileSize / offsetY);
     sprite.setOrigin(texture.getSize().x / 2.0f, texture.getSize().y / 2.0f);
     sprite.setScale(size / texture.getSize().x, size / texture.getSize().y);
-    sprite.setPosition(centerX, centerY);
+    sprite.setPosition(_offsetX + (x * _tileSize) + (_tileSize / offsetX), _offsetY + (y * _tileSize) + (_tileSize / offsetY));
     _window.draw(sprite);
 }
 

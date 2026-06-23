@@ -32,7 +32,7 @@ bool Sfml::isOpen() const
 
 void Sfml::handleEvent()
 {
-    _eventHandler.update(WIDTH, HEIGHT, _uiRender);
+    _eventHandler.update(WIDTH, HEIGHT, _uiRender, getHandleTrantorians(), _world, _tileSize, _offsetX, _offsetY);
 }
 
 void Sfml::displayWindow()
@@ -43,13 +43,11 @@ void Sfml::displayWindow()
         updateDimensions();
     _world.updateGameTime(deltaTime);
     _renderMap.getHandleTrantorians().updateAnimations(deltaTime);
-
     _window.clear(sf::Color::Black);
-    _window.setView(_camera); //c'est pour afficher les éléments
+    _window.setView(_camera);
     _renderMap.drawBackground();
     _renderMap.drawMap();
-
-    _window.setView(_window.getDefaultView()); // et ça c'est pour le UI
+    _window.setView(_window.getDefaultView());
     _uiRender.displayUI();
     _window.display();
 }
@@ -58,11 +56,9 @@ void Sfml::updateDimensions()
 {
     if (_world.getMapSize().first == 0 || _world.getMapSize().second == 0)
         return;
-    float mapAreaHeight = HEIGHT * 0.80f;
-    _tileSize = mapAreaHeight / _world.getMapSize().second;
-    float finalMapWidth = _tileSize * _world.getMapSize().first;
-    _offsetY = (HEIGHT - mapAreaHeight) / 2.0f;
-    _offsetX = (WIDTH - finalMapWidth) / 2.0f;
+    _tileSize = HEIGHT * 0.80f / _world.getMapSize().second;
+    _offsetY = (HEIGHT - HEIGHT * 0.80f) / 2.0f;
+    _offsetX = (WIDTH - _tileSize * _world.getMapSize().first) / 2.0f;
     _limitWindowWidth = WIDTH;
     _camera.setSize(WIDTH, HEIGHT);
     _camera.setCenter(WIDTH / 2.0f, HEIGHT / 2.0f);
@@ -74,27 +70,27 @@ HandleTrantorians &Sfml::getHandleTrantorians()
     return _renderMap.getHandleTrantorians();
 }
 
-void Sfml::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+void Sfml::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
-    _renderMap.getHandleTrantorians().setPlayerActionBubble(id, textureKey, duration);
+    _renderMap.getHandleTrantorians().setTrantorianActionBubble(id, textureKey, duration);
 }
 
-void Sfml::triggerPlayerDeath(int id)
+void Sfml::triggerTrantorianDeath(int id)
 {
-    _renderMap.getHandleTrantorians().triggerPlayerDeath(id);
+    _renderMap.getHandleTrantorians().triggerTrantorianDeath(id);
 }
 
-void Sfml::triggerPlayerBroadcast(int id, const std::string &message)
+void Sfml::setTrantorianIncanting(int id, bool state)
 {
-    _renderMap.getHandleTrantorians().triggerPlayerBroadcast(id, message);
-}
-
-void Sfml::setPlayerIncanting(int id, bool state)
-{
-    _renderMap.getHandleTrantorians().setPlayerIncanting(id, state);
+    _renderMap.getHandleTrantorians().setTrantorianIncanting(id, state);
 }
 
 void Sfml::stopIncantationAt(int x, int y)
 {
     _renderMap.getHandleTrantorians().stopIncantationAt(x, y);
+}
+
+void Sfml::addBroadcast(int x, int y)
+{
+    _renderMap.getHandleTrantorians().addBroadcast(x, y);
 }

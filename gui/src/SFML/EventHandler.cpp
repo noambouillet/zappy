@@ -10,18 +10,33 @@
 #include "EventHandler.hpp"
 #include <algorithm>
 
-EventHandler::EventHandler(sf::RenderWindow &window, sf::View &camera): _window(window), _camera(camera){}
+EventHandler::EventHandler(sf::RenderWindow &window, sf::View &camera): _window(window), _camera(camera) {}
 
-void EventHandler::update(float windowWidth, float windowHeight, UIRender &uiRender)
+void EventHandler::update(float windowWidth, float windowHeight, UIRender &uiRender, HandleTrantorians &handleTrantorians, World &world, float tileSize, float offsetX, float offsetY)
 {
+    sf::Vector2i mousePosPos = sf::Mouse::getPosition(_window);
+    sf::Vector2f worldMousePos = _window.mapPixelToCoords(mousePosPos, _camera);
+    int tileX = static_cast<int>((worldMousePos.x - offsetX) / tileSize);
+    int tileY = static_cast<int>((worldMousePos.y - offsetY) / tileSize);
+    auto mapSize = world.getMapSize();
+
     _windowWidth = windowWidth;
     _windowHeight = windowHeight;
-
+    if (tileX >= 0 && tileX < static_cast<int>(mapSize.first) && tileY >= 0 && tileY < static_cast<int>(mapSize.second))
+        world.setHoveredTile(tileX, tileY);
+    else
+        world.setHoveredTile(-1, -1);
     while (_window.pollEvent(_event)) {
         if (_event.type == sf::Event::Closed)
             _window.close();
         uiRender.handleEvent(_event);
+        handleTrantorians.handleEvent(_event);
         handleZoom();
+        if (_event.type == sf::Event::MouseButtonReleased && _event.mouseButton.button == sf::Mouse::Left) {
+            sf::Vector2f uiMousePos = _window.mapPixelToCoords(mousePosPos, _window.getDefaultView());
+            if (uiMousePos.x < 1500.0f)
+                world.setSelectedTile(world.getHoveredTile().first, world.getHoveredTile().second);
+        }
     }
     handleMove();
 }
@@ -56,11 +71,10 @@ void EventHandler::handleZoom()
             if (_camera.getSize().x > _windowWidth * 0.1)
                 _camera.zoom(0.9f);
         } else if (_event.mouseWheelScroll.delta < 0) {
-            if (_camera.getSize().x < _windowWidth) {
+            if (_camera.getSize().x < _windowWidth)
                 _camera.zoom(1.1f);
-            } else {
+            else
                 _camera.setSize(_windowWidth, _windowHeight);
-            }
         }
     }
 }

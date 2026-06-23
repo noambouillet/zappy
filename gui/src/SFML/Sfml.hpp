@@ -34,11 +34,11 @@ class Sfml : public IGui {
         bool isOpen() const override;
         void handleEvent() override;
         void displayWindow() override;
-        void setPlayerActionBubble(int id, const std::string &textureKey, float duration) override;
-        void triggerPlayerDeath(int id) override;
-        void triggerPlayerBroadcast(int id, const std::string &message) override;
-        void setPlayerIncanting(int id, bool state) override;
+        void setTrantorianActionBubble(int id, const std::string &textureKey, float duration) override;
+        void triggerTrantorianDeath(int id) override;
+        void setTrantorianIncanting(int id, bool state) override;
         void stopIncantationAt(int x, int y) override;
+        void addBroadcast(int x, int y) override;
         HandleTrantorians &getHandleTrantorians();
 
     private:

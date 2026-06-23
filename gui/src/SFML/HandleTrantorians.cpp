@@ -8,7 +8,10 @@
 #include "HandleTrantorians.hpp"
 #include <math.h>
 
-HandleTrantorians::HandleTrantorians(TextureManager &textureManager, sf::RenderWindow &window, World &world): _textureManager(textureManager), _window(window), _world(world) {}
+HandleTrantorians::HandleTrantorians(TextureManager &textureManager, sf::RenderWindow &window, World &world): _textureManager(textureManager), _window(window), _world(world)
+{
+    _displayBroadcast = false;
+}
 
 HandleTrantorians::~HandleTrantorians() {}
 
@@ -17,47 +20,47 @@ sf::Vector2f HandleTrantorians::convertToPixels(int x, int y) const
     return sf::Vector2f(_offsetX + (x * _tileSize) + (_tileSize / 2.0f), _offsetY + (y * _tileSize) + (_tileSize / 2.0f));
 }
 
-void HandleTrantorians::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+void HandleTrantorians::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
-    PlayerAnim_t &anim = _playerAnims[id];
-    
+    TrantorianAnim_t &anim = _trantorianAnims[id];
+
     anim.bubbleQueue.push_back({textureKey, duration});
     if (anim.bubbleTimer <= 0.0f)
         anim.bubbleTimer = duration;
 }
 
-void HandleTrantorians::updatePlayerAnimation(PlayerAnim_t &anim, const Player_t &player, float deltaTime, float maxWidth, float maxHeight)
+void HandleTrantorians::updateTrantorianAnimation(TrantorianAnim_t &anim, const Trantorian_t &trantorian, float deltaTime, float maxWidth, float maxHeight)
 {
     if (anim.isDying) {
-        updatePlayerDeath(anim, deltaTime);
+        updateTrantorianDeath(anim, deltaTime);
         return;
     }
     if (anim.isIncanting)
-        updatePlayerIncantation(anim, deltaTime);
-    sf::Vector2f currentTilePixelPos = convertToPixels(player.x, player.y);
+        updateTrantorianIncantation(anim, deltaTime);
+    sf::Vector2f currentTilePixelPos = convertToPixels(trantorian.x, trantorian.y);
     if (anim.visualPos == sf::Vector2f(0.0f, 0.0f) && currentTilePixelPos != sf::Vector2f(0.0f, 0.0f))
-        initPlayerAnim(anim, player, currentTilePixelPos);
-    if (player.x != anim.lastX || player.y != anim.lastY) {
+        initTrantorianAnim(anim, trantorian, currentTilePixelPos);
+    if (trantorian.x != anim.lastX || trantorian.y != anim.lastY) {
         anim.targetPos = currentTilePixelPos;
         anim.isMoving = true;
-        anim.lastX = player.x;
-        anim.lastY = player.y;
+        anim.lastX = trantorian.x;
+        anim.lastY = trantorian.y;
     }
-    updatePlayerPosition(anim, deltaTime, maxWidth, maxHeight);
-    updatePlayerBubble(anim, deltaTime);
+    updateTrantorianPosition(anim, deltaTime, maxWidth, maxHeight);
+    updateTrantorianBubble(anim, deltaTime);
 }
 
-void HandleTrantorians::initPlayerAnim(PlayerAnim_t &anim, const Player_t &player, const sf::Vector2f &pixelPos)
+void HandleTrantorians::initTrantorianAnim(TrantorianAnim_t &anim, const Trantorian_t &trantorian, const sf::Vector2f &pixelPos)
 {
-    anim.id = player.id;
+    anim.id = trantorian.id;
     anim.visualPos = pixelPos;
     anim.targetPos = pixelPos;
-    anim.lastX = player.x;
-    anim.lastY = player.y;
+    anim.lastX = trantorian.x;
+    anim.lastY = trantorian.y;
     anim.isMoving = false;
 }
 
-void HandleTrantorians::updatePlayerPosition(PlayerAnim_t &anim, float deltaTime, float maxWidth, float maxHeight)
+void HandleTrantorians::updateTrantorianPosition(TrantorianAnim_t &anim, float deltaTime, float maxWidth, float maxHeight)
 {
     if (!anim.isMoving) {
         anim.walkTimer = 0.0f;
@@ -83,7 +86,7 @@ void HandleTrantorians::updatePlayerPosition(PlayerAnim_t &anim, float deltaTime
     }
 }
 
-void HandleTrantorians::updatePlayerBubble(PlayerAnim_t &anim, float deltaTime)
+void HandleTrantorians::updateTrantorianBubble(TrantorianAnim_t &anim, float deltaTime)
 {
     if (anim.bubbleTimer <= 0.0f)
         return;
@@ -97,44 +100,33 @@ void HandleTrantorians::updatePlayerBubble(PlayerAnim_t &anim, float deltaTime)
 
 void HandleTrantorians::updateAnimations(float deltaTime)
 {
-    for (size_t y = 0; y < _world.getMapSize().second; ++y) {
-        for (size_t x = 0; x < _world.getMapSize().first; ++x) {
+    for (size_t y = 0; y < _world.getMapSize().second; y++) {
+        for (size_t x = 0; x < _world.getMapSize().first; x++) {
             TileData_t &tile = _world.getTileData(x, y);
-            for (const auto &pair : tile.players) {
-                updatePlayerAnimation(_playerAnims[pair.second.id], pair.second, deltaTime, _world.getMapSize().first * _tileSize, _world.getMapSize().second * _tileSize);
-            }
+            for (const auto &pair : tile.trantorians)
+                updateTrantorianAnimation(_trantorianAnims[pair.second.id], pair.second, deltaTime, _world.getMapSize().first * _tileSize, _world.getMapSize().second * _tileSize);
         }
     }
-    for (auto it = _playerAnims.begin(); it != _playerAnims.end();) {
+    for (auto it = _trantorianAnims.begin(); it != _trantorianAnims.end();) {
         if (it->second.isDeadAndGone) {
             _world.removeTrantorian(it->second.id);
-            it = _playerAnims.erase(it);
-        } else {
+            it = _trantorianAnims.erase(it);
+        } else
             it++;
-        }
     }
 }
 
-void HandleTrantorians::triggerPlayerDeath(int id)
+void HandleTrantorians::triggerTrantorianDeath(int id)
 {
-    if (_playerAnims.find(id) != _playerAnims.end()) {
-        _playerAnims[id].isDying = true;
-        _playerAnims[id].deathFrame = 0;
-        _playerAnims[id].deathTimer = 0.0f;
+    if (_trantorianAnims.find(id) != _trantorianAnims.end()) {
+        _trantorianAnims[id].isDying = true;
+        _trantorianAnims[id].deathFrame = 0;
+        _trantorianAnims[id].deathTimer = 0.0f;
     }
 }
 
-void HandleTrantorians::triggerPlayerBroadcast(int id, const std::string &message)
+void HandleTrantorians::updateTrantorianDeath(TrantorianAnim_t &anim, float deltaTime)
 {
-    (void)id;
-    (void)message;
-    // No implementation for SFML cause already done in another branch
-}
-
-void HandleTrantorians::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
-{
-    if (!anim.isDying)
-        return;
     anim.deathTimer += deltaTime;
     if (anim.deathTimer >= 0.1f) {
         anim.deathTimer = 0.0f;
@@ -144,23 +136,23 @@ void HandleTrantorians::updatePlayerDeath(PlayerAnim_t &anim, float deltaTime)
     }
 }
 
-void HandleTrantorians::setPlayerIncanting(int id, bool state)
+void HandleTrantorians::setTrantorianIncanting(int id, bool state)
 {
-    if (_playerAnims.find(id) != _playerAnims.end()) {
-        _playerAnims[id].isIncanting = state;
-        _playerAnims[id].incantFrame = 0;
-        _playerAnims[id].incantTimer = 0.0f;
+    if (_trantorianAnims.find(id) != _trantorianAnims.end()) {
+        _trantorianAnims[id].isIncanting = state;
+        _trantorianAnims[id].incantFrame = 0;
+        _trantorianAnims[id].incantTimer = 0.0f;
     }
 }
 
 void HandleTrantorians::stopIncantationAt(int x, int y)
 {
-    for (auto &pair : _playerAnims)
+    for (auto &pair : _trantorianAnims)
         if (pair.second.lastX == x && pair.second.lastY == y)
             pair.second.isIncanting = false;
 }
 
-void HandleTrantorians::updatePlayerIncantation(PlayerAnim_t &anim, float deltaTime)
+void HandleTrantorians::updateTrantorianIncantation(TrantorianAnim_t &anim, float deltaTime)
 {
     if (!anim.isIncanting)
         return;
@@ -174,6 +166,7 @@ void HandleTrantorians::updatePlayerIncantation(PlayerAnim_t &anim, float deltaT
 void HandleTrantorians::drawBaseIndicator(const sf::Vector2f &pos)
 {
     sf::CircleShape baseIndicator(_tileSize * 0.4f);
+
     baseIndicator.setOrigin(baseIndicator.getRadius(), baseIndicator.getRadius());
     baseIndicator.setPosition(pos.x, pos.y + _tileSize * 0.2f);
     baseIndicator.setFillColor(sf::Color(178, 102, 180));
@@ -185,26 +178,30 @@ void HandleTrantorians::drawBaseIndicator(const sf::Vector2f &pos)
 void HandleTrantorians::drawTrantorians(const TileData_t &tile)
 {
     float size = _tileSize * 0.95f;
-    const sf::Texture &tex = _textureManager.getTexture("benoit");
-    sf::Sprite &sprite = _textureManager.getSprite("benoit");
+    const sf::Texture &tex = _textureManager.getTexture("trantorian");
+    sf::Sprite &sprite = _textureManager.getSprite("trantorian");
     sprite.setOrigin(tex.getSize().x / 2.0f, tex.getSize().y / 2.0f);
     std::string activeTeam = _world.getSelectedTeam();
-    int hoveredPlayerId = _world.getSelectedPlayerId();
-    for (const auto &animPair : _playerAnims) {
-        const PlayerAnim_t &anim = animPair.second;
-        auto it = tile.players.find(anim.id);
-        bool hasPlayer = (it != tile.players.end());
-        if (hasPlayer || anim.isDying) {
-            bool isTargetTeam = (!activeTeam.empty() && hasPlayer && it->second.teamName == activeTeam);
-            if (isTargetTeam || (hasPlayer && hoveredPlayerId == it->second.id))
+    int hoveredTrantorianId = _world.getSelectedTrantorianId();
+    for (const auto &animPair : _trantorianAnims) {
+        const TrantorianAnim_t &anim = animPair.second;
+        auto it = tile.trantorians.find(anim.id);
+        bool hasTrantorian = (it != tile.trantorians.end());
+        if (hasTrantorian || anim.isDying) {
+            bool isTargetTeam = (!activeTeam.empty() && hasTrantorian && it->second.teamName == activeTeam);
+            if (isTargetTeam || (hasTrantorian && hoveredTrantorianId == it->second.id))
                 drawBaseIndicator(anim.visualPos);
-            if (activeTeam.empty())
-                sprite.setScale(size / tex.getSize().x, size / tex.getSize().y);
-            if (anim.isDying) {
-                drawAnimation(anim, size, 32, "spritesheetDeath", anim.deathFrame);
-            } else if (anim.isIncanting) {
+            float scaleX = size / tex.getSize().x;
+            if (hasTrantorian) {
+                if (it->second.orientation == 2)
+                    scaleX = -scaleX;
+            }
+            sprite.setScale(scaleX, size / tex.getSize().y);
+            if (anim.isDying)
+                drawAnimation(anim, size * 1.5f, 32, "spritesheetDeath", anim.deathFrame);
+            else if (anim.isIncanting)
                 drawAnimation(anim, size, 6, "incantation", anim.incantFrame);
-            } else {
+            else {
                 sprite.setPosition(anim.visualPos);
                 sprite.setRotation((anim.isMoving) ? (15.0f * std::sin(anim.walkTimer * 18.0f)) : 0.0f);
                 _window.draw(sprite);
@@ -214,42 +211,40 @@ void HandleTrantorians::drawTrantorians(const TileData_t &tile)
     }
     sprite.setRotation(0.0f);
     sprite.setColor(sf::Color::White);
+    if (_displayBroadcast)
+        updateAndDrawWaves(_window);
 }
 
-void HandleTrantorians::drawAnimation(const PlayerAnim_t &anim, float size, int nbFrame, std::string sheetKey, int currentFrame)
+void HandleTrantorians::drawAnimation(const TrantorianAnim_t &anim, float size, int nbFrame, std::string sheetKey, int currentFrame)
 {
     const sf::Texture &tex = _textureManager.getTexture(sheetKey);
     sf::Sprite &sprite = _textureManager.getSprite(sheetKey);
-    int frameW = tex.getSize().x / nbFrame;
-    int frameH = tex.getSize().y;
 
-    sprite.setTextureRect(sf::IntRect(currentFrame * frameW, 0, frameW, frameH));
-    sprite.setOrigin(frameW / 2.0f, frameH / 2.0f);
-    sprite.setScale(size / frameW, size / frameH);
+    sprite.setTextureRect(sf::IntRect(currentFrame * tex.getSize().x / nbFrame, 0, tex.getSize().x / nbFrame, tex.getSize().y));
+    sprite.setOrigin(tex.getSize().x / nbFrame / 2.0f, tex.getSize().y / 2.0f);
+    sprite.setScale(size / (tex.getSize().x / nbFrame), size / tex.getSize().y);
     sprite.setPosition(anim.visualPos);
     sprite.setRotation(0.0f);
     _window.draw(sprite);
 }
 
-void HandleTrantorians::displayBubble(const PlayerAnim_t &anim)
+void HandleTrantorians::displayBubble(const TrantorianAnim_t &anim)
 {
     if (anim.bubbleQueue.empty())
         return;
-    float bSize = _tileSize * 0.60f;
-    float iSize = _tileSize * 0.40f;
+    float bubbleSize = _tileSize * 0.60f;
+    float IconSize = _tileSize * 0.40f;
     const sf::Texture &bTex = _textureManager.getTexture("bubble");
     sf::Sprite &bSprite = _textureManager.getSprite("bubble");
     const sf::Texture &iTex = _textureManager.getTexture(anim.bubbleQueue.front().first);
     sf::Sprite &iSprite = _textureManager.getSprite(anim.bubbleQueue.front().first);
 
     bSprite.setOrigin(bTex.getSize().x / 2.0f, bTex.getSize().y / 2.0f);
-    bSprite.setScale(bSize / bTex.getSize().x, bSize / bTex.getSize().y);
-    float bX = anim.visualPos.x;
-    float bY = anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (bSize / 2.0f) - 4.0f;
-    bSprite.setPosition(bX, bY);
+    bSprite.setScale(bubbleSize / bTex.getSize().x, bubbleSize / bTex.getSize().y);
+    bSprite.setPosition(anim.visualPos.x, anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (bubbleSize / 2.0f) - 4.0f);
     iSprite.setOrigin(iTex.getSize().x / 2.0f, iTex.getSize().y / 2.0f);
-    iSprite.setScale(iSize / iTex.getSize().x, iSize / iTex.getSize().y);
-    iSprite.setPosition(bX, bY);
+    iSprite.setScale(IconSize / iTex.getSize().x, IconSize / iTex.getSize().y);
+    iSprite.setPosition(anim.visualPos.x, anim.visualPos.y - ((_tileSize * 0.95f) / 2.0f) - (bubbleSize / 2.0f) - 4.0f);
     _window.draw(bSprite);
     _window.draw(iSprite);
 }
@@ -259,4 +254,40 @@ void HandleTrantorians::update(float tileSize, float offsetX, float offsetY)
     _tileSize = tileSize;
     _offsetX = offsetX;
     _offsetY = offsetY;
+}
+
+void HandleTrantorians::addBroadcast(int x, int y)
+{    
+    BroadcastWave wave;
+
+    wave.centerPos = convertToPixels(x, y);
+    _waves.push_back(wave);
+}
+
+void HandleTrantorians::updateAndDrawWaves(sf::RenderWindow &window)
+{
+    float deltaTime = _clock.restart().asSeconds();
+    sf::CircleShape circle;
+    circle.setFillColor(sf::Color::Transparent);
+    circle.setOutlineThickness(2.0f);
+
+    for (auto it = _waves.begin(); it != _waves.end();) {
+        it->radius += SPEED * deltaTime;
+        if (it->radius >= MAX_RADIUS) {
+            it = _waves.erase(it);
+            continue;
+        }
+        circle.setRadius(it->radius);
+        circle.setOrigin(it->radius, it->radius);
+        circle.setPosition(it->centerPos);
+        circle.setOutlineColor(sf::Color(151, 26, 251));
+        window.draw(circle);
+        it++;
+    }
+}
+
+void HandleTrantorians::handleEvent(const sf::Event &event)
+{
+    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::B)
+        _displayBroadcast = !_displayBroadcast;
 }
