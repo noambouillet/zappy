@@ -176,10 +176,22 @@ const std::vector<std::string> &World::getTeams()
     return _teams;
 }
 
+std::map<std::string, std::map<int, int>> World::getTeamStats() const
+{
+    std::map<std::string, std::map<int, int>> stats;
+    for (size_t y = 0; y < _mapSize.second; y++) {
+        for (size_t x = 0; x < _mapSize.first; x++) {
+            for (const auto &[id, player] : _map[y][x].players) {
+                stats[player.teamName][player.level]++;
+            }
+        }
+    }
+    return stats;
+}
+
 void World::updateGameTime(float deltaTime)
 {
-    if (getTime() > 0)
-        _internalGameTime += deltaTime * getTime();
+    _internalGameTime += deltaTime;
 }
 
 std::string World::getFormattedGameTime() const

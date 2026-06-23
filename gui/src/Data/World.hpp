@@ -54,6 +54,7 @@ class World {
         std::pair<size_t, size_t> getMapSize() const;
         TileData_t &getTileData(int x, int y);
         const std::vector<std::string> &getTeams();
+        std::map<std::string, std::map<int, int>> getTeamStats() const;
         const std::vector<int> &getTotalRessources();
         void setSelectedTeam(const std::string teamName);
         const std::string &getSelectedTeam() const;
