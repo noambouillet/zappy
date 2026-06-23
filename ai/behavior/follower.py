@@ -41,8 +41,8 @@ class Follower(Behavior):
                 agent.leader_id = None
                 agent.direction_to_follow = 0
                 agent.last_send_leader = agent.tick
-                return ["Look\n"]
-            return ["Look\n"]
+                return ["Inventory\n"]
+            return ["Inventory\n"]
         else:
             agent.joining_incantation = True
             agent.leader_id = msg_leader["sender_id"]

@@ -14,15 +14,19 @@ def do_take(agent, response_server, command):
         response_server (str): the message send by the server for the response
         command: the command send by the ia
     """
+    split_command = command.split()
+    ressource = split_command[1].strip()
     if (response_server == "ok"):
-        split_command = command.split()
-        ressource = split_command[1].strip()
         key = agent.inventory.get(ressource)
         if (key is not None):
             agent.inventory[ressource] += 1
+        if (agent.vision != [[]] and ressource in agent.vision[0]):
+            agent.vision[0].remove(ressource)
         logger.info("The Take command was successful (received and completed).")
         print(f"The Take command worked correctly, the object could be taken from the tile. ({ressource}) 🗿​​")
     elif (response_server == "ko"):
+        if (agent.vision != [[]] and ressource in agent.vision[0]):
+            agent.vision[0].remove(ressource)
         logger.info("The Take command did not result in retrieving the object from the tile")
         print("The Take command did not work; there was no noticeable change to the tile.")        
     else:

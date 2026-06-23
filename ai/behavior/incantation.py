@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import MIN_FOOD, requirement_for_progress
+from constant import MIN_FOOD, requirement_for_progress, NB_PLAYERS_REQUIRED
 
 class Incantation(Behavior):
     def execute(self, agent):
@@ -72,11 +72,8 @@ class Incantation(Behavior):
         return eject_players
     
     def verif_incantation(self, agent):
-        #nb_required_players = requirement_for_progress[agent.level - 1]["nb_players"]
-        if 6 > agent.teammate_on_tile:
-            if (agent.tick % 2 == 0):
-                return False, [f"Broadcast INCANTATION|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
-            return False, ["Look\n"]
+        if NB_PLAYERS_REQUIRED > agent.teammate_on_tile:
+            return False, [f"Broadcast INCANTATION|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n", "Look\n"]
         commands, can_start = self.prepare_tile_resources(agent)
         if commands:
             agent.prepare_incantation = True

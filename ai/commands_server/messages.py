@@ -22,13 +22,13 @@ def receive_message(agent, response_server):
     except (ValueError, IndexError):
         return
     parts = content.split("|")
-    if parts[0] in ["AVAILABLE", "INCANTATION", "READY", "ALIVE?"]:
+    if parts[0] in ["AVAILABLE", "INCANTATION", "READY", "ALIVE?", "LEAVING"]:
         try:
             action = parts[0]
             level = parts[1]
             team = parts[2]
             tick = parts[3]
             sender_id = parts[4]
+            agent.mailbox.append({"action": action, "direction": (int)(direction), "level": (int)(level), "team": team, "tick": (int)(tick), "sender_id": (int)(sender_id)})
         except ValueError:
             return
-        agent.mailbox.append({"action": action, "direction": (int)(direction), "level": (int)(level), "team": team, "tick": (int)(tick), "sender_id": (int)(sender_id)})
