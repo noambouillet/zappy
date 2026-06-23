@@ -89,3 +89,8 @@ void Sfml::stopIncantationAt(int x, int y)
 {
     _renderMap.getHandleTrantorians().stopIncantationAt(x, y);
 }
+
+void Sfml::addBroadcast(int x, int y)
+{
+    _renderMap.getHandleTrantorians().addBroadcast(x, y);
+}

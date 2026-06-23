@@ -31,6 +31,7 @@ class RaylibGui : public IGui {
         void triggerTrantorianDeath(int id) override;
         void setTrantorianIncanting(int id, bool state) override;
         void stopIncantationAt(int x, int y) override;
+        void addBroadcast(int x, int y) override;
 
     private:
         World &_world;

@@ -174,3 +174,8 @@ void RaylibGui::drawTileContent(int x, int z)
         DrawModelEx(_models["wizard"]->getModel(), Vector3{static_cast<float>(x), 0.0f, static_cast<float>(z)}, Vector3{0.0f, 1.0f, 0.0f}, angle, Vector3{0.5f, 0.5f, 0.5f}, WHITE);
     }
 }
+
+void RaylibGui::addBroadcast(int x, int y)
+{
+    return;
+}

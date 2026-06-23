@@ -23,6 +23,7 @@ sf::Vector2f HandleTrantorians::convertToPixels(int x, int y) const
 void HandleTrantorians::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
     TrantorianAnim_t &anim = _trantorianAnims[id];
+
     anim.bubbleQueue.push_back({textureKey, duration});
     if (anim.bubbleTimer <= 0.0f)
         anim.bubbleTimer = duration;

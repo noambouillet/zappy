@@ -155,7 +155,7 @@ void UIRender::displayTeams()
                     hoveredTrantorianId = trantorian.id;
                 }
                 _text.setFillColor(subColor);
-                drawButton(trantorian.Name.find(' ') != std::string::npos ? trantorian.Name.substr(0, trantorian.Name.find(' ')) : trantorian.Name, 35, subX, y, subW, subH);
+                drawButton((trantorian.Name.find(' ') != std::string::npos ? trantorian.Name.substr(0, trantorian.Name.find(' ')) : trantorian.Name) + " Lvl:" + std::to_string(trantorian.level), 35, subX, y, subW, subH);
                 y += subH + 10.0f;
             }
         }

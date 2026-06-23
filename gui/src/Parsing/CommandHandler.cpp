@@ -186,7 +186,7 @@ void CommandHandler::handle_pin(std::stringstream &ss)
     if (!(ss >> sharp >> id >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6))
         return;
     _world.setTrantorianInventory(x, y, id, {q0, q1, q2, q3, q4, q5, q6});
-    _gui.setTrantorianActionBubble(id, "inventory", 1.0f / _world.getTime());
+    _gui.setTrantorianActionBubble(id, "inventory", 5.0f * 1.0f / _world.getTime());
     std::cout << "Trantorian #" << id << " check his inventory." << std::endl;
 }
 
@@ -197,7 +197,7 @@ void CommandHandler::handle_pex(std::stringstream &ss)
 
     if (!(ss >> sharp >> id))
         return;
-    _gui.setTrantorianActionBubble(id, "lotOres", 7.0f / _world.getTime()); // à changer pour un point d'exclamation
+    _gui.setTrantorianActionBubble(id, "lotOres", 5.0f * 7.0f / _world.getTime()); // à changer pour un point d'exclamation
     std::cout << "Trantorian #" << id << " is angry and need to push things to feel better." << std::endl;
 }
 
@@ -209,7 +209,8 @@ void CommandHandler::handle_pgt(std::stringstream &ss)
     static const std::string resourceTextures[] = {"donut", "linemate", "emeraude", "rubis", "diamond", "saphir", "amethyst"};
 
     if (!(ss >> sharp >> id >> resourceId))
-    _gui.setTrantorianActionBubble(id, resourceTextures[resourceId], 7.0f / _world.getTime());
+        return;
+    _gui.setTrantorianActionBubble(id, resourceTextures[resourceId], 5.0f * 7.0f / _world.getTime());
     std::cout << "Trantorian #" << id << " collect " << resourceTextures[resourceId] << "." << std::endl;
 }
 
@@ -261,7 +262,7 @@ void CommandHandler::handle_pbc(std::stringstream &ss)
     if (!(ss >> sharp >> id >> message))
         return;
     Trantorian_t &trantorian = _world.getTrantorian(id);
-    //_gui.addBroadcast(trantorian.x, trantorian.y);
+    _gui.addBroadcast(trantorian.x, trantorian.y);
     std::cout << "trantorian #" << id << ": \"" << message << "\"" << std::endl;
 }
 
@@ -272,7 +273,7 @@ void CommandHandler::handle_pfk(std::stringstream &ss)
 
     if (!(ss >> sharp >> id))
         return;
-    _gui.setTrantorianActionBubble(id, "egg", 42.0f / _world.getTime()); 
+    _gui.setTrantorianActionBubble(id, "egg", 5.0f * 42.0f / _world.getTime()); 
     std::cout << "Egg laying by the trantorian #" << id << std::endl;
 }
 
@@ -284,7 +285,7 @@ void CommandHandler::handle_pdr(std::stringstream &ss)
 
     if (!(ss >> sharp >> id >> nb))
         return;
-    _gui.setTrantorianActionBubble(id, "ground", 42.0f / _world.getTime()); // à changer pour une main en mode il drop 
+    _gui.setTrantorianActionBubble(id, "ground", 5.0f * 42.0f / _world.getTime()); // à changer pour une main en mode il drop 
     std::cout << "Trantorian #" << id << " drop " << nb << " ressources." << std::endl;
 }
 

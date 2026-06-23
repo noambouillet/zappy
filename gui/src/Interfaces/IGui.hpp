@@ -22,6 +22,7 @@ class IGui {
         virtual void triggerTrantorianDeath(int id) = 0;
         virtual void setTrantorianIncanting(int id, bool state) = 0;
         virtual void stopIncantationAt(int x, int y) = 0;
+        virtual void addBroadcast(int x, int y) = 0;
 };
 
 #endif /* !IGUI_HPP_ */
