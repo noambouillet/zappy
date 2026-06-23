@@ -44,10 +44,9 @@ class RaylibGui : public IGui {
         
         void setTrantorianActionBubble(int id, const std::string &textureKey, float duration) override;
         void triggerTrantorianDeath(int id) override;
-        void triggerPlayerBroadcast(int id, const std::string &message) override;
         void setTrantorianIncanting(int id, bool state) override;
         void stopIncantationAt(int x, int y) override;
-        void addBroadcast(int x, int y) override;
+        void addBroadcast(int id) override;
 
     private:
         World &_world;

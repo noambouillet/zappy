@@ -261,8 +261,7 @@ void CommandHandler::handle_pbc(std::stringstream &ss)
 
     if (!(ss >> sharp >> id >> message))
         return;
-    Trantorian_t &trantorian = _world.getTrantorian(id);
-    _gui.addBroadcast(trantorian.x, trantorian.y);
+    _gui.addBroadcast(id);
     std::cout << "trantorian #" << id << ": \"" << message << "\"" << std::endl;
 }
 

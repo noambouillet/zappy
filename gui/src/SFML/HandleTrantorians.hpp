@@ -34,7 +34,7 @@ struct TrantorianAnim_t {
 };
 
 struct BroadcastWave {
-    sf::Vector2f centerPos;
+    int id;
     float radius = 0.0f;
 };
 
@@ -52,7 +52,7 @@ class HandleTrantorians {
         void triggerTrantorianDeath(int id);
         void stopIncantationAt(int x, int y);
         void updateAnimations(float deltaTime);
-        void addBroadcast(int x, int y);
+        void addBroadcast(int id);
         void handleEvent(const sf::Event &event);
     private:
         sf::Vector2f convertToPixels(int x, int y) const;

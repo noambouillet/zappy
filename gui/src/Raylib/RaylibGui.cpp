@@ -212,15 +212,6 @@ void RaylibGui::triggerTrantorianDeath(int id)
     anim.deathTimer = 0.0f;
 }
 
-void RaylibGui::triggerPlayerBroadcast(int id, const std::string &message)
-{
-    (void)message;
-    RayPlayerAnim_t &anim = _playerAnims[id];
-    anim.id = id;
-    anim.isBroadcasting = true;
-    anim.broadcastTimer = 0.0f;
-}
-
 void RaylibGui::setTrantorianIncanting(int id, bool state)
 {
     RayPlayerAnim_t &anim = _playerAnims[id];
@@ -233,7 +224,7 @@ void RaylibGui::setTrantorianIncanting(int id, bool state)
 void RaylibGui::stopIncantationAt(int x, int y)
 {
     auto& tile = _world.getTileData(x, y);
-    for (auto& [id, player] : tile.players) {
+    for (auto& [id, player] : tile.trantorians) {
         if (_playerAnims.find(id) != _playerAnims.end()) {
             _playerAnims[id].isIncanting = false;
         }
@@ -307,7 +298,7 @@ void RaylibGui::drawTileContent(int x, int z)
         if (anim.isDying)
             rlRotatef(std::min(anim.deathTimer * 90.0f, 90.0f), 1.0f, 0.0f, 0.0f);
         rlScalef(0.5f, 0.5f, 0.5f);
-        Color wizardColor = RayUI::getTeamColor(player.teamName);
+        Color wizardColor = RayUI::getTeamColor(trantorian.teamName);
         DrawModel(_models["wizard"]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 1.0f, wizardColor);
         rlPopMatrix();
 
@@ -324,7 +315,10 @@ void RaylibGui::drawTileContent(int x, int z)
     }
 }
 
-void RaylibGui::addBroadcast(int x, int y)
+void RaylibGui::addBroadcast(int id)
 {
-    return;
+    RayPlayerAnim_t &anim = _playerAnims[id];
+    anim.id = id;
+    anim.isBroadcasting = true;
+    anim.broadcastTimer = 0.0f;
 }

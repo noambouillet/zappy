@@ -256,11 +256,15 @@ void HandleTrantorians::update(float tileSize, float offsetX, float offsetY)
     _offsetY = offsetY;
 }
 
-void HandleTrantorians::addBroadcast(int x, int y)
+void HandleTrantorians::addBroadcast(int id)
 {    
-    BroadcastWave wave;
+    _waves.erase(std::remove_if(_waves.begin(), _waves.end(),
+        [id](const BroadcastWave &wave) {
+            return wave.id == id;
+        }), _waves.end());
 
-    wave.centerPos = convertToPixels(x, y);
+    BroadcastWave wave;
+    wave.id = id;
     _waves.push_back(wave);
 }
 
@@ -277,11 +281,13 @@ void HandleTrantorians::updateAndDrawWaves(sf::RenderWindow &window)
             it = _waves.erase(it);
             continue;
         }
-        circle.setRadius(it->radius);
-        circle.setOrigin(it->radius, it->radius);
-        circle.setPosition(it->centerPos);
-        circle.setOutlineColor(sf::Color(151, 26, 251));
-        window.draw(circle);
+        if (_trantorianAnims.find(it->id) != _trantorianAnims.end()) {
+            circle.setRadius(it->radius);
+            circle.setOrigin(it->radius, it->radius);
+            circle.setPosition(_trantorianAnims[it->id].visualPos);
+            circle.setOutlineColor(sf::Color(151, 26, 251));
+            window.draw(circle);
+        }
         it++;
     }
 }
