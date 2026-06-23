@@ -16,6 +16,7 @@ def print_help(value_exit):
     """
     print("USAGE: ./zappy_ai -p port -n name -h machine")
     if (value_exit == 84):
+        print("\nIncorrect number of arguments:\nYou need at least: -p num_port -n name_team\nAnd at most: -p num_port -n name_team -h name_machine")
         logger.critical("\nIncorrect number of arguments:\nYou need at least: -p num_port -n name_team\nAnd at most: -p num_port -n name_team -h name_machine")
     sys.exit(value_exit)
 
@@ -25,6 +26,7 @@ def parse_args():
         _type_: port(int), name(str), machine(str)
     """
     logging.basicConfig(filename='zappy_ai.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    print("Launch of the program")
     logger.info("Launch of the program")
     if (len(sys.argv) == 2 and sys.argv[1] == "--help"):
         print_help(0)
@@ -41,9 +43,11 @@ def parse_args():
     if (args.name_machine is None):
         args.name_machine = socket.gethostname()
     if (args.port is None or args.name_team is None):
+        print("The port and the name of the machine are mandatory")
         logger.critical("The port and the name of the machine are mandatory")
         sys.exit(84)
     if (args.port < 1024 or args.port > 65535):
+        print("The machine port cannot be less than 1 or greater than 65535, the value now :", args.port)
         logger.critical("The machine port cannot be less than 1 or greater than 65535, the value now :", args.port)
         sys.exit(84)
     return args.port, args.name_team, args.name_machine
