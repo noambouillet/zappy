@@ -36,19 +36,21 @@ bool Parsing_gui::is_ipv4(const std::string &addr)
 networkData_t Parsing_gui::check_args(const std::string &addr, const std::string &port)
 {
     networkData_t data;
-    
-    if (!is_ipv4(addr))
-        throw GuiException("The address: '" + addr + "' does not feat the ipv4 format");
+    if (addr == "localhost")
+        data.ip = "127.0.0.1";
+    else {
+        if (!is_ipv4(addr))
+            throw GuiException("The address: '" + addr + "' does not feat the ipv4 format");
+        data.ip = addr;
+    }
+
     for (std::size_t i = 0; i < port.length(); i++)
         if (port[i] < '0' || port[i] > '9')
             throw GuiException("The port: '" + port + "' is not a number");
     data.port = std::stoi(port);
     if (data.port < 1 || data.port > 65535)
         throw GuiException("The port: '" + port + "' is out of range (port must be between 1 and 65535)");
-    if (addr == "localhost")
-        data.ip = "127.0.0.1";
-    else
-        data.ip = addr;
+
     return data;
 }
 
