@@ -38,7 +38,10 @@ class Agent:
         self.leader_id = 0
         self.direction_to_follow = 0
         self.level = 1
+        
+        self.send_available = False
         self.teammate_on_tile = 1
+        self.tab_id_teammate = []
 
     def display_info(self):
         logger.debug("AGENT INFO:")

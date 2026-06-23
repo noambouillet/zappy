@@ -26,7 +26,6 @@ class Incantation(Behavior):
             agent.prepare_incantation = False
             return []
         agent.leader_id = agent.agent_id 
-        agent.teammate_on_tile = 1
         is_eject = self.count_follower(agent)
         if (is_eject == True):
             return ["Eject\n"]
@@ -57,24 +56,31 @@ class Incantation(Behavior):
             agent (_type_): _description_
         """
         eject_players = False
-        new_mailbox = []
-        for msg in agent.mailbox:
+        mailbox_message = agent.mailbox.copy()
+        for msg in mailbox_message:
             if (msg["sender_id"] == agent.agent_id):
                 continue
-            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name):
+            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] not in agent.tab_id_teammate):
                 direction = msg["direction"]
                 if (direction == 0):
+                    agent.tab_id_teammate.append(msg["sender_id"])
                     agent.teammate_on_tile += 1
+            elif (msg["action"] == "LEAVING" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] in agent.tab_id_teammate):
+                agent.tab_id_teammate.remove(msg["sender_id"])
+                agent.teammate_on_tile -= 1
             elif (msg["team"] != agent.team_name and msg["direction"] == 0):
                 eject_players = True
-            else:
-                new_mailbox.append(msg)
-        agent.mailbox = new_mailbox
+                agent.tab_id_teammate = []
+                agent.teammate_on_tile = 1
+        agent.mailbox = [msg for msg in agent.mailbox if msg.get("action") == "INCANTATION"]
         return eject_players
     
     def verif_incantation(self, agent):
         if NB_PLAYERS_REQUIRED > agent.teammate_on_tile:
             return False, [f"Broadcast INCANTATION|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n", "Look\n"]
+        nb_players_in_vision = agent.vision[0].count("player")
+        if (NB_PLAYERS_REQUIRED > nb_players_in_vision):
+            return False, ["Look\n"]
         commands, can_start = self.prepare_tile_resources(agent)
         if commands:
             agent.prepare_incantation = True

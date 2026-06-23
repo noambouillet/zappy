@@ -19,7 +19,8 @@ class Follower(Behavior):
             agent.survive = True
             agent.joining_incantation = False
             agent.leader_id = None
-            return []
+            agent.send_available = False
+            return [f"Broadcast LEAVING|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
         msg_leader = None
         for msg in reversed(agent.mailbox):
             if (msg["sender_id"] == agent.agent_id):
@@ -42,14 +43,20 @@ class Follower(Behavior):
                 agent.leader_id = None
                 agent.direction_to_follow = 0
                 agent.last_send_leader = agent.tick
-                return ["Inventory\n"]
-            return ["Inventory\n"]
+                agent.send_available = False
+                return [f"Broadcast LEAVING|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
+            return ["Look\n"]
         else:
             agent.joining_incantation = True
             agent.leader_id = msg_leader["sender_id"]
             agent.direction_to_follow = msg_leader["direction"]
             agent.last_send_leader = agent.tick
             if (agent.direction_to_follow != 0):
+                agent.send_available = False
                 return agent.follow_direction(agent.direction_to_follow)
             else:
-                return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
+                if (agent.send_available == False):
+                    agent.send_available = True
+                    return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
+                else:
+                    return ["Look\n"]

@@ -31,7 +31,9 @@ def do_incantation(agent, response_server):
         agent.is_incantation = False
         agent.prepare_incantation = False
         agent.joining_incantation = False
+        agent.tab_id_teammate = []
         agent.mailbox.clear()
+        agent.teammate_on_tile = 1
         remove_incantation_command(agent)
     elif (response_server == "ko"):
         logger.info("The Incantation command did not result in the elevation of the character")
@@ -39,5 +41,8 @@ def do_incantation(agent, response_server):
         agent.is_incantation = False
         agent.prepare_incantation = False
         agent.joining_incantation = False
+        agent.teammate_on_tile = 1
+        agent.tab_id_teammate = []
+        agent.mailbox.clear()
         remove_incantation_command(agent)
     return   
