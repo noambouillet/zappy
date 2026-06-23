@@ -28,7 +28,7 @@ bool Parsing_gui::is_ipv4(const std::string &addr)
     int d;
     char end;
 
-    if (!addr || addr[0] == '\0' || sscanf(addr, "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4 || (a < 0 || a > 255) || (b < 0 || b > 255) || (c < 0 || c > 255) || (d < 0 || d > 255))
+    if (addr.empty() || addr[0] == '\0' || sscanf(addr.c_str(), "%3d.%3d.%3d.%3d%c", &a, &b, &c, &d, &end) != 4 || (a < 0 || a > 255) || (b < 0 || b > 255) || (c < 0 || c > 255) || (d < 0 || d > 255))
         return false;
     return true;
 }

@@ -118,7 +118,7 @@ void RaylibGui::displayWindow()
     _window.endDrawing();
 }
 
-void RaylibGui::setPlayerActionBubble(int id, const std::string &textureKey, float duration)
+void RaylibGui::setTrantorianActionBubble(int id, const std::string &textureKey, float duration)
 {
     (void)id;
     (void)textureKey;
@@ -126,7 +126,7 @@ void RaylibGui::setPlayerActionBubble(int id, const std::string &textureKey, flo
     // TODO: Implement 3D bubbles
 }
 
-void RaylibGui::triggerPlayerDeath(int id)
+void RaylibGui::triggerTrantorianDeath(int id)
 {
     // TODO: Implement 3D death animation
     try {
@@ -135,7 +135,7 @@ void RaylibGui::triggerPlayerDeath(int id)
     }
 }
 
-void RaylibGui::setPlayerIncanting(int id, bool state)
+void RaylibGui::setTrantorianIncanting(int id, bool state)
 {
     (void)id;
     (void)state;
@@ -156,10 +156,10 @@ void RaylibGui::drawTileContent(int x, int z)
         DrawModel(_models["donut"]->getModel(), Vector3{static_cast<float>(x) - 0.3f, 0.05f, static_cast<float>(z) - 0.3f}, 0.35f, WHITE);
     }
 
-    for (auto& [id, player] : tile.players) {
+    for (auto& [id, trantorian] : tile.trantorians) {
         (void)id;
         float angle = 0.0f;
-        switch (player.orientation) {
+        switch (trantorian.orientation) {
             case 1: angle = 180.0f;
                 break;
             case 2: angle = 90.0f;
@@ -173,4 +173,9 @@ void RaylibGui::drawTileContent(int x, int z)
         }
         DrawModelEx(_models["wizard"]->getModel(), Vector3{static_cast<float>(x), 0.0f, static_cast<float>(z)}, Vector3{0.0f, 1.0f, 0.0f}, angle, Vector3{0.5f, 0.5f, 0.5f}, WHITE);
     }
+}
+
+void RaylibGui::addBroadcast(int x, int y)
+{
+    return;
 }

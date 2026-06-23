@@ -78,3 +78,5 @@ class HandleTrantorians {
         sf::Clock _clock;
         bool _displayBroadcast;
 };
+
+#endif

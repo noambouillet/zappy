@@ -31,13 +31,16 @@ class Sfml : public IGui {
         Sfml(World &world);
         ~Sfml() override;
         sf::RenderWindow &getWindow();
-        void handleEvent();
-        void displayWindow();
-        void setTrantorianActionBubble(int id, const std::string &textureKey, float duration);
-        void triggerTrantorianDeath(int id);
-        void setTrantorianIncanting(int id, bool state);
-        void stopIncantationAt(int x, int y);
+        bool isOpen() const override;
+        void handleEvent() override;
+        void displayWindow() override;
+        void setTrantorianActionBubble(int id, const std::string &textureKey, float duration) override;
+        void triggerTrantorianDeath(int id) override;
+        void setTrantorianIncanting(int id, bool state) override;
+        void stopIncantationAt(int x, int y) override;
+        void addBroadcast(int x, int y) override;
         HandleTrantorians &getHandleTrantorians();
+
     private:
         sf::RenderWindow  _window;
         World &_world;

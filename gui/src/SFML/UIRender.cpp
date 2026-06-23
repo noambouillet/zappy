@@ -20,6 +20,10 @@ UIRender::~UIRender() {}
 
 void UIRender::displayUI()
 {
+    if (_world.isGameOver()) {
+        displayGameOver();
+        return;
+    }
     drawPanel(10.0f, 200.0f, 360.0f, 800.0f);
     drawPanel(810.0f, 35.0f, 330.0f, 60.0f);
     drawText("Time : " + _world.getFormattedGameTime(), 50, 830.0f, 30.0f);
@@ -151,7 +155,7 @@ void UIRender::displayTeams()
                     hoveredTrantorianId = trantorian.id;
                 }
                 _text.setFillColor(subColor);
-                drawButton(trantorian.Name.find(' ') != std::string::npos ? trantorian.Name.substr(0, trantorian.Name.find(' ')) : trantorian.Name, 35, subX, y, subW, subH);
+                drawButton((trantorian.Name.find(' ') != std::string::npos ? trantorian.Name.substr(0, trantorian.Name.find(' ')) : trantorian.Name) + " Lvl:" + std::to_string(trantorian.level), 35, subX, y, subW, subH);
                 y += subH + 10.0f;
             }
         }
@@ -271,4 +275,14 @@ void UIRender::drawPanel(float x, float y, float width, float height)
     _buttonShape.setOutlineColor(sf::Color(151, 26, 251));
     _buttonShape.setOutlineThickness(3.0f);
     _window.draw(_buttonShape);
+}
+
+void UIRender::displayGameOver()
+{
+    sf::RectangleShape overlay(sf::Vector2f(1920.0f, 1080.0f));
+    overlay.setFillColor(sf::Color(0, 0, 0, 200));
+    _window.draw(overlay);
+    drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
+    drawText("VICTORY !", 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
+    drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", 35, 610.0f + 60.0f, 340.0f + 180.0f);
 }

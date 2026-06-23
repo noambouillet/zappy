@@ -233,3 +233,18 @@ std::pair<int, int> World::getSelectedTile() const
 { 
     return _selectedTile;
 }
+
+void World::setGameOver(const std::string &teamName)
+{
+    _isGameOver = true; _winningTeam = teamName;
+}
+
+bool World::isGameOver() const
+{
+    return _isGameOver;
+}
+
+const std::string &World::getWinningTeam() const
+{
+    return _winningTeam;
+}
