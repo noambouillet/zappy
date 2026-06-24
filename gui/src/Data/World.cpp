@@ -260,3 +260,13 @@ const std::string &World::getWinningTeam() const
 {
     return _winningTeam;
 }
+
+void World::setDisplayLvl(bool value)
+{
+    _displayLvl = value;
+}
+
+bool World::getDisplayLvl()
+{
+    return _displayLvl;
+}

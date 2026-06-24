@@ -38,5 +38,7 @@ class UIRender {
         void drawPanel(float x, float y, float width, float height);
         void displayTileData(int x, int y);
         void displayGameOver();
+        void displayLevelLegend();
+
 };
 #endif

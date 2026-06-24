@@ -8,10 +8,7 @@
 #include "HandleTrantorians.hpp"
 #include <math.h>
 
-HandleTrantorians::HandleTrantorians(TextureManager &textureManager, sf::RenderWindow &window, World &world): _textureManager(textureManager), _window(window), _world(world)
-{
-    _displayBroadcast = false;
-}
+HandleTrantorians::HandleTrantorians(TextureManager &textureManager, sf::RenderWindow &window, World &world): _textureManager(textureManager), _window(window), _world(world) {}
 
 HandleTrantorians::~HandleTrantorians() {}
 
@@ -175,6 +172,12 @@ void HandleTrantorians::drawBaseIndicator(const sf::Vector2f &pos)
     _window.draw(baseIndicator);
 }
 
+const sf::Color HandleTrantorians::getColorWithLvl(int lvl)
+{
+    static const sf::Color Colors[] = {sf::Color(255, 0, 0), sf::Color(255, 228, 0), sf::Color(165, 255, 0), sf::Color(0, 255, 106), sf::Color(0, 239, 255), sf::Color(0, 90, 255), sf::Color(69, 0, 255), sf::Color(228, 0, 255)};
+    return Colors[lvl - 1];
+}
+
 void HandleTrantorians::drawTrantorians(const TileData_t &tile)
 {
     float size = _tileSize * 0.95f;
@@ -197,6 +200,8 @@ void HandleTrantorians::drawTrantorians(const TileData_t &tile)
                     scaleX = -scaleX;
             }
             sprite.setScale(scaleX, size / tex.getSize().y);
+            if (_displayLvl)
+                sprite.setColor(getColorWithLvl(it->second.level));
             if (anim.isDying)
                 drawAnimation(anim, size * 1.5f, 32, "spritesheetDeath", anim.deathFrame);
             else if (anim.isIncanting)
@@ -294,6 +299,12 @@ void HandleTrantorians::updateAndDrawWaves(sf::RenderWindow &window)
 
 void HandleTrantorians::handleEvent(const sf::Event &event)
 {
-    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::B)
-        _displayBroadcast = !_displayBroadcast;
+    if (event.type == sf::Event::KeyPressed) {
+        if  (event.key.code == sf::Keyboard::B)
+            _displayBroadcast = !_displayBroadcast;
+        if  (event.key.code == sf::Keyboard::L)  {
+            _displayLvl = !_displayLvl;
+            _world.setDisplayLvl(_displayLvl);
+        }
+    }
 }

@@ -66,6 +66,7 @@ class HandleTrantorians {
         void displayBubble(const TrantorianAnim_t &anim);
         void drawBaseIndicator(const sf::Vector2f &pos);
         void updateAndDrawWaves(sf::RenderWindow &window);
+        const sf::Color getColorWithLvl(int lvl);
 
         std::map<int, TrantorianAnim_t> _trantorianAnims;
         TextureManager &_textureManager;
@@ -76,7 +77,8 @@ class HandleTrantorians {
         float _offsetX;
         float _offsetY;
         sf::Clock _clock;
-        bool _displayBroadcast;
+        bool _displayBroadcast = false;
+        bool _displayLvl = false;
 };
 
 #endif

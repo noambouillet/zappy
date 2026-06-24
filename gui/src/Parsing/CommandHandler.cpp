@@ -32,6 +32,8 @@ CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gu
     _commands["seg"] = &CommandHandler::handle_seg;
     _commands["smg"] = &CommandHandler::handle_smg;
     _commands["plv"] = &CommandHandler::handle_plv;
+    _commands["suc"] = &CommandHandler::handle_suc;
+    _commands["sbp"] = &CommandHandler::handle_sbp;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -339,4 +341,14 @@ void CommandHandler::handle_plv(std::stringstream &ss)
         return;
     _world.setTrantorianLvl(id, lvl);
     std::cout << "Trantorian #" << id << " reach the level " << lvl << std::endl;
+}
+
+void CommandHandler::handle_suc(std::stringstream &)
+{
+    std::cout << "unknown command by the server" << std::endl;
+}
+
+void CommandHandler::handle_sbp(std::stringstream &)
+{
+    std::cout << "wrong command parameter" << std::endl;
 }
