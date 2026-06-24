@@ -28,6 +28,7 @@ class Map {
         unsigned int getWidth() const;
         unsigned int getHeight() const;
         void spawnResources();
+        void refillResources();
         void generate();
         void setSeed(unsigned int seed);
 };
