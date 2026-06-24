@@ -269,6 +269,11 @@ void World::setPaused(bool isPaused)
     _isPaused = isPaused;
 }
 
+bool World::isPaused() const
+{
+    return _isPaused;
+}
+
 const std::string &World::getWinningTeam() const
 {
     return _winningTeam;

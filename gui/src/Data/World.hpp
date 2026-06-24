@@ -67,6 +67,7 @@ class World {
         void setGameOver(const std::string &teamName);
         bool isGameOver() const;
         void setPaused(bool isPaused);
+        bool isPaused() const;
         const std::string &getWinningTeam() const;
         const std::string &getGameOverTime() const;
         void setDisplayLvl(bool);
