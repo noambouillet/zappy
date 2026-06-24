@@ -73,9 +73,12 @@ void RaylibGui::handleEvent()
                     auto &tile = _world.getTileData(x, z);
                     for (const auto &[id, trantorian] : tile.trantorians) {
                         BoundingBox shiftedBox = originalBox;
-                        shiftedBox.min.x += x; shiftedBox.max.x += x;
-                        shiftedBox.min.y += 0.0f; shiftedBox.max.y += 0.0f;
-                        shiftedBox.min.z += z; shiftedBox.max.z += z;
+                        shiftedBox.min.x += x;
+                        shiftedBox.max.x += x;
+                        shiftedBox.min.y += 0.0f;
+                        shiftedBox.max.y += 0.0f;
+                        shiftedBox.min.z += z;
+                        shiftedBox.max.z += z;
 
                         RayCollision collision = GetRayCollisionBox(ray, shiftedBox);
                         if (collision.hit && collision.distance < closestDistance) {
