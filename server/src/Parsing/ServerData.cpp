@@ -15,17 +15,6 @@
 
 namespace ZappyServer {
 
-static constexpr std::string_view ascii67 = R"(    _
-^^^^( )
-|      |   _
-|     /   ( )^^^^
-|    (    |      |
-|     )    \     |
-\___/      )    |
-         (     |
-          \___/
-)";
-
 static void printHelp()
 {
     std::cout
@@ -172,8 +161,6 @@ void ServerData::parse(int argc, char **argv)
 
 void ServerData::printServerData() const
 {
-    std::cout << "------------------\n";
-    std::cout << ascii67;
     std::cout << "------------------\n";
     std::cout << "port = " << _port << "\nwidth = " << _width << "\nheight = " << _height << "\nclients_nb = "
     << _clientsNb << "\nfreq = " << _freq << "\nseed = " << _seed << std::endl;
