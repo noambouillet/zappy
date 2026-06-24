@@ -27,6 +27,7 @@ int NetworkHandler::connect_to_server()
 void NetworkHandler::send_command(int fd, const std::string& msg)
 {
     std::string command = msg + "\n";
+
     try {
         _socket.sendMessage(fd, command.c_str(), command.size());
     } catch (const std::exception &e) {
@@ -36,7 +37,7 @@ void NetworkHandler::send_command(int fd, const std::string& msg)
 
 std::string NetworkHandler::read_from_server(int fd)
 {
-    char buffer[4096];
+    char buffer[BUFFER_SIZE];
     ssize_t bytes = 0;
 
     try {

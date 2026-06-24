@@ -5,7 +5,8 @@
 ** Encapsulation of poll
 */
 
-#pragma once
+#ifndef POLL_HPP_
+#define POLL_HPP_
 
 #include <vector>
 #include <poll.h>
@@ -24,3 +25,5 @@ class Poll {
         std::vector<struct pollfd> _fds;
         std::vector<struct pollfd>::iterator findFd(int fd);
 };
+
+#endif /* !POLL_HPP_ */

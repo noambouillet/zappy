@@ -8,6 +8,8 @@
 #include "Parsing_gui.hpp"
 #include <unistd.h>
 #include <iostream>
+#include <memory>
+#include "RaylibGui.hpp"
 #include "Sfml.hpp"
 #include "CommandHandler.hpp"
 #include "NetworkHandler.hpp"
@@ -20,13 +22,20 @@ int main(int ac, char **av)
     Parsing_gui parse;
     std::string server_buffer;
     World world;
-    CommandHandler handler(world);
     Poll netPoll;
 
     try {
         networkData_t data = parse.parse_args(ac, av);
         NetworkHandler network(data.port, data.ip);
-        Sfml gui(world);
+
+        std::unique_ptr<IGui> gui;
+        if (data.use3D) {
+            gui = std::make_unique<RaylibGui>(world);
+        } else {
+            gui = std::make_unique<Sfml>(world);
+        }
+
+        CommandHandler handler(world, *gui);
         
         int fd = network.connect_to_server();
         server_buffer = network.read_from_server(fd);
@@ -37,8 +46,8 @@ int main(int ac, char **av)
         }
         server_buffer.clear(); 
         netPoll.addFd(fd, POLLIN);
-        while (gui.getWindow().isOpen()) {
-            gui.handleEvent();
+        while (gui->isOpen()) {
+            gui->handleEvent();
             if (netPoll.wait(0) < 0)
                 throw GuiException("poll failed");
             const auto &fds = netPoll.getFds();
@@ -60,7 +69,7 @@ int main(int ac, char **av)
                     }
                 }
             }
-            gui.displayWindow();
+            gui->displayWindow();
         }
     } catch (const MajorGuiException &e) {
         logger.error(std::string("Error: ") + e.what());

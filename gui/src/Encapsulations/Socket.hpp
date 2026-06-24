@@ -5,7 +5,8 @@
 ** Socket
 */
 
-#pragma once
+#ifndef SOCKET_HPP_
+#define SOCKET_HPP_
 
 #include <string>
 #include <sys/socket.h>
@@ -14,13 +15,10 @@ class Socket {
     public:
         Socket();
         ~Socket();
-
         Socket(Socket &&other) noexcept;
         Socket &operator=(Socket &&other) noexcept;
-
         Socket(const Socket &other) = delete;
         Socket &operator=(const Socket &other) = delete;
-
         void openSocket();
         void connectSocket(const std::string &ip, unsigned int port);
         void sendMessage(int fd, const char *buffer, std::size_t size);
@@ -31,3 +29,5 @@ class Socket {
     private:
         int _fd;
 };
+
+#endif /* !SOCKET_HPP_ */

@@ -5,12 +5,14 @@
 ** NetworkHandler
 */
 
-#pragma once
+#ifndef NETWORKHANDLER_HPP_
+#define NETWORKHANDLER_HPP_
 
 #include <string>
 #include <exception>
 #include "Socket.hpp"
 
+constexpr int BUFFER_SIZE = 4096;
 class NetworkHandler {
     public:
         NetworkHandler(int port, std::string ip);
@@ -26,3 +28,5 @@ class NetworkHandler {
         std::string _ip;
         Socket _socket;
 };
+
+#endif /* !NETWORKHANDLER_HPP_ */

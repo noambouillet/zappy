@@ -74,6 +74,7 @@ void Socket::sendMessage(int fd, const char *buffer, std::size_t size)
 ssize_t Socket::receiveMessage(int fd, char *buffer, std::size_t size)
 {
     ssize_t receivedBytes = recv(fd, buffer, size, 0);
+    
     if (receivedBytes < 0) {
         throw GuiException("recv failed.");
     }
