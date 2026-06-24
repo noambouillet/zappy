@@ -55,7 +55,7 @@ class Follower(Behavior):
                 agent.send_available = False
                 return agent.follow_direction(agent.direction_to_follow)
             else:
-                if (agent.send_available == False):
+                if (agent.send_available == False or agent.tick % 10 == 0):
                     agent.send_available = True
                     return [f"Broadcast AVAILABLE|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n"]
                 else:

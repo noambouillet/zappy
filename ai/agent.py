@@ -20,14 +20,18 @@ class Agent:
         self.agent_id = os.getpid()
         self.team_name = ""
         self.list_commands = []
+        self.tab_id_teammate = []
         self.mailbox = []
         self.vision = [[]]
         self.inventory = {"food" : 10, "linemate" : 0, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras": 0, "thystame" : 0}
+        self.start_game = True
         self.survive = True
         self.eject_players = False
         self.joining_incantation = False
         self.prepare_incantation = False
         self.is_incantation = False
+        self.send_available = False
+        self.already_fork = False
         self.direction = Direction.Up
         self.behavior = Survive()
         self.size_map = (0, 0)
@@ -38,10 +42,7 @@ class Agent:
         self.leader_id = 0
         self.direction_to_follow = 0
         self.level = 1
-        
-        self.send_available = False
         self.teammate_on_tile = 1
-        self.tab_id_teammate = []
 
     def display_info(self):
         logger.debug("AGENT INFO:")

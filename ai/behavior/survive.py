@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import FOOD_TO_REACH
+from constant import FOOD_TO_REACH, FOOD_BEFORE_START
 from logger import logger
 
 class Survive(Behavior):
@@ -20,10 +20,28 @@ class Survive(Behavior):
         logger.debug("\n========== SURVIVE ==========")
         agent.tick += 1
         agent.display_info()
-        if (agent.inventory["food"] >= FOOD_TO_REACH):
-            agent.survive = False
-            agent.adapt_behavior()
-            return agent.behavior.execute(agent)
+        if (agent.start_game == False):
+            if (agent.inventory["food"] >= FOOD_TO_REACH):
+                agent.survive = False
+                agent.adapt_behavior()
+                return agent.behavior.execute(agent)
+            return self.take_food_vision(agent)
+        else:
+            if (agent.already_fork == False):
+                agent.already_fork = True
+                return ["Fork\n"]
+            if (agent.inventory["food"] >= FOOD_BEFORE_START):
+                agent.survive = False
+                agent.start_game = False
+                return agent.behavior.execute(agent)
+            return self.take_food_vision(agent)
+        
+
+    def take_food_vision(self, agent):
+        """This function is to take the food in the vision if is possible
+        Args:
+            agent (class): Agent
+        """
         try:
             food_commands = agent.take_food_on_tile()
             if food_commands != []:
