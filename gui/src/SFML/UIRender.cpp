@@ -30,6 +30,8 @@ void UIRender::displayUI()
     drawText("Frequency : " + std::to_string(_world.getTime()), 50, 60.0f, 200.0f);
     displayRessources();
     displayTeams();
+    if (_world.getDisplayLvl())
+        displayLevelLegend();
     if (_activeDataTrantorianId != -1)
         displayTrantorianData(_activeDataTrantorianId);
     else if (_world.getSelectedTile().first != -1)
@@ -285,4 +287,27 @@ void UIRender::displayGameOver()
     drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
     drawText("VICTORY !", 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
     drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", 35, 610.0f + 60.0f, 340.0f + 180.0f);
+}
+
+void UIRender::displayLevelLegend()
+{
+    static const sf::Color levelColors[] = {sf::Color(255, 0, 0), sf::Color(255, 228, 0), sf::Color(165, 255, 0), sf::Color(0, 255, 106), sf::Color(0, 239, 255), sf::Color(0, 90, 255), sf::Color(69, 0, 255), sf::Color(228, 0, 255)};
+    float squareSize = 35.0f;
+    float spacing = 15.0f;
+    int totalLevels = 8;
+    float totalWidth = (squareSize * totalLevels) + (spacing * (totalLevels - 1));
+    float startX = (1920.0f - totalWidth) / 2.0f;
+    float startY = 1020.0f;
+
+    drawText("LEVELS : ", 25, startX - 100.0f, startY);
+    sf::RectangleShape rect(sf::Vector2f(squareSize, squareSize));
+    rect.setOutlineColor(sf::Color(40, 40, 40));
+    rect.setOutlineThickness(1.5f);
+    for (int i = 0; i < totalLevels; i++) {
+        float currentX = startX + i * (squareSize + spacing);
+        rect.setFillColor(levelColors[i]);
+        rect.setPosition(currentX, startY);
+        _window.draw(rect);
+        drawText(std::to_string(i + 1), 30, currentX + 12.0f, startY - 1.0f);
+    }
 }
