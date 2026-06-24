@@ -135,7 +135,12 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
         for command in tab_commands:
             if (len(agent.list_commands) < 10):
                 agent.list_commands.append(command)
-                socket_connection.sendall((command).encode('utf-8'))
+                try:
+                    socket_connection.sendall((command).encode('utf-8'))
+                except OSError:
+                    logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                    socket_connection.close()
+                    sys.exit(84)
         logger.debug(f"New list of commands send by the client : {agent.list_commands}")
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
