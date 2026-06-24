@@ -73,6 +73,11 @@ void RayUI::drawResourceLine(int x, int y, const std::string &iconKey, const std
 
 void RayUI::drawGlobalInfo()
 {
+    if (_world.isPaused()) {
+        std::string pauseText = "The simulation is currently in pause, to resume it, press space bar again";
+        int pauseTextWidth = MeasureText(pauseText.c_str(), 25);
+        DrawText(pauseText.c_str(), (GetScreenWidth() - pauseTextWidth) / 2, 20, 25, RED);
+    }
     int width = 300;
     const auto &teams = _world.getTeams();
     auto teamStats = _world.getTeamStats();

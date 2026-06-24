@@ -24,6 +24,9 @@ void UIRender::displayUI()
         displayGameOver();
         return;
     }
+    if (_world.isPaused()) {
+        drawText("The simulation is currently in pause, to resume it, press space bar again", 25, 600.0f, 20.0f);
+    }
     drawPanel(10.0f, 200.0f, 360.0f, 800.0f);
     drawPanel(810.0f, 35.0f, 330.0f, 60.0f);
     drawText("Time : " + _world.getFormattedGameTime(), 50, 830.0f, 30.0f);
