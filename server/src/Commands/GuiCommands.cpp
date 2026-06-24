@@ -134,6 +134,10 @@ namespace {
         }
     }
 
+    std::string prefixedId(int id) {
+        return "#" + std::to_string(id);
+    }
+
     std::optional<std::reference_wrapper<Client>> getClientById(Server &server, int id) {
         for (Client &client : server.getClients()) {
             if (client.getFd() == id) {
@@ -150,7 +154,7 @@ void GuiCommands::pnw(Server &server, int playerId)
     if (!clientOpt.has_value())
         return;
     Client &client = clientOpt.value().get();
-    std::string msg = "pnw " + std::to_string(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY()) + " " + std::to_string(client.getPlayerData()->getDirection()) + " " + std::to_string(client.getPlayerData()->getLevel()) + " " + client.getTeamName() + "\n";
+    std::string msg = "pnw " + prefixedId(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY()) + " " + std::to_string(client.getPlayerData()->getDirection()) + " " + std::to_string(client.getPlayerData()->getLevel()) + " " + client.getTeamName() + "\n";
     broadcastToGui(server, msg);
 }
 
@@ -160,7 +164,7 @@ void GuiCommands::ppo(Server &server, int playerId)
     if (!clientOpt.has_value())
         return;
     Client &client = clientOpt.value().get();
-    std::string msg = "ppo " + std::to_string(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY()) + " " + std::to_string(client.getPlayerData()->getDirection()) + "\n";
+    std::string msg = "ppo " + prefixedId(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY()) + " " + std::to_string(client.getPlayerData()->getDirection()) + "\n";
     broadcastToGui(server, msg);
 }
 
@@ -170,7 +174,7 @@ void GuiCommands::plv(Server &server, int playerId)
     if (!clientOpt.has_value())
         return;
     Client &client = clientOpt.value().get();
-    std::string msg = "plv " + std::to_string(playerId) + " " + std::to_string(client.getPlayerData()->getLevel()) + "\n";
+    std::string msg = "plv " + prefixedId(playerId) + " " + std::to_string(client.getPlayerData()->getLevel()) + "\n";
     broadcastToGui(server, msg);
 }
 
@@ -180,7 +184,7 @@ void GuiCommands::pin(Server &server, int playerId)
     if (!clientOpt.has_value())
         return;
     Client &client = clientOpt.value().get();
-    std::string msg = "pin " + std::to_string(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY());
+    std::string msg = "pin " + prefixedId(playerId) + " " + std::to_string(client.getPlayerData()->getX()) + " " + std::to_string(client.getPlayerData()->getY());
     for (unsigned int i = 0; i < RESOURCES_NUMBER; i++) {
         msg += " " + std::to_string(client.getPlayerData()->getInventory(i));
     }
@@ -190,13 +194,13 @@ void GuiCommands::pin(Server &server, int playerId)
 
 void GuiCommands::pex(Server &server, int playerId)
 {
-    std::string msg = "pex " + std::to_string(playerId) + "\n";
+    std::string msg = "pex " + prefixedId(playerId) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::pbc(Server &server, int playerId, const std::string &msg)
 {
-    std::string out = "pbc " + std::to_string(playerId) + " " + msg + "\n";
+    std::string out = "pbc " + prefixedId(playerId) + " " + msg + "\n";
     broadcastToGui(server, out);
 }
 
@@ -205,7 +209,7 @@ void GuiCommands::pic(Server &server, unsigned int x, unsigned int y, int level)
     std::string msg = "pic " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(level);
     for (Client &c : server.getClients()) {
         if (!c.isDead() && c.getState() == ClientState::AI && c.getPlayerData()->getX() == x && c.getPlayerData()->getY() == y && c.getPlayerData()->getLevel() == (unsigned int)level) {
-            msg += " " + std::to_string(c.getFd());
+            msg += " " + prefixedId(c.getFd());
         }
     }
     msg += "\n";
@@ -220,43 +224,43 @@ void GuiCommands::pie(Server &server, unsigned int x, unsigned int y, bool resul
 
 void GuiCommands::pfk(Server &server, int playerId)
 {
-    std::string msg = "pfk " + std::to_string(playerId) + "\n";
+    std::string msg = "pfk " + prefixedId(playerId) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::pdr(Server &server, int playerId, int resource)
 {
-    std::string msg = "pdr " + std::to_string(playerId) + " " + std::to_string(resource) + "\n";
+    std::string msg = "pdr " + prefixedId(playerId) + " " + std::to_string(resource) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::pgt(Server &server, int playerId, int resource)
 {
-    std::string msg = "pgt " + std::to_string(playerId) + " " + std::to_string(resource) + "\n";
+    std::string msg = "pgt " + prefixedId(playerId) + " " + std::to_string(resource) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::pdi(Server &server, int playerId)
 {
-    std::string msg = "pdi " + std::to_string(playerId) + "\n";
+    std::string msg = "pdi " + prefixedId(playerId) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::enw(Server &server, int eggId, int playerId, unsigned int x, unsigned int y)
 {
-    std::string msg = "enw " + std::to_string(eggId) + " " + std::to_string(playerId) + " " + std::to_string(x) + " " + std::to_string(y) + "\n";
+    std::string msg = "enw " + prefixedId(eggId) + " " + prefixedId(playerId) + " " + std::to_string(x) + " " + std::to_string(y) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::ebo(Server &server, int eggId)
 {
-    std::string msg = "ebo " + std::to_string(eggId) + "\n";
+    std::string msg = "ebo " + prefixedId(eggId) + "\n";
     broadcastToGui(server, msg);
 }
 
 void GuiCommands::edi(Server &server, int eggId)
 {
-    std::string msg = "edi " + std::to_string(eggId) + "\n";
+    std::string msg = "edi " + prefixedId(eggId) + "\n";
     broadcastToGui(server, msg);
 }
 
