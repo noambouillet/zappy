@@ -14,9 +14,7 @@ def do_inventory(agent, response_server):
         response_server (str): Response from the server
     """
     if not response_server.startswith("["):
-        print("[INVENTORY] Invalid response:", response_server)
         return
-    old_inventory = agent.inventory.copy()
     clean_response = response_server.replace("[", "")
     clean_response = clean_response.replace("]", "")
     clean_response = clean_response.replace(",", "")
@@ -29,8 +27,7 @@ def do_inventory(agent, response_server):
             try:
                 agent.inventory[ressource] = int(number_str)
             except ValueError:
-                print("[INVENTORY] Invalid number:", ressource, number_str)
+                return
         index += 2
     agent.adapt_behavior()
-    print("The inventory change for the agent from", old_inventory, "to", agent.inventory)
-    logger.info("The Inventory command was successful (received and completed).")
+    logger.info(f"{agent.agent_id}: The wizard consulted his satchel; he now knows what it contains {agent.inventory}")

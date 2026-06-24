@@ -14,9 +14,7 @@ def do_look(agent, response_server):
         response_server (str): Response from the serv
     """
     if not response_server.startswith("["):
-        print("[LOOK] Invalid Look response:", response_server)
         return  
-    old_vision = agent.vision.copy()
     remove_bracket = response_server.strip()[1:-1]
     vision_split = remove_bracket.split(',')
     tab_vision = []
@@ -27,5 +25,4 @@ def do_look(agent, response_server):
         else:
             tab_vision.append([])
     agent.vision = tab_vision
-    print("La vision de l'agent à évoluer passant de", old_vision, "to", agent.vision)
-    logger.info("The Look command was successful (received and completed).")
+    logger.info(f"{agent.agent_id}: Thanks to a night vision spell, the wizard's vision is now as clear as crystal {agent.vision}")

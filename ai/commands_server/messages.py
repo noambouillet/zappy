@@ -5,6 +5,8 @@
 ## messages
 ##
 
+from logger import logger
+
 def receive_message(agent, response_server):
     """This function is for receiving messages from another AI
     
@@ -22,13 +24,14 @@ def receive_message(agent, response_server):
     except (ValueError, IndexError):
         return
     parts = content.split("|")
-    if parts[0] in ["AVAILABLE", "INCANTATION", "READY", "ALIVE?", "LEAVING"]:
+    if parts[0] in ["AVAILABLE", "INCANTATION", "LEAVING"]:
         try:
             action = parts[0]
             level = parts[1]
             team = parts[2]
             tick = parts[3]
             sender_id = parts[4]
+            logger.info(f"{agent.agent_id}: You have received a new message via telekinesis, the subject is {action} from {sender_id} to {direction}")
             agent.mailbox.append({"action": action, "direction": (int)(direction), "level": (int)(level), "team": team, "tick": (int)(tick), "sender_id": (int)(sender_id)})
         except ValueError:
             return

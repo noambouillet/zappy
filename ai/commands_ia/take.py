@@ -22,14 +22,11 @@ def do_take(agent, response_server, command):
             agent.inventory[ressource] += 1
         if (agent.vision != [[]] and ressource in agent.vision[0]):
             agent.vision[0].remove(ressource)
-        logger.info("The Take command was successful (received and completed).")
-        print(f"The Take command worked correctly, the object could be taken from the tile. ({ressource}) 🗿​​")
+        logger.info(f"{agent.agent_id}: The mage managed to seize the coveted component {ressource}, and his grimoire grew richer.")
     elif (response_server == "ko"):
         if (agent.vision != [[]] and ressource in agent.vision[0]):
             agent.vision[0].remove(ressource)
-        logger.info("The Take command did not result in retrieving the object from the tile")
-        print("The Take command did not work; there was no noticeable change to the tile.")        
+        logger.info(f"{agent.agent_id}: The ground yielded no treasure this time {ressource}")      
     else:
         logger.error("The response message from the server is not suitable for this command, result_command != ok or ko. (Take)")
-        print("The response message from the server is not suitable for this command. (Take)")
     return

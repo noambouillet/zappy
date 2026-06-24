@@ -26,16 +26,18 @@ def parse_args():
     logger.debug("Launch of the program")
     if (len(sys.argv) == 2 and sys.argv[1] == "--help"):
         display_help(0)
-    if (len(sys.argv) < 5 or len(sys.argv) > 7 or len(sys.argv) % 2 == 0):
+    if (len(sys.argv) < 3 or len(sys.argv) > 7 or len(sys.argv) % 2 == 0):
         display_help(84)
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-p", type=int, required=True, dest="port", help="The port of the machine")
+    parser.add_argument("-p", type=int, required=False, dest="port", help="The port of the machine")
     parser.add_argument("-n", type=str, required=True, dest="name_team", help="The name of the team")
     parser.add_argument("-h", type=str, required=False, dest="name_machine", help="The name of the machine; localhost by default")
     try:
         args = parser.parse_args()
     except (ValueError, SystemExit, SystemError):
         sys.exit(84)
+    if (args.port is None):
+        args.port = 4242
     if (args.name_machine is None):
         args.name_machine = socket.gethostname()
     if (args.port is None or args.name_team is None):

@@ -15,11 +15,9 @@ def do_connection(agent, response_server):
     """
     if (response_server.isdigit() == False):
         logger.error("The response message from the server is not suitable for this command. response_server != int (Connect_nbr)")
-        print("The value of the reponse from the server is not a number")
         return
     else:
         value = (int)(response_server)
         agent.unused_slots = value
-        logger.info("The Connect_nbr command was successful (received and completed).")
-        print("Here is the number of places still available in the team:", value)
+        logger.info(f"{agent.agent_id}: The wizard always takes care of his family; looking at his family tree, they are now {value}")
         

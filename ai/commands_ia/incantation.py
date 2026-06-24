@@ -18,15 +18,13 @@ def do_incantation(agent, response_server):
         result_command (str): the message send by the server for the response
     """
     if (response_server == "Elevation underway"):
-        logger.info("The Incantation command is in progress")
-        print("The elevation of this character is in progress")
+        logger.info("The stars are aligned, the candles are ready, the ritual can begin")
         agent.is_incantation = True
         remove_incantation_command(agent)
     elif (response_server.startswith("Current level:")):
         list_level = response_server.split(':')
         level = int(list_level[1])
-        logger.info(f"The Incantation command was successful. Player level {agent.level} to {level}")
-        print("The Incantation command was successful; the character has done incantation to the following level: ", level)
+        logger.info(f"{agent.agent_id}: The wizard's knowledge has grown; he feels his state evolving from level {agent.level} to level {level}")
         agent.level = level
         agent.is_incantation = False
         agent.prepare_incantation = False
@@ -36,8 +34,7 @@ def do_incantation(agent, response_server):
         agent.teammate_on_tile = 1
         remove_incantation_command(agent)
     elif (response_server == "ko"):
-        logger.info("The Incantation command did not result in the elevation of the character")
-        print("The Incantation command did not work; there was no noticeable change for the character.")
+        logger.info(f"{agent.agent_id}: The ritual failed; the heavens did not grant us their piety.")
         agent.is_incantation = False
         agent.prepare_incantation = False
         agent.joining_incantation = False

@@ -14,9 +14,7 @@ def do_forward(agent, response_server):
         response_server (str): the message send by the server for the response
     """
     if (response_server == "ok"):
-        logger.info("The Forward command was successful (direction: " + agent.direction.name + ")")
-        print("Our agent managed to advance one space in the direction:", agent.direction.name)
+        logger.info(f"{agent.agent_id}: The wizard decided to follow his destiny and go towards the lands in the direction of {agent.direction.name}")
     else:
         logger.error("The response message from the server is not suitable for this command. response_server != ok (Left)")
-        print("The response message from the server is not suitable for this command. (Forward)")
     return
