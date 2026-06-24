@@ -69,6 +69,8 @@ class World {
         const std::string &getWinningTeam() const;
         void setDisplayLvl(bool);
         bool getDisplayLvl();
+        void setDisplayBroadcast(bool);
+        bool getDisplayBroadcast();
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};
@@ -84,7 +86,7 @@ class World {
         bool _isGameOver = false;
         std::string _winningTeam = "";
         bool _displayLvl = false;
-
+        bool _displayBroadcast = false;
 };
 
 #endif

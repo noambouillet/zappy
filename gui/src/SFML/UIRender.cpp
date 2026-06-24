@@ -30,6 +30,7 @@ void UIRender::displayUI()
     drawText("Frequency : " + std::to_string(_world.getTime()), 50, 60.0f, 200.0f);
     displayRessources();
     displayTeams();
+    displayShortcut();
     if (_world.getDisplayLvl())
         displayLevelLegend();
     if (_activeDataTrantorianId != -1)
@@ -310,4 +311,14 @@ void UIRender::displayLevelLegend()
         _window.draw(rect);
         drawText(std::to_string(i + 1), 30, currentX + 12.0f, startY - 1.0f);
     }
+}
+
+void UIRender::displayShortcut()
+{
+    std::string lvl = _world.getDisplayLvl() ? "ON" : "OFF";
+    std::string broadcast = _world.getDisplayBroadcast() ? "ON" : "OFF";
+
+    drawPanel(1460.0f, 900.0f, 150.0f, 150.0f);
+    drawText("L :" + lvl, 50, 1470.0f, 900.0f);
+    drawText("B :" + broadcast, 50, 1470.0f, 960.0f);
 }
