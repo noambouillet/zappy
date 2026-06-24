@@ -8,6 +8,7 @@
 #include <exception>
 #include <iostream>
 #include "ServerData.hpp"
+#include "Logger.hpp"
 
 int main(int argc, char **argv)
 {
@@ -16,7 +17,7 @@ int main(int argc, char **argv)
         server.parse(argc, argv);
         server.run();
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        ZappyServer::logger.error(e.what());
         return 84;
     }
     return 0;

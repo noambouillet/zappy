@@ -25,6 +25,41 @@ class ServerException : public std::exception {
         }
 };
 
+class MinorServerException : public ServerException {
+    public:
+        explicit MinorServerException(std::string message) noexcept : ServerException(std::move(message)) {}
+};
+
+class MajorServerException : public ServerException {
+    public:
+        explicit MajorServerException(std::string message) noexcept : ServerException(std::move(message)) {}
+};
+
+class SocketException : public MinorServerException {
+    public:
+        explicit SocketException(std::string message) noexcept : MinorServerException(std::move(message)) {}
+};
+
+class FatalSocketException : public MajorServerException {
+    public:
+        explicit FatalSocketException(std::string message) noexcept : MajorServerException(std::move(message)) {}
+};
+
+class PollException : public MinorServerException {
+    public:
+        explicit PollException(std::string message) noexcept : MinorServerException(std::move(message)) {}
+};
+
+class FatalPollException : public MajorServerException {
+    public:
+        explicit FatalPollException(std::string message) noexcept : MajorServerException(std::move(message)) {}
+};
+
+class ParsingException : public MajorServerException {
+    public:
+        explicit ParsingException(std::string message) noexcept : MajorServerException(std::move(message)) {}
+};
+
 }
 
 #endif /* !SERVER_EXCEPTIONS_HPP_ */

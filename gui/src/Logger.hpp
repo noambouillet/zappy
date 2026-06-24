@@ -2,27 +2,22 @@
 ** EPITECH PROJECT, 2026
 ** Logger
 ** File description:
-** Singleton representing the logger
+** Singleton representing the logger for the GUI
 */
 
-#ifndef LOGGER_HPP_
-#define LOGGER_HPP_
+#ifndef GUI_LOGGER_HPP_
+#define GUI_LOGGER_HPP_
 
-#include <fstream>
 #include <string>
-#include <ctime>
 #include <iostream>
-#include <filesystem>
+#include <ctime>
 
-namespace ZappyServer {
-
-class Logger {
+class GuiLogger {
     private:
-        std::ofstream _file;
         bool _verbose = false;
     public:
-        Logger(const std::string &path);
-        ~Logger();
+        GuiLogger();
+        ~GuiLogger();
 
         void setVerbose(bool verbose);
         void write(const std::string &message);
@@ -31,8 +26,6 @@ class Logger {
         void error(const std::string &message);
 };
 
-extern Logger logger;
+extern GuiLogger logger;
 
-}
-
-#endif /* !LOGGER_HPP_ */
+#endif /* !GUI_LOGGER_HPP_ */

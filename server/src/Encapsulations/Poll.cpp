@@ -30,7 +30,7 @@ void Poll::addFd(int fd, short events)
     struct pollfd pollDescriptor;
 
     if (findFd(fd) != _fds.end()) {
-        throw ServerException("Poll fd already registered: " + std::to_string(fd) + ".");
+        throw PollException("Poll fd already registered: " + std::to_string(fd) + ".");
     }
     pollDescriptor.fd = fd;
     pollDescriptor.events = events;
@@ -43,7 +43,7 @@ void Poll::removeFd(int fd)
     const std::vector<struct pollfd>::iterator index = findFd(fd);
 
     if (index == _fds.end()) {
-        throw ServerException("Poll fd not found: " + std::to_string(fd) + ".");
+        throw PollException("Poll fd not found: " + std::to_string(fd) + ".");
     }
     _fds.erase(index);
 }
@@ -53,7 +53,7 @@ void Poll::setEvents(int fd, short events)
     const std::vector<struct pollfd>::iterator index = findFd(fd);
 
     if (index == _fds.end()) {
-        throw ServerException("Poll fd not found: " + std::to_string(fd) + ".");
+        throw PollException("Poll fd not found: " + std::to_string(fd) + ".");
     }
     index->events = events;
 }
@@ -63,7 +63,7 @@ int Poll::wait(int timeout)
     const int result = poll(_fds.data(), static_cast<nfds_t>(_fds.size()), timeout);
 
     if (result < 0 && errno != EINTR) {
-        throw ServerException("poll failed.");
+        throw FatalPollException("poll failed.");
     }
     return result;
 }

@@ -1,0 +1,50 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+
+    env_file:
+      - .env
+
+    ports:
+      - "${ZAPPY_PORT}:${ZAPPY_PORT}"
+
+  ai_red:
+    build:
+      context: .
+      dockerfile: ai/Dockerfile
+
+    command:
+      - -h
+      - server
+      - -p
+      - "${ZAPPY_PORT}"
+      - -n
+      - Red
+
+  ai_blue:
+    build:
+      context: .
+      dockerfile: ai/Dockerfile
+
+    command:
+      - -h
+      - server
+      - -p
+      - "${ZAPPY_PORT}"
+      - -n
+      - Blue
+
+  ai_green:
+    build:
+      context: .
+      dockerfile: ai/Dockerfile
+
+    command:
+      - -h
+      - server
+      - -p
+      - "${ZAPPY_PORT}"
+      - -n
+      - Green

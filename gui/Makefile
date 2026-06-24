@@ -19,6 +19,7 @@ SRC     = main.cpp \
 		  src/Data/World.cpp \
 		  src/SFML/EventHandler.cpp \
 		  src/Network/NetworkHandler.cpp \
+		  src/Logger.cpp \
 		  src/Encapsulations/Socket.cpp \
 		  src/Encapsulations/Poll.cpp
 

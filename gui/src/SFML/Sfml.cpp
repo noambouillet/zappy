@@ -6,6 +6,7 @@
 */
 
 #include "Sfml.hpp"
+#include "Logger.hpp"
 #include <algorithm>
 
 Sfml::Sfml(World &world): _window(sf::VideoMode::getDesktopMode(), "trantor", sf::Style::Titlebar | sf::Style::Close), _world(world), _eventHandler(_window, _camera)
@@ -181,13 +182,13 @@ int Sfml::loadTexture()
             sf::Texture texture;
             sf::Sprite sprite;
             if (!texture.loadFromFile(entry.path().string())) {
-                std::cerr << "fail to load " << entry.path().string() << std::endl;
+                logger.error("fail to load " + entry.path().string());
                 continue;
             }
             _textures[entry.path().stem().string()] = std::move(texture);
             sprite.setTexture(_textures[entry.path().stem().string()]);
             _sprites[entry.path().stem().string()] = std::move(sprite);
-            std::cout << "texture loaded : " << entry.path().stem().string() << std::endl;
+            logger.info("texture loaded : " + entry.path().stem().string());
         }
     } else {
         //throw une erreur lors de l'ouverture du fichier assets

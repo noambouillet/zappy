@@ -31,6 +31,11 @@ Logger::~Logger()
 {
 }
 
+void Logger::setVerbose(bool verbose)
+{
+    _verbose = verbose;
+}
+
 void Logger::write(const std::string &message)
 {
     if (_file.is_open()) {
@@ -46,11 +51,15 @@ void Logger::write(const std::string &message)
 
 void Logger::info(const std::string &message)
 {
+    if (!_verbose)
+        return;
     write("[INFO] " + message);
 }
 
 void Logger::warn(const std::string &message)
 {
+    if (!_verbose)
+        return;
     write("[WARN] " + message);
 }
 

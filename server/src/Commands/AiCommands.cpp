@@ -17,35 +17,6 @@
 
 namespace ZappyServer {
 
-// 🚀 L'IA il y en a pas mal qui connaissent mdr
-int getSoundDirection(int senderX, int senderY, int receiverX, int receiverY, int mapWidth, int mapHeight, unsigned int receiverDir) {
-    int deltaXDirect = senderX - receiverX;
-    int deltaXWrapped = (senderX > receiverX) ? (senderX - receiverX - mapWidth) : (senderX - receiverX + mapWidth);
-    int shortestDeltaX = (std::abs(deltaXDirect) < std::abs(deltaXWrapped)) ? deltaXDirect : deltaXWrapped;
-    int deltaYDirect = senderY - receiverY;
-    int deltaYWrapped = (senderY > receiverY) ? (senderY - receiverY - mapHeight) : (senderY - receiverY + mapHeight);
-    int shortestDeltaY = (std::abs(deltaYDirect) < std::abs(deltaYWrapped)) ? deltaYDirect : deltaYWrapped;
-    if (shortestDeltaX == 0 && shortestDeltaY == 0)
-        return 0;
-
-    int dxSign = (shortestDeltaX > 0) - (shortestDeltaX < 0);
-    int dySign = (shortestDeltaY > 0) - (shortestDeltaY < 0);
-    
-    static const int absDirMatrix[3][3] = {
-        {8, 1, 2},
-        {7, 0, 3},
-        {6, 5, 4}
-    };
-    int from_abs = absDirMatrix[dySign + 1][dxSign + 1];
-    static const int bcastDir[4][8] = {
-        {1, 8, 7, 6, 5, 4, 3, 2},
-        {3, 2, 1, 8, 7, 6, 5, 4},
-        {5, 4, 3, 2, 1, 8, 7, 6},
-        {7, 6, 5, 4, 3, 2, 1, 8}
-    };
-    return bcastDir[receiverDir - 1][from_abs - 1];
-}
-
 static const std::array<Vector2D, static_cast<int>(Direction::MAX)> directions = {{
     {0, 0}, {0, -1}, {1, 0}, {0, 1}, {-1, 0}
 }};
@@ -55,6 +26,73 @@ static const std::array<Vector2D, static_cast<int>(Direction::MAX)> look_w_direc
 static const std::array<std::string_view, static_cast<int>(ResourceType::MAX)> resNames = {
     "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"
 };
+
+static int getSquaredDistance(int x1, int y1, int x2, int y2)
+{
+    int deltaX = x1 - x2;
+    int deltaY = y1 - y2;
+
+    return deltaX * deltaX + deltaY * deltaY;
+}
+
+static Vector2D getShortestBroadcastVector(int senderX, int senderY, int receiverX, int receiverY, int mapWidth, int mapHeight)
+{
+    static constexpr std::array<Vector2D, 8> wrapOffsets = {{
+        {-1, 0},
+        {1, 0},
+        {0, -1},
+        {0, 1},
+        {-1, -1},
+        {1, 1},
+        {1, -1},
+        {-1, 1}
+    }};
+    int bestSenderX = senderX;
+    int bestSenderY = senderY;
+    int bestDistance = getSquaredDistance(senderX, senderY, receiverX, receiverY);
+
+    for (const Vector2D &wrapOffset : wrapOffsets) {
+        int candidateX = senderX + wrapOffset.x * mapWidth;
+        int candidateY = senderY + wrapOffset.y * mapHeight;
+        int candidateDistance = getSquaredDistance(candidateX, candidateY, receiverX, receiverY);
+
+        if (candidateDistance < bestDistance) {
+            bestSenderX = candidateX;
+            bestSenderY = candidateY;
+            bestDistance = candidateDistance;
+        }
+    }
+    return {bestSenderX - receiverX, bestSenderY - receiverY};
+}
+
+int getSoundDirection(int senderX, int senderY, int receiverX, int receiverY, int mapWidth, int mapHeight, unsigned int receiverDir)
+{
+    Vector2D shortestVector = getShortestBroadcastVector(senderX, senderY, receiverX, receiverY, mapWidth, mapHeight);
+    int shortestDeltaX = shortestVector.x;
+    int shortestDeltaY = shortestVector.y;
+
+    if (shortestDeltaX == 0 && shortestDeltaY == 0)
+        return 0;
+    Vector2D facing = directions[receiverDir];
+    double targetAngle = std::atan2(static_cast<double>(shortestDeltaY), static_cast<double>(shortestDeltaX));
+    double facingAngle = std::atan2(static_cast<double>(facing.y), static_cast<double>(facing.x));
+    double relativeAngle = targetAngle - facingAngle;
+    double fullTurn = std::acos(-1.0) * 2.0;
+    double straightSector = std::atan(3.0 / 4.0);
+    double diagonalSector = std::atan(4.0 / 3.0);
+
+    if (relativeAngle < 0.0)
+        relativeAngle += fullTurn;
+    double lowerBound = std::atan(1.0 / 3.0);
+    double upperBound = lowerBound + diagonalSector;
+    for (int direction = 8; direction >= 2; direction--) {
+        if (relativeAngle >= lowerBound && relativeAngle <= upperBound)
+            return direction;
+        lowerBound = upperBound;
+        upperBound += direction % 2 == 0 ? straightSector : diagonalSector;
+    }
+    return 1;
+}
 
 static const std::unordered_map<std::string, AiCommandHandler> aiDispatch = {
     { "Forward", AiCommands::forward },
@@ -84,12 +122,35 @@ unsigned int AiCommands::getCommandTicks(const std::string &commandName)
     return 7;
 }
 
+CommandStartResult AiCommands::begin(Client &client, Server &server, const std::string &line)
+{
+    std::size_t spacePos = line.find(' ');
+    std::string commandName = line.substr(0, spacePos);
+    std::string args = spacePos != std::string::npos ? line.substr(spacePos + 1) : "";
+
+    if (commandName == "Fork") {
+        GuiCommands::pfk(server, client.getFd());
+        return CommandStartResult::RUNNING;
+    }
+    if (commandName == "Incantation") {
+        incantation(client, server, args);
+        if (client.isDead())
+            return CommandStartResult::FAILED;
+        if (client.getPlayerData()->isIncantating())
+            return CommandStartResult::CONSUMED;
+        return CommandStartResult::FAILED;
+    }
+    return CommandStartResult::RUNNING;
+}
+
 void AiCommands::dispatch(Client &client, Server &server, const std::string &line)
 {
     std::size_t spacePos = line.find(' ');
     std::string commandName = line.substr(0, spacePos);
     std::string args = spacePos != std::string::npos ? line.substr(spacePos + 1) : "";
 
+    if (commandName == "Incantation")
+        return;
     auto entry = aiDispatch.find(commandName);
     if (entry != aiDispatch.end()) {
         entry->second(client, server, args);
@@ -204,7 +265,10 @@ void AiCommands::broadcast(Client &client, Server &server, const std::string &ar
     if (!text.empty() && text.back() == '\n') {
         text.pop_back();
     }
-    
+    if (text.empty()) {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+        return;
+    }
     logger.write("A voice echoes through the plains: \"" + text + "\"");
 
     for (Client &receiver : server.getClients()) {
@@ -245,7 +309,6 @@ void AiCommands::connectNbr(Client &client, Server &server, const std::string &)
 
 void AiCommands::fork(Client &client, Server &server, const std::string &)
 {
-    GuiCommands::pfk(server, client.getFd());
     unsigned int id = server.addEgg(client.getTeamName(), client.getPlayerData()->getX(), client.getPlayerData()->getY());
     GuiCommands::enw(server, id, client.getFd(), client.getPlayerData()->getX(), client.getPlayerData()->getY());
     logger.write("An egg has been laid on the ground by team " + client.getTeamName() + ".");
@@ -352,20 +415,10 @@ namespace Elevation {
         if (currentLevel >= 8) {
             return false;
         }
-        
-        static const unsigned int requirements[7][7] = {
-            {1, 1, 0, 0, 0, 0, 0},
-            {2, 1, 1, 1, 0, 0, 0},
-            {2, 2, 0, 1, 0, 2, 0},
-            {4, 1, 1, 2, 0, 1, 0},
-            {4, 1, 2, 1, 3, 0, 0},
-            {6, 1, 2, 3, 0, 1, 0},
-            {6, 2, 2, 2, 2, 2, 1}
-        };
-        requiredPlayers = requirements[currentLevel - 1][0];
+        requiredPlayers = INCANTATION_REQUIREMENTS[currentLevel - 1][0];
         Tile &tile = server.getMap().getTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
         for (int index = 1; index <= 6; index++) {
-            if (tile.resources[index] < requirements[currentLevel - 1][index]) {
+            if (tile.resources[index] < INCANTATION_REQUIREMENTS[currentLevel - 1][index]) {
                 return false;
             }
         }
@@ -376,48 +429,22 @@ namespace Elevation {
         std::vector<int> fds;
         for (Client &participant : server.getClients()) {
             if (!participant.isDead() && participant.getState() == ClientState::AI && participant.getPlayerData()->getX() == initiator.getPlayerData()->getX()
-                && participant.getPlayerData()->getY() == initiator.getPlayerData()->getY() && participant.getPlayerData()->getLevel() == initiator.getPlayerData()->getLevel()) {
+                && participant.getPlayerData()->getY() == initiator.getPlayerData()->getY() && participant.getPlayerData()->getLevel() == initiator.getPlayerData()->getLevel()
+                && !participant.getPlayerData()->isIncantating()) {
                 fds.push_back(participant.getFd());
             }
         }
         return fds;
-    }
-
-    void consumeResources(const Client &client, Server &server) {
-        static const unsigned int requirements[7][7] = {
-            {1, 1, 0, 0, 0, 0, 0},
-            {2, 1, 1, 1, 0, 0, 0},
-            {2, 2, 0, 1, 0, 2, 0},
-            {4, 1, 1, 2, 0, 1, 0},
-            {4, 1, 2, 1, 3, 0, 0},
-            {6, 1, 2, 3, 0, 1, 0},
-            {6, 2, 2, 2, 2, 2, 1}
-        };
-        unsigned int currentLevel = client.getPlayerData()->getLevel();
-        Tile &tile = server.getMap().getTile(client.getPlayerData()->getX(), client.getPlayerData()->getY());
-        for (int index = 1; index <= 6; index++) {
-            tile.resources[index] -= requirements[currentLevel - 1][index];
-        }
-    }
-
-    void elevate(const std::vector<int> &fds, Server &server, unsigned int newLevel) {
-        for (int fd : fds) {
-            for (Client &participant : server.getClients()) {
-                if (participant.getFd() == fd) {
-                    participant.getPlayerData()->setLevel(newLevel);
-                    server.getSocket().sendMessage(fd, "Elevation underway\n", 19);
-                    std::string msg = "Current level: " + std::to_string(newLevel) + "\n";
-                    server.getSocket().sendMessage(fd, msg.c_str(), msg.size());
-                    break;
-                }
-            }
-        }
     }
 }
 
 void AiCommands::incantation(Client &client, Server &server, const std::string &)
 {
     unsigned int requiredPlayers = 0;
+    if (client.getPlayerData()->isIncantating()) {
+        server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
+        return;
+    }
     if (!Elevation::canIncant(client, server, requiredPlayers)) {
         server.getSocket().sendMessage(client.getFd(), "ko\n", 3);
         return;
@@ -430,17 +457,17 @@ void AiCommands::incantation(Client &client, Server &server, const std::string &
     }
 
     GuiCommands::pic(server, client.getPlayerData()->getX(), client.getPlayerData()->getY(), client.getPlayerData()->getLevel());
-
-    Elevation::consumeResources(client, server);
-    Elevation::elevate(participantFds, server, client.getPlayerData()->getLevel() + 1);
-    
-    logger.write("A bright flash engulfs the players! They ascended to a higher state of being.");
-    
-    GuiCommands::pie(server, client.getPlayerData()->getX(), client.getPlayerData()->getY(), true);
     for (int fd : participantFds) {
-        GuiCommands::plv(server, fd);
+        for (Client &participant : server.getClients()) {
+            if (participant.getFd() == fd) {
+                participant.getPlayerData()->setIncantating(true);
+                server.getSocket().sendMessage(fd, "Elevation underway\n", 19);
+                break;
+            }
+        }
     }
-    GuiCommands::bct_broadcast(server, client.getPlayerData()->getX(), client.getPlayerData()->getY());
+    server.getIncantations().push_back({participantFds, client.getPlayerData()->getX(),
+        client.getPlayerData()->getY(), client.getPlayerData()->getLevel(), 300});
 }
 
 }

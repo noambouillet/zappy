@@ -10,7 +10,7 @@
 
 namespace ZappyServer {
 
-PlayerData::PlayerData() : _x(0), _y(0), _direction(1), _level(1), _foodTicks(126)
+PlayerData::PlayerData() : _x(0), _y(0), _direction(1), _level(1), _foodTicks(126), _incantating(false)
 {
     for (int index = 0; index < 7; index++) {
         _inventory[index] = 0;
@@ -82,6 +82,16 @@ void PlayerData::setFoodTicks(unsigned int value)
     _foodTicks = value;
 }
 
+bool PlayerData::isIncantating() const
+{
+    return _incantating;
+}
+
+void PlayerData::setIncantating(bool value)
+{
+    _incantating = value;
+}
+
 std::queue<QueuedCommand> &PlayerData::getCommandQueue()
 {
     return _commandQueue;
@@ -95,10 +105,16 @@ const std::queue<QueuedCommand> &PlayerData::getCommandQueue() const
 void PlayerData::queueCommand(const std::string &cmd, unsigned int ticks)
 {
     if (_commandQueue.size() < 10) {
-        _commandQueue.push({cmd, ticks});
+        _commandQueue.push({cmd, ticks, false});
     } else {
         logger.warn("Command queue full, dropping command: " + cmd);
     }
+}
+
+void PlayerData::popCommand()
+{
+    if (!_commandQueue.empty())
+        _commandQueue.pop();
 }
 
 }

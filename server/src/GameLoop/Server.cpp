@@ -10,20 +10,67 @@
 #include "Logger.hpp"
 #include "GuiCommands.hpp"
 #include "AiCommands.hpp"
-#include <poll.h>
-#include <unistd.h>
+#include "ServerExceptions.hpp"
 #include <algorithm>
-#include <cmath>
-#include <cctype>
 #include <csignal>
+#include <optional>
+#include <functional>
 
 namespace ZappyServer {
 
-// 🚀 Server starting up !!!!
+static std::optional<std::reference_wrapper<Client>> findAliveClientByFd(std::vector<Client> &clients, int fd)
+{
+    for (Client &client : clients) {
+        if (!client.isDead() && client.getFd() == fd)
+            return client;
+    }
+    return std::nullopt;
+}
 
-Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, const std::vector<std::string> &teamNames)
-    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height), _nextEggId(0), _running(true), _shell(*this)
-{}
+static bool isIncantationParticipantValid(const PendingIncantation &pendingIncantation, const Client &participant)
+{
+    if (!participant.getPlayerData().has_value())
+        return false;
+    const PlayerData &player = participant.getPlayerData().value();
+
+    return player.getX() == pendingIncantation.x
+        && player.getY() == pendingIncantation.y
+        && player.getLevel() == pendingIncantation.level;
+}
+
+static bool hasRequiredResources(const PendingIncantation &pendingIncantation, const Tile &tile)
+{
+    for (int resourceIndex = 1; resourceIndex <= 6; resourceIndex++) {
+        if (tile.resources[resourceIndex] < INCANTATION_REQUIREMENTS[pendingIncantation.level - 1][resourceIndex])
+            return false;
+    }
+    return true;
+}
+
+static void consumeIncantationResources(const PendingIncantation &pendingIncantation, Tile &tile)
+{
+    for (int resourceIndex = 1; resourceIndex <= 6; resourceIndex++)
+        tile.resources[resourceIndex] -= INCANTATION_REQUIREMENTS[pendingIncantation.level - 1][resourceIndex];
+}
+
+static void unfreezeIncantationParticipants(const PendingIncantation &pendingIncantation, std::vector<Client> &clients)
+{
+    for (int participantFd : pendingIncantation.participantFds) {
+        std::optional<std::reference_wrapper<Client>> participantRef = findAliveClientByFd(clients, participantFd);
+
+        if (participantRef.has_value() && participantRef->get().getPlayerData().has_value())
+            participantRef->get().getPlayerData()->setIncantating(false);
+    }
+}
+
+Server::Server(unsigned int port, unsigned int width, unsigned int height, unsigned int clientsNb, unsigned int freq, unsigned int seed, const std::vector<std::string> &teamNames)
+    : _port(port), _width(width), _height(height), _clientsNb(clientsNb), _freq(freq), _teamNames(teamNames), _map(width, height),
+    _nextEggId(0), _resourceRefillTicks(RESOURCE_REFILL_TICKS), _running(true), _paused(false), _shell(*this)
+{
+    _map.setSeed(seed);
+    _map.generate();
+    _rng.seed(seed);
+}
 
 Server::~Server()
 {
@@ -37,6 +84,21 @@ Socket &Server::getSocket() {
 void Server::stop()
 {
     _running = false;
+}
+
+void Server::pause()
+{
+    _paused = true;
+    logger.write("The world is now paused.");
+}
+
+void Server::resume()
+{
+    if (_paused) {
+        _paused = false;
+        _lastTick = std::chrono::steady_clock::now();
+        logger.write("The world is now back running.");
+    }
 }
 
 void Server::setup()
@@ -76,6 +138,26 @@ void Server::disconnectClient(Client &client)
     _poll.removeFd(client.getFd());
     close(client.getFd());
     client.invalidate();
+}
+
+void Server::killClient(int fd)
+{
+    for (Client &client : _clients) {
+        if (client.isDead())
+            continue;
+        if (client.getFd() != fd)
+            continue;
+        if (client.getState() != ClientState::AI) {
+            logger.write("Only AI clients can be killed.");
+            return;
+        }
+        GuiCommands::pdi(*this, fd);
+        _socket.sendMessage(client.getFd(), "dead\n", 5);
+        disconnectClient(client);
+        logger.write("Murdered AI client " + std::to_string(fd) + ".");
+        return;
+    }
+    logger.write("Client not found.");
 }
 
 void Server::handleGuiHandshake(Client &client)
@@ -138,30 +220,56 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
 
     unsigned int aliveCount = countAlivePlayersInTeam(requestedTeamName);
     client.initPlayerData();
+    if (!assignAiSpawnPosition(client, requestedTeamName, aliveCount))
+        return;
+    finalizeAiHandshake(client, requestedTeamName, aliveCount);
+}
+
+bool Server::assignAiSpawnPosition(Client &client, const std::string &requestedTeamName, unsigned int aliveCount)
+{
+    PlayerData &player = client.getPlayerData().value();
 
     if (aliveCount >= _clientsNb) {
-        auto eggIt = std::find_if(_eggs.begin(), _eggs.end(),
-            [&requestedTeamName](const Egg &e) { return e.teamName == requestedTeamName; });
-        if (eggIt == _eggs.end()) {
+        std::vector<std::size_t> matchingEggs;
+
+        for (std::size_t index = 0; index < _eggs.size(); index++) {
+            if (_eggs[index].teamName == requestedTeamName)
+                matchingEggs.push_back(index);
+        }
+        if (matchingEggs.empty()) {
             _socket.sendMessage(client.getFd(), "ko\n", 3);
             disconnectClient(client);
-            return;
+            return false;
         }
-        GuiCommands::ebo(*this, eggIt->id);
-        client.getPlayerData()->setX(eggIt->x);
-        client.getPlayerData()->setY(eggIt->y);
-        _eggs.erase(eggIt);
+        std::uniform_int_distribution<std::size_t> eggDist(0, matchingEggs.size() - 1);
+        std::size_t eggIndex = matchingEggs[eggDist(_rng)];
+        Egg egg = _eggs[eggIndex];
+
+        GuiCommands::ebo(*this, egg.id);
+        player.setX(egg.x);
+        player.setY(egg.y);
+        _eggs.erase(_eggs.begin() + eggIndex);
     } else {
-        client.getPlayerData()->setX(rand() % _width);
-        client.getPlayerData()->setY(rand() % _height);
+        std::uniform_int_distribution<unsigned int> distX(0, _width - 1);
+        std::uniform_int_distribution<unsigned int> distY(0, _height - 1);
+
+        player.setX(distX(_rng));
+        player.setY(distY(_rng));
     }
+    return true;
+}
+
+void Server::finalizeAiHandshake(Client &client, const std::string &requestedTeamName, unsigned int aliveCount)
+{
+    PlayerData &player = client.getPlayerData().value();
 
     client.setState(ClientState::AI);
     client.setTeamName(requestedTeamName);
-    client.getPlayerData()->setDirection((rand() % 4) + 1);
-    client.getPlayerData()->setLevel(1);
-    client.getPlayerData()->setInventory(0, 10);
-    
+    std::uniform_int_distribution<unsigned int> directionDist(1, 4);
+    player.setDirection(directionDist(_rng));
+    player.setLevel(1);
+    player.setInventory(0, 9);
+
     int remaining = computeAvailableSlots(requestedTeamName, aliveCount);
     std::string availableSlots  = std::to_string(remaining) + "\n";
     std::string worldDimensions = std::to_string(_width) + " " + std::to_string(_height) + "\n";
@@ -190,7 +298,11 @@ void Server::dispatchClientLine(Client &client, const std::string &completeLine)
         std::size_t spacePos = completeLine.find(' ');
         std::string cmdName = completeLine.substr(0, spacePos);
         unsigned int ticks = AiCommands::getCommandTicks(cmdName);
+        bool queueWasEmpty = client.getPlayerData()->getCommandQueue().empty();
+
         client.getPlayerData()->queueCommand(completeLine, ticks);
+        if (queueWasEmpty)
+            startQueuedCommands(client, client.getPlayerData().value());
     }
 }
 
@@ -207,18 +319,18 @@ void Server::readClient(Client &client)
     client.getReadBuffer().append(readChunk, receivedBytes);
     std::string &readBuffer = client.getReadBuffer();
     std::size_t newlinePos;
-    
+
     while ((newlinePos = readBuffer.find('\n')) != std::string::npos) {
         std::string completeLine = readBuffer.substr(0, newlinePos);
         readBuffer.erase(0, newlinePos + 1);
-        
+
         if (!completeLine.empty() && completeLine.back() == '\r') {
             completeLine.pop_back();
         }
         if (completeLine.empty()) {
             continue;
         }
-        
+
         dispatchClientLine(client, completeLine);
     }
 }
@@ -230,7 +342,8 @@ void Server::closeClients()
             close(client.getFd());
     }
     _clients.clear();
-    close(_socket.getFd());
+    if (_socket.getFd() >= 0)
+        close(_socket.getFd());
 }
 
 void Server::readClients(const std::vector<pollfd> &fds)
@@ -271,7 +384,7 @@ void Server::processFoodDecay(Client &client, PlayerData &player)
     if (player.getFoodTicks() > 0) {
         player.setFoodTicks(player.getFoodTicks() - 1);
     }
-    
+
     if (player.getFoodTicks() == 0) {
         if (player.getInventory(0) > 0) {
             player.setInventory(0, player.getInventory(0) - 1);
@@ -290,15 +403,136 @@ void Server::processClientCommand(Client &client, PlayerData &player)
     if (client.isDead() || player.getCommandQueue().empty()) {
         return;
     }
-    
-    QueuedCommand &cmd = player.getCommandQueue().front();
-    if (cmd.remainingTicks > 0) {
-        cmd.remainingTicks--;
+
+    QueuedCommand &queuedCommand = player.getCommandQueue().front();
+    std::string commandLine = queuedCommand.line;
+
+    if (!queuedCommand.started)
+        return;
+    if (queuedCommand.remainingTicks > 0)
+        queuedCommand.remainingTicks--;
+    if (queuedCommand.remainingTicks > 0)
+        return;
+    if (player.isIncantating())
+        return;
+    player.popCommand();
+    logger.info("Player fd " + std::to_string(client.getFd()) + " executed command: " + commandLine);
+    AiCommands::dispatch(client, *this, commandLine);
+    if (client.isDead() || player.isIncantating())
+        return;
+    startQueuedCommands(client, player);
+}
+
+void Server::startQueuedCommands(Client &client, PlayerData &player)
+{
+    while (!client.isDead() && !player.getCommandQueue().empty()) {
+        QueuedCommand &queuedCommand = player.getCommandQueue().front();
+
+        if (queuedCommand.started)
+            return;
+        CommandStartResult startResult = AiCommands::begin(client, *this, queuedCommand.line);
+        if (startResult == CommandStartResult::FAILED) {
+            player.popCommand();
+            continue;
+        }
+        if (startResult == CommandStartResult::CONSUMED) {
+            player.popCommand();
+            continue;
+        }
+        queuedCommand.started = true;
+        return;
     }
-    if (cmd.remainingTicks == 0) {
-        logger.info("Player fd " + std::to_string(client.getFd()) + " executed command: " + cmd.line);
-        AiCommands::dispatch(client, *this, cmd.line);
-        player.getCommandQueue().pop();
+}
+
+std::vector<std::reference_wrapper<Client>> Server::getIncantationParticipants(const PendingIncantation &pendingIncantation, bool &success)
+{
+    std::vector<std::reference_wrapper<Client>> participants;
+
+    for (int participantFd : pendingIncantation.participantFds) {
+        std::optional<std::reference_wrapper<Client>> participantRef = findAliveClientByFd(_clients, participantFd);
+
+        if (!participantRef.has_value() || !isIncantationParticipantValid(pendingIncantation, participantRef->get())) {
+            success = false;
+            break;
+        }
+        participants.push_back(participantRef->get());
+    }
+    return participants;
+}
+
+void Server::handleSuccessfulIncantation(const PendingIncantation &pendingIncantation,
+    std::vector<std::reference_wrapper<Client>> &participants, Tile &tile)
+{
+    consumeIncantationResources(pendingIncantation, tile);
+    for (std::reference_wrapper<Client> participantRef : participants) {
+        Client &participant = participantRef.get();
+        PlayerData &player = participant.getPlayerData().value();
+        std::string levelMessage = "Current level: " + std::to_string(pendingIncantation.level + 1) + "\n";
+
+        player.setLevel(pendingIncantation.level + 1);
+        _socket.sendMessage(participant.getFd(), levelMessage.c_str(), levelMessage.size());
+        GuiCommands::plv(*this, participant.getFd());
+    }
+    logger.write("A bright flash engulfs the players! They ascended to a higher state of being.");
+    GuiCommands::bct_broadcast(*this, pendingIncantation.x, pendingIncantation.y);
+    for (const std::string &teamName : _teamNames) {
+        unsigned int level8Count = 0;
+
+        for (const Client &client : _clients) {
+            if (!client.isDead() && client.getState() == ClientState::AI && client.getTeamName() == teamName
+                && client.getPlayerData().has_value() && client.getPlayerData()->getLevel() == 8) {
+                level8Count++;
+            }
+        }
+        if (level8Count >= 6) {
+            GuiCommands::seg(*this, teamName);
+            logger.write("Team " + teamName + " has won the game!");
+            stop();
+            break;
+        }
+    }
+}
+
+void Server::handleFailedIncantation(const PendingIncantation &pendingIncantation)
+{
+    logger.write("The incantation fizzles out before completion.");
+    for (int participantFd : pendingIncantation.participantFds) {
+        std::optional<std::reference_wrapper<Client>> participantRef = findAliveClientByFd(_clients, participantFd);
+
+        if (participantRef.has_value())
+            _socket.sendMessage(participantRef->get().getFd(), "ko\n", 3);
+    }
+}
+
+void Server::processIncantation(PendingIncantation &pendingIncantation)
+{
+    Tile &tile = _map.getTile(pendingIncantation.x, pendingIncantation.y);
+    bool success = true;
+    std::vector<std::reference_wrapper<Client>> participants = getIncantationParticipants(pendingIncantation, success);
+
+    if (success)
+        success = hasRequiredResources(pendingIncantation, tile);
+    GuiCommands::pie(*this, pendingIncantation.x, pendingIncantation.y, success);
+    if (success)
+        handleSuccessfulIncantation(pendingIncantation, participants, tile);
+    else
+        handleFailedIncantation(pendingIncantation);
+    unfreezeIncantationParticipants(pendingIncantation, _clients);
+}
+
+void Server::processIncantationsTick()
+{
+    auto pendingIncantation = _incantations.begin();
+
+    while (pendingIncantation != _incantations.end()) {
+        if (pendingIncantation->remainingTicks > 0)
+            pendingIncantation->remainingTicks--;
+        if (pendingIncantation->remainingTicks > 0) {
+            pendingIncantation++;
+            continue;
+        }
+        processIncantation(*pendingIncantation);
+        pendingIncantation = _incantations.erase(pendingIncantation);
     }
 }
 
@@ -312,34 +546,43 @@ void Server::processTicks(int ticks)
             PlayerData &player = client.getPlayerData().value();
 
             processFoodDecay(client, player);
+            if (client.isDead())
+                continue;
             processClientCommand(client, player);
         }
+        processIncantationsTick();
+        if (_resourceRefillTicks > 0)
+            _resourceRefillTicks--;
+        if (_resourceRefillTicks == 0) {
+            _map.refillResources();
+            _resourceRefillTicks = RESOURCE_REFILL_TICKS;
+        }
     }
+}
+
+void Server::processPendingTicks()
+{
+    double tickDurationMs = 1000.0 / _freq;
+    auto now = std::chrono::steady_clock::now();
+    double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+    int ticksToProcess = elapsedMs / tickDurationMs;
+
+    if (ticksToProcess <= 0)
+        return;
+    try {
+        processTicks(ticksToProcess);
+    } catch (const MinorServerException &e) {
+        logger.warn(e.what());
+    }
+    _lastTick += std::chrono::milliseconds(static_cast<int>(ticksToProcess * tickDurationMs));
 }
 
 int Server::calculateNextTimeout(double elapsedMs, double tickDurationMs)
 {
     int minTicks = -1;
-    for (const Client &client : _clients) {
-        if (client.isDead() || client.getState() != ClientState::AI || !client.getPlayerData().has_value()) {
-            continue;
-        }
-        const PlayerData &player = client.getPlayerData().value();
-        
-        if (player.getFoodTicks() > 0) {
-            int eventTicks = player.getFoodTicks();
-            if (minTicks == -1 || eventTicks < minTicks) {
-                minTicks = eventTicks;
-            }
-        }
-        if (!player.getCommandQueue().empty()) {
-            const QueuedCommand &cmd = player.getCommandQueue().front();
-            int eventTicks = cmd.remainingTicks > 0 ? cmd.remainingTicks : 1;
-            if (minTicks == -1 || eventTicks < minTicks) {
-                minTicks = eventTicks;
-            }
-        }
-    }
+    for (const Client &client : _clients)
+        updateMinTicksFromClient(minTicks, client);
+    updateMinTicksFromIncantations(minTicks);
 
     if (minTicks != -1) {
         double targetElapsedMs = minTicks * tickDurationMs;
@@ -350,6 +593,37 @@ int Server::calculateNextTimeout(double elapsedMs, double tickDurationMs)
         }
     }
     return -1;
+}
+
+void Server::updateMinTicksFromClient(int &minTicks, const Client &client) const
+{
+    if (client.isDead() || client.getState() != ClientState::AI || !client.getPlayerData().has_value())
+        return;
+    const PlayerData &player = client.getPlayerData().value();
+
+    if (player.getFoodTicks() > 0) {
+        int eventTicks = player.getFoodTicks();
+
+        if (minTicks == -1 || eventTicks < minTicks)
+            minTicks = eventTicks;
+    }
+    if (!player.getCommandQueue().empty()) {
+        const QueuedCommand &cmd = player.getCommandQueue().front();
+        int eventTicks = cmd.remainingTicks > 0 ? cmd.remainingTicks : 1;
+
+        if (minTicks == -1 || eventTicks < minTicks)
+            minTicks = eventTicks;
+    }
+}
+
+void Server::updateMinTicksFromIncantations(int &minTicks) const
+{
+    for (const PendingIncantation &incantation : _incantations) {
+        int eventTicks = incantation.remainingTicks > 0 ? incantation.remainingTicks : 1;
+
+        if (minTicks == -1 || eventTicks < minTicks)
+            minTicks = eventTicks;
+    }
 }
 
 void Server::readShellCommands(const std::vector<pollfd>& fds)
@@ -364,11 +638,11 @@ void Server::readShellCommands(const std::vector<pollfd>& fds)
             }
             try {
                 _shell.processCommand(line);
-            } catch (const std::exception &e) {
-                std::cerr << e.what() << '\n';
+            } catch (const ParsingException &e) {
+                logger.warn(e.what());
             }
             if (_running)
-                std::cout << "> " << std::flush;
+                logger.write("> ");
         }
     }
 }
@@ -377,27 +651,28 @@ void Server::run()
 {
     setup();
     while (_running) {
-        double tickDurationMs = 1000.0 / _freq;
-        auto now = std::chrono::steady_clock::now();
-        double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
-        int ticksToProcess = elapsedMs / tickDurationMs;
+        int timeout = -1;
+        if (!_paused) {
+            double tickDurationMs = 1000.0 / _freq;
+            processPendingTicks();
+            auto now = std::chrono::steady_clock::now();
+            double elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
 
-        if (ticksToProcess > 0) {
-            processTicks(ticksToProcess);
-            _lastTick += std::chrono::milliseconds((int)(ticksToProcess * tickDurationMs));
-            now = std::chrono::steady_clock::now();
-            elapsedMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+            timeout = calculateNextTimeout(elapsedMs, tickDurationMs);
         }
-
-        int timeout = calculateNextTimeout(elapsedMs, tickDurationMs);
         int ret = _poll.wait(timeout);
-
         if (ret > 0) {
-            const std::vector<pollfd> &fds = _poll.getFds();
-            acceptPendingClients(fds);
-            readClients(fds);
-            readShellCommands(fds);
-            removeDeadClients();
+            try {
+                if (!_paused)
+                    processPendingTicks();
+                const std::vector<pollfd> &fds = _poll.getFds();
+                acceptPendingClients(fds);
+                readClients(fds);
+                readShellCommands(fds);
+                removeDeadClients();
+            } catch (const MinorServerException &e) {
+                logger.warn(e.what());
+            }
         }
     }
 }
@@ -430,6 +705,7 @@ unsigned int Server::getFreq() const
 void Server::setFreq(unsigned int t)
 {
     _freq = t;
+    _lastTick = std::chrono::steady_clock::now();
 }
 
 std::vector<Client> &Server::getClients()
@@ -445,6 +721,11 @@ unsigned int Server::getClientsNb() const
 const std::vector<Egg> &Server::getEggs() const
 {
     return _eggs;
+}
+
+std::vector<PendingIncantation> &Server::getIncantations()
+{
+    return _incantations;
 }
 
 unsigned int Server::addEgg(const std::string &teamName, unsigned int x, unsigned int y)

@@ -16,6 +16,7 @@ namespace ZappyServer {
 struct QueuedCommand {
     std::string line;
     unsigned int remainingTicks;
+    bool started;
 };
 
 class PlayerData {
@@ -26,6 +27,7 @@ class PlayerData {
         unsigned int _level;
         unsigned int _inventory[7];
         unsigned int _foodTicks;
+        bool _incantating;
         std::queue<QueuedCommand> _commandQueue;
     public:
         PlayerData();
@@ -42,9 +44,12 @@ class PlayerData {
         void setInventory(unsigned int index, unsigned int value);
         unsigned int getFoodTicks() const;
         void setFoodTicks(unsigned int value);
+        bool isIncantating() const;
+        void setIncantating(bool value);
         std::queue<QueuedCommand> &getCommandQueue();
         const std::queue<QueuedCommand> &getCommandQueue() const;
         void queueCommand(const std::string &cmd, unsigned int ticks);
+        void popCommand();
 };
 
 }

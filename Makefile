@@ -47,6 +47,6 @@ fclean:
 re: fclean all
 
 tests_run:
-	@echo "No tests"
-  
+	@$(MAKE) --no-print-directory -C $(SERVER_DIR) tests_run
+
 .PHONY: all zappy_server zappy_gui zappy_ai clean fclean re tests_run
