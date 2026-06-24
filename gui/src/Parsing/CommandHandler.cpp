@@ -35,6 +35,7 @@ CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gu
     _commands["plv"] = &CommandHandler::handle_plv;
     _commands["suc"] = &CommandHandler::handle_suc;
     _commands["sbp"] = &CommandHandler::handle_sbp;
+    _commands["sps"] = &CommandHandler::handle_sps;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -352,4 +353,18 @@ void CommandHandler::handle_suc(std::stringstream &)
 void CommandHandler::handle_sbp(std::stringstream &)
 {
     std::cout << "wrong command parameter" << std::endl;
+}
+
+void CommandHandler::handle_sps(std::stringstream &ss)
+{
+    int isPaused = 0;
+    if (!(ss >> isPaused))
+        return;
+    if (isPaused) {
+        std::cout << "Game is paused." << std::endl;
+        _world.setPaused(true);
+    } else {
+        std::cout << "Game is running." << std::endl;
+        _world.setPaused(false);
+    }
 }

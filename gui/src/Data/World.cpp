@@ -193,6 +193,8 @@ std::map<std::string, std::map<int, int>> World::getTeamStats() const
 
 void World::updateGameTime(float deltaTime)
 {
+    if (_isGameOver || _isPaused)
+        return;
     _internalGameTime += deltaTime;
 }
 
@@ -254,6 +256,7 @@ void World::setGameOver(const std::string &teamName)
 {
     _isGameOver = true;
     _winningTeam = teamName;
+    _gameOverTime = getFormattedGameTime();
 }
 
 bool World::isGameOver() const
@@ -261,9 +264,19 @@ bool World::isGameOver() const
     return _isGameOver;
 }
 
+void World::setPaused(bool isPaused)
+{
+    _isPaused = isPaused;
+}
+
 const std::string &World::getWinningTeam() const
 {
     return _winningTeam;
+}
+
+const std::string &World::getGameOverTime() const
+{
+    return _gameOverTime;
 }
 
 void World::setDisplayLvl(bool value)

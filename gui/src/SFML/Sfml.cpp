@@ -95,3 +95,8 @@ void Sfml::addBroadcast(int id)
 {
     _renderMap.getHandleTrantorians().addBroadcast(id);
 }
+
+std::string Sfml::getPendingCommand()
+{
+    return _eventHandler.getPendingCommand();
+}

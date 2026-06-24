@@ -66,7 +66,9 @@ class World {
         std::pair<int, int> getSelectedTile() const;
         void setGameOver(const std::string &teamName);
         bool isGameOver() const;
+        void setPaused(bool isPaused);
         const std::string &getWinningTeam() const;
+        const std::string &getGameOverTime() const;
         void setDisplayLvl(bool);
         bool getDisplayLvl();
 
@@ -83,7 +85,9 @@ class World {
         std::pair<int, int> _selectedTile = {-1, -1};
         bool _isGameOver = false;
         std::string _winningTeam = "";
+        std::string _gameOverTime = "";
         bool _displayLvl = false;
+        bool _isPaused = false;
 
 };
 

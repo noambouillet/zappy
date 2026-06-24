@@ -23,6 +23,7 @@ class IGui {
         virtual void setTrantorianIncanting(int id, bool state) = 0;
         virtual void stopIncantationAt(int x, int y) = 0;
         virtual void addBroadcast(int id) = 0;
+        virtual std::string getPendingCommand() = 0;
 };
 
 #endif /* !IGUI_HPP_ */

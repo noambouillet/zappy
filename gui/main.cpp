@@ -48,6 +48,10 @@ int main(int ac, char **av)
         netPoll.addFd(fd, POLLIN);
         while (gui->isOpen()) {
             gui->handleEvent();
+            std::string pendingCmd = gui->getPendingCommand();
+            if (!pendingCmd.empty()) {
+                network.send_command(fd, pendingCmd);
+            }
             if (netPoll.wait(0) < 0)
                 throw GuiException("poll failed");
             const auto &fds = netPoll.getFds();

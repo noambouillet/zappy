@@ -10,7 +10,7 @@
 #include "EventHandler.hpp"
 #include <algorithm>
 
-EventHandler::EventHandler(sf::RenderWindow &window, sf::View &camera): _window(window), _camera(camera) {}
+EventHandler::EventHandler(sf::RenderWindow &window, sf::View &camera): _window(window), _camera(camera), _pendingCommand("") {}
 
 void EventHandler::update(float windowWidth, float windowHeight, UIRender &uiRender, HandleTrantorians &handleTrantorians, World &world, float tileSize, float offsetX, float offsetY)
 {
@@ -37,8 +37,18 @@ void EventHandler::update(float windowWidth, float windowHeight, UIRender &uiRen
             if (uiMousePos.x < 1500.0f)
                 world.setSelectedTile(world.getHoveredTile().first, world.getHoveredTile().second);
         }
+        if (_event.type == sf::Event::KeyPressed && _event.key.code == sf::Keyboard::Space) {
+            _pendingCommand = "sps";
+        }
     }
     handleMove();
+}
+
+std::string EventHandler::getPendingCommand()
+{
+    std::string cmd = _pendingCommand;
+    _pendingCommand.clear();
+    return cmd;
 }
 
 void EventHandler::handleMove()
