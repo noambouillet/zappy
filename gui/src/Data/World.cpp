@@ -203,11 +203,11 @@ std::string World::getFormattedGameTime() const
     int minutes = (totalSeconds % 3600) / 60;
     int seconds = totalSeconds % 60;
 
-    std::ostringstream oss;
-    oss << std::setfill('0') << std::setw(2) << hours << ":"
+    std::ostringstream fullTime;
+    fullTime << std::setfill('0') << std::setw(2) << hours << ":"
         << std::setfill('0') << std::setw(2) << minutes << ":"
         << std::setfill('0') << std::setw(2) << seconds;
-    return oss.str();
+    return fullTime.str();
 }
 
 void World::setSelectedTeam(const std::string teamName)
