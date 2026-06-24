@@ -7,6 +7,7 @@
 
 #include "TextureManager.hpp"
 #include "GuiExceptions.hpp"
+#include "Logger.hpp"
 
 void TextureManager::loadAllTextures()
 {
@@ -19,7 +20,7 @@ void TextureManager::loadAllTextures()
             sf::Texture texture;
             sf::Sprite sprite;
             if (!texture.loadFromFile(entry.path().string())) {
-                std::cerr << "fail to load " << entry.path().string() << std::endl;
+                logger.warn("fail to load " + entry.path().string());
                 continue;
             }
             _textures[entry.path().stem().string()] = std::move(texture);

@@ -17,7 +17,7 @@ Parsing_gui::Parsing_gui()
 
 void Parsing_gui::print_help()
 {
-    std::cout << "USAGE: ./zappy_gui -p port -h machine [-3d]" << std::endl;
+    logger.info("USAGE: ./zappy_gui -p port -h machine [-3d]");
 }
 
 bool Parsing_gui::is_ipv4(const std::string &addr)

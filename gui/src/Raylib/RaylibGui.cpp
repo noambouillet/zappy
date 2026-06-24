@@ -6,7 +6,7 @@
 */
 
 #include "RaylibGui.hpp"
-#include <iostream>
+#include "Logger.hpp"
 #include <algorithm>
 #include <rlgl.h>
 #include <filesystem>
@@ -21,9 +21,9 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
             std::string name = entry.path().stem().string();
             try {
                 _textures[name] = std::make_unique<RayTexture>(entry.path().string());
-                std::cout << "Loaded texture: " << name << " from " << entry.path() << std::endl;
+                logger.info("Loaded texture: " + name + " from " + entry.path().string());
             } catch (const std::exception &e) {
-                std::cerr << "Warning: " << e.what() << std::endl;
+                logger.warn("Warning: " + std::string(e.what()));
             }
         }
     }
@@ -36,9 +36,9 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
                 BoundingBox box = GetModelBoundingBox(_models[name]->getModel());
                 float maxSize = std::max({box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z});
                 _modelScales[name] = (maxSize > 0.0f) ? (0.20f / maxSize) : 0.20f;
-                std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
+                logger.info("Loaded model: " + name + " from " + entry.path().string());
             } catch (const std::exception &e) {
-                std::cerr << "Warning: " << e.what() << std::endl;
+                logger.warn("Warning: " + std::string(e.what()));
             }
         }
     }
