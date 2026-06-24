@@ -36,10 +36,13 @@ class Incantation(Behavior):
         return ["Incantation\n"]
         
     def can_become_leader(self, agent):
-        """_summary_
+        """return if the agent can become a leader
 
         Args:
-            agent (_type_): _description_
+            agent (Agent): agent
+
+        Returns:
+            tuple(bool, int): can become leader and id of the new leader
         """
         for msg in agent.mailbox:
             if (msg["action"] == "INCANTATION" and msg["level"] == agent.level and msg["team"] == agent.team_name):
@@ -50,10 +53,13 @@ class Incantation(Behavior):
         return (True, agent.agent_id)
     
     def count_follower(self, agent):
-        """_summary_
+        """count the number of agent that follow the incantation to ensure they are all from the same team
 
         Args:
-            agent (_type_): _description_
+            agent (Agent): agent
+
+        Returns:
+            bool: bool to decide if the agent that start the incantation need to eject enemies
         """
         eject_players = False
         mailbox_message = agent.mailbox.copy()
@@ -76,6 +82,14 @@ class Incantation(Behavior):
         return eject_players
     
     def verif_incantation(self, agent):
+        """check if all the condition for an incantation are OK before starting
+
+        Args:
+            agent (_type_): _description_
+
+        Returns:
+            tuple(bool, list): bool that indicate if the agent can start the incantation and list of command to execute
+        """
         if NB_PLAYERS_REQUIRED > agent.teammate_on_tile:
             return False, [f"Broadcast INCANTATION|{agent.level}|{agent.team_name}|{agent.tick}|{agent.agent_id}\n", "Look\n"]
         nb_players_in_vision = agent.vision[0].count("player")
@@ -92,6 +106,14 @@ class Incantation(Behavior):
         return True, []
         
     def prepare_tile_resources(self, agent):
+        """set all required ressources for the incantation on the current tile
+
+        Args:
+            agent (Agent): agent
+
+        Returns:
+            tuple(list, bool): list of command to execute and bool that indicate if the ressources have been correctly set
+        """
         commands = []
         level = agent.level - 1
         if (level >= 7):

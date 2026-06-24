@@ -8,6 +8,11 @@
 from logger import logger
 
 def remove_incantation_command(agent):
+    """remove incantation command from the command list of the agent
+
+    Args:
+        agent (Agent): agent
+    """
     if "Incantation\n" in agent.list_commands:
         agent.list_commands.remove("Incantation\n")
 

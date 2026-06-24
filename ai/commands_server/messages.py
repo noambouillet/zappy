@@ -9,9 +9,9 @@ from logger import logger
 
 def receive_message(agent, response_server):
     """This function is for receiving messages from another AI
-    
-    Expected format from server:
-    message K, text
+
+    format:
+    message direction, action|level|team|tick|sender_id
 
     Args:
         agent (_type_): _description_

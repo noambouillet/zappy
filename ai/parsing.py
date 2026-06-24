@@ -10,8 +10,9 @@ from logger import logger
 
 def display_help(value_exit):
     """This function helps the user to use the settings correctly
+
     Args:
-        value_exit (_type_): value for exit the code
+        value_exit (int): value for exit the code
     """
     logger.warning("USAGE: ./zappy_ai -p port -n name -h machine")
     if (value_exit == 84):
@@ -19,9 +20,10 @@ def display_help(value_exit):
     sys.exit(value_exit)
 
 def parse_args():
-    """This function parse the arguments as the port, the name, and the name of the machine
+    """this function parse the arguments as the port, the name, and the name of the machine
+
     Returns:
-        _type_: port(int), name(str), machine(str)
+        struct{int, str, str}: port, name, machine
     """
     logger.debug("Launch of the program")
     if (len(sys.argv) == 2 and sys.argv[1] == "--help"):

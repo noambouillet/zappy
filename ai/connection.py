@@ -9,10 +9,12 @@ import sys, socket
 from logger import logger
 
 def connect_to_server(port, machine_name):
-    """ This function is to start the connection with the server and recover the socket
+    """This function is to start the connection with the server and recover the socket
+
     Args:
-        port (_type_): the port for the server
-        machine_name (_type_): the machine name for the connection
+        port (int): the port for the server
+        machine_name (str): the machine name for the connection
+
     Returns:
         socket: the socket of the connection to receive and send informations
     """
@@ -32,9 +34,11 @@ def connect_to_server(port, machine_name):
 
 def communication_server_client(socket_connection, team_name):
     """This function is to do the communication between the serv and the client, for recover slot, or world's dimensions
+
     Args:
         socket_connection (socket): The socket with the connection
         team_name (str): The name to send for the server
+
     Returns:
         dict: a dictionnary with the values of the slot and dimensions
     """

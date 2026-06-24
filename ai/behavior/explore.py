@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import requirement_for_progress, FOOD_TO_REACH
+from constant import FOOD_TO_REACH
 import math
 from logger import logger
 
@@ -25,6 +25,14 @@ class Explore(Behavior):
         return ["Forward\n"]
 
     def find_first_ressource(self, agent):
+        """retrieve the nearest available resource in his view to advance to the next level
+
+        Args:
+            agent (Agent): agent
+
+        Returns:
+            tuple(str, int): ressource and index of the tile from view
+        """
         valid = {"food" : FOOD_TO_REACH, "linemate" : 9, "deraumere" : 8, "sibur" : 10, "mendiane" : 5, "phiras" : 6, "thystame" : 1}
         for index, tile in enumerate(agent.vision):
             for ressource in tile:
@@ -33,6 +41,16 @@ class Explore(Behavior):
         return None, None
 
     def get_command(self, agent, ressource, tile_index):
+        """return the list of command to move to the desired tile and take the desired ressource
+
+        Args:
+            agent (Agent): agent
+            ressource (str): ressource to take
+            tile_index (int): tile index from view where the ressource is located
+
+        Returns:
+            list: commands list
+        """
         if ressource is None or tile_index is None:
             return None
         if tile_index == 0:

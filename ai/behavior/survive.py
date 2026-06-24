@@ -35,7 +35,6 @@ class Survive(Behavior):
                 agent.start_game = False
                 return agent.behavior.execute(agent)
             return self.take_food_vision(agent)
-        
 
     def take_food_vision(self, agent):
         """This function is to take the food in the vision if is possible

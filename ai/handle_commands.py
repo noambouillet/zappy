@@ -26,11 +26,11 @@ from agent import Agent
 import select
 from logger import logger
 
-
 def launch_commands(agent, command, response_server):
-    """This function allows you to determine which command to use to launch them.
+    """this function allows you to determine which command to use to launch them
+
     Args:
-        agent (class): Agent IA
+        agent (Agent): agent
         command (str): the command ask by the agent
         response_server (str): the response from the server
     """
@@ -58,12 +58,14 @@ def launch_commands(agent, command, response_server):
         logger.debug(f"Command unknown : {command}")
     
 def handle_commands(agent : Agent, all_responses_server):
-    """This function is to handle commands betwenn commands_ia and commands_server
+    """this function is to handle commands betwenn commands_ia and commands_server
+
     Args:
-        agent (class): agent IA
-        all_responses_server (str): all_responses_server
+        agent (Agent): agent
+        all_responses_server (str): all server responses
+
     Returns:
-        str: The remaining orders have not yet been processed.
+        str: the remaining orders have not yet been processed
     """
     while '\n' in all_responses_server:
         response_server, all_responses_server = all_responses_server.split('\n', 1)
@@ -99,10 +101,14 @@ def handle_commands(agent : Agent, all_responses_server):
     return all_responses_server
 
 def check_inventory_regularly(agent, tab_commands):
-    """_summary_
+    """do inventory command by following a frequence
 
     Args:
-        agent (_type_): _description_
+        agent (Agent): agent
+        tab_commands (list): command list
+
+    Returns:
+        list: command list
     """
     if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE and agent.is_incantation != True):
         agent.last_inventory = agent.tick
@@ -110,11 +116,11 @@ def check_inventory_regularly(agent, tab_commands):
     return tab_commands
 
 def send_commands(socket_connection : socket.socket, agent : Agent):
-    """Send the commands to server from the execute behavior (class)
+    """send the commands to server from the execute behavior
 
     Args:
         socket_connection (socket.socket): the socket connection between ia and server
-        agent (Agent): Agent IA
+        agent (Agent): agent
     """
     need_look = ["Forward\n", "Left\n", "Right\n", "Eject\n"]
     if agent.is_incantation == True:
@@ -145,6 +151,7 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
         """This function is to juggle between send and receive commands (Ai/Server)
+
         Args:
             socket_connection (socket): the point of connection between server and ia
             agent (class): Agent IA

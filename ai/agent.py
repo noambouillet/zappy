@@ -98,7 +98,7 @@ class Agent:
             tile (int): direction from which the broadcast originates
 
         Returns:
-            (x, y): direction to follow to go to the tile from the agent tile
+            (x, y): direction to follow to go to the tile from the view
         """
         if tile <= 0:
             return 0, 0
@@ -114,6 +114,12 @@ class Agent:
 
     def go_to(self, tile):
         """Return the list of commands to go to a tile from look
+
+        Args:
+            tile (int): tile index to go
+
+        Returns:
+            list: commands list
         """
         x, y = self.tile_to_coords(tile)
         commands = []
@@ -130,6 +136,14 @@ class Agent:
         return commands
     
     def follow_direction(self, direction: int):
+        """follow direction from a broadcast (0 to 8)
+
+        Args:
+            direction (int): direction to follow (0 to 8)
+
+        Returns:
+            list: command list
+        """
         logger.debug(f"[FOLLOW_DIRECTION] Broadcast direction: {direction}")
         if direction == 0:
             return []
@@ -160,6 +174,7 @@ class Agent:
     
     def capable_of_incantation(self):
         """This function is to determinate if the player can do incantation with his ressources
+
         Returns:
             bool: true or false for level up
         """
