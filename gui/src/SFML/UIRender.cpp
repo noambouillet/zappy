@@ -11,7 +11,7 @@
 UIRender::UIRender(World &world, sf::RenderWindow &window, TextureManager &textureManager): _world(world), _window(window), _textureManager(textureManager)
 {
     if (!_font.loadFromFile("gui/assets/fonts/magic.ttf"))
-        throw GuiException("can't load font");
+        throw GuiException("can't load font: gui/assets/fonts/magic.ttf");
     _text.setFont(_font);
     _text.setFillColor(sf::Color::White);
 }
