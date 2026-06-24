@@ -49,6 +49,7 @@ class Server {
         std::vector<PendingIncantation> _incantations;
         unsigned int _nextEggId;
         unsigned int _resourceRefillTicks;
+        std::chrono::time_point<std::chrono::steady_clock> _startTime;
         std::chrono::time_point<std::chrono::steady_clock> _lastTick;
         bool _running;
         bool _paused;

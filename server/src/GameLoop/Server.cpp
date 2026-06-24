@@ -113,6 +113,7 @@ void Server::setup()
         std::cout << "> " << std::flush;
         _poll.addFd(STDIN_FILENO, POLLIN);
     }
+    _startTime = std::chrono::steady_clock::now();
     _lastTick = std::chrono::steady_clock::now();
 
     signal(SIGPIPE, SIG_IGN);
@@ -485,8 +486,11 @@ void Server::handleSuccessfulIncantation(const PendingIncantation &pendingIncant
             }
         }
         if (level8Count >= 6) {
+            const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - _startTime
+            ).count();
             GuiCommands::seg(*this, teamName);
-            logger.write("Team " + teamName + " has won the game!");
+            logger.write("Team " + teamName + " has won the game in " + std::to_string(elapsed) + " seconds.");
             stop();
             break;
         }
