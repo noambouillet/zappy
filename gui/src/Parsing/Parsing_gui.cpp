@@ -67,9 +67,10 @@ networkData_t Parsing_gui::parse_args(int ac, char **av)
         std::string flag = av[i];
         if (flag == "-3d") {
             use3D = true;
+            continue;
+        }
         if (flag == "-v" || flag == "--verbose") {
             logger.setVerbose(true);
-            i--;
             continue;
         }
         if (i + 1 >= ac) {
