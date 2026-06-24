@@ -23,5 +23,29 @@ class GuiException : public std::exception {
         }
 };
 
+class MinorGuiException : public GuiException {
+    public:
+        explicit MinorGuiException(std::string message) noexcept : GuiException(std::move(message)) {}
+};
 
-#endif /* !Gui_EXCEPTIONS_HPP_ */
+class MajorGuiException : public GuiException {
+    public:
+        explicit MajorGuiException(std::string message) noexcept : GuiException(std::move(message)) {}
+};
+
+class ParsingGuiException : public MajorGuiException {
+    public:
+        explicit ParsingGuiException(std::string message) noexcept : MajorGuiException(std::move(message)) {}
+};
+
+class NetworkException : public MajorGuiException {
+    public:
+        explicit NetworkException(std::string message) noexcept : MajorGuiException(std::move(message)) {}
+};
+
+class MinorNetworkException : public MinorGuiException {
+    public:
+        explicit MinorNetworkException(std::string message) noexcept : MinorGuiException(std::move(message)) {}
+};
+
+#endif /* !GUI_EXCEPTIONS_HPP_ */

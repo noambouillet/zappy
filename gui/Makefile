@@ -31,6 +31,7 @@ SRC     = main.cpp \
 		  src/Parsing/CommandHandler.cpp \
 		  src/Data/World.cpp \
 		  src/Network/NetworkHandler.cpp \
+		  src/Logger.cpp \
 		  src/Encapsulations/Socket.cpp \
 		  src/Encapsulations/Poll.cpp \
 		  src/Data/TextureManager.cpp \

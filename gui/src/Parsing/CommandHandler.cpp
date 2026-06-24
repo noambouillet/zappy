@@ -7,6 +7,7 @@
 
 #include "CommandHandler.hpp"
 #include <random>
+#include "Logger.hpp"
 
 CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gui)
 {
@@ -48,7 +49,7 @@ void CommandHandler::handle(const std::string &line)
     if (it != _commands.end()) {
         (this->*(it->second))(ss);
     } else {
-        std::cout << "Unknown command : " << line << std::endl;
+        logger.warn("Unknown command : " + line);
     }
 }
 

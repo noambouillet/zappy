@@ -6,6 +6,7 @@
 */
 
 #include "Sfml.hpp"
+#include "Logger.hpp"
 #include <algorithm>
 #include <cmath>
 #include "GuiExceptions.hpp"
