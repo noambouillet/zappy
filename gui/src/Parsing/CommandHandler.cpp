@@ -199,7 +199,7 @@ void CommandHandler::handle_pex(std::stringstream &ss)
 
     if (!(ss >> sharp >> id))
         return;
-    _gui.setTrantorianActionBubble(id, "lotOres", 5.0f * 7.0f / _world.getTime()); // à changer pour un point d'exclamation
+    _gui.setTrantorianActionBubble(id, "!", 5.0f * 7.0f / _world.getTime());
     std::cout << "Trantorian #" << id << " is angry and need to push things to feel better." << std::endl;
 }
 
