@@ -287,6 +287,7 @@ void UIRender::displayGameOver()
     drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
     drawText("VICTORY !", 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
     drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", 35, 610.0f + 60.0f, 340.0f + 180.0f);
+    drawText("Match Duration: " + _world.getGameOverTime(), 25, 610.0f + 200.0f, 340.0f + 250.0f);
 }
 
 void UIRender::displayLevelLegend()

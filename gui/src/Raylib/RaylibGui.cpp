@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <cmath>
 
-RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D - Raylib")
+RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D - Raylib"), _pendingCommand("")
 {
     _backgroundTexture = std::make_unique<RayTexture>("gui/assets/3D/backgrounds/background.png");
 
@@ -113,6 +113,17 @@ void RaylibGui::handleEvent()
             }
         }
     }
+
+    if (IsKeyPressed(KEY_SPACE)) {
+        _pendingCommand = "sps";
+    }
+}
+
+std::string RaylibGui::getPendingCommand()
+{
+    std::string cmd = _pendingCommand;
+    _pendingCommand.clear();
+    return cmd;
 }
 
 void RaylibGui::updateAnimations(float deltaTime)
@@ -217,7 +228,7 @@ void RaylibGui::displayWindow()
         return;
     }
 
-    DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, 1920, 1080}, Vector2{0, 0}, 0.0f, WHITE);
+    DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())}, Vector2{0, 0}, 0.0f, WHITE);
     _camera.beginMode3D();
 
     auto mapSize = _world.getMapSize();

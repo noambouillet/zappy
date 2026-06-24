@@ -230,4 +230,8 @@ void RayUI::drawGameOverScreen(const std::string &winningTeam)
     std::string text = "Team " + winningTeam + " has won the game!";
     int textWidth = MeasureText(text.c_str(), 35);
     DrawText(text.c_str(), posX + (panelWidth - textWidth) / 2, posY + 180, 35, WHITE);
+
+    std::string timeText = "Match Duration: " + _world.getGameOverTime();
+    int timeTextWidth = MeasureText(timeText.c_str(), 25);
+    DrawText(timeText.c_str(), posX + (panelWidth - timeTextWidth) / 2, posY + 240, 25, GRAY);
 }
