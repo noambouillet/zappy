@@ -156,7 +156,7 @@ void HandleTrantorians::updateTrantorianIncantation(TrantorianAnim_t &anim, floa
     anim.incantTimer += deltaTime;
     if (anim.incantTimer >= 0.05f) {
         anim.incantTimer = 0.0f;
-        anim.incantFrame = (anim.incantFrame + 1) % 4;
+        anim.incantFrame = (anim.incantFrame + 1) % 21;
     }
 }
 
@@ -208,7 +208,7 @@ void HandleTrantorians::drawTrantorians(const TileData_t &tile)
             if (anim.isDying)
                 drawAnimation(anim, size * 1.5f, 32, "spritesheetDeath", anim.deathFrame);
             else if (anim.isIncanting)
-                drawAnimation(anim, size, 6, "incantation", anim.incantFrame);
+                drawAnimation(anim, size * 1.2f, 21, "incantation", anim.incantFrame);
             else {
                 sprite.setPosition(anim.visualPos);
                 sprite.setRotation((anim.isMoving) ? (15.0f * std::sin(anim.walkTimer * 18.0f)) : 0.0f);

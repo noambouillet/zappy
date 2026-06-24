@@ -199,7 +199,7 @@ void CommandHandler::handle_pex(std::stringstream &ss)
 
     if (!(ss >> sharp >> id))
         return;
-    _gui.setTrantorianActionBubble(id, "lotOres", 5.0f * 7.0f / _world.getTime()); // à changer pour un point d'exclamation
+    _gui.setTrantorianActionBubble(id, "exclamation", 5.0f * 7.0f / _world.getTime());
     std::cout << "Trantorian #" << id << " is angry and need to push things to feel better." << std::endl;
 }
 
@@ -286,7 +286,7 @@ void CommandHandler::handle_pdr(std::stringstream &ss)
 
     if (!(ss >> sharp >> id >> nb))
         return;
-    _gui.setTrantorianActionBubble(id, "ground", 5.0f * 42.0f / _world.getTime()); // à changer pour une main en mode il drop 
+    _gui.setTrantorianActionBubble(id, "drop", 5.0f * 7.0f / _world.getTime());
     std::cout << "Trantorian #" << id << " drop " << nb << " ressources." << std::endl;
 }
 
