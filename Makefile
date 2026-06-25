@@ -42,11 +42,13 @@ fclean:
 	@$(MAKE) --no-print-directory -C $(SERVER_DIR) fclean
 	@$(MAKE) --no-print-directory -C $(GUI_DIR) fclean
 	@$(MAKE) --no-print-directory -C $(AI_DIR) fclean
+	@find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	@find . -type f \( -name "*.txt" -o -name "*.log" \) -delete
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) Full cleaning done."
 
 re: fclean all
 
 tests_run:
-	@echo "No tests"
-  
+	@$(MAKE) --no-print-directory -C $(SERVER_DIR) tests_run
+
 .PHONY: all zappy_server zappy_gui zappy_ai clean fclean re tests_run
