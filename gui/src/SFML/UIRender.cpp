@@ -26,10 +26,11 @@ void UIRender::displayUI()
     }
     if (_world.isPaused())
         displayPauseMenu();
-    drawPanel(10.0f, 200.0f, 360.0f, 800.0f);
+    drawPanel(10.0f, 200.0f, 360.0f, 840.0f);
     drawPanel(810.0f, 35.0f, 330.0f, 60.0f);
     drawText("Time : " + _world.getFormattedGameTime(), sf::Color::White, 50, 830.0f, 30.0f);
     drawText("Frequency : " + std::to_string(_world.getTime()), sf::Color::White, 50, 60.0f, 200.0f);
+    drawText("Map Size : " + std::to_string(_world.getMapSize().first) + "x" + std::to_string(_world.getMapSize().second), sf::Color::White, 50, 60.0f, 270.0f);
     displayRessources();
     displayTeams();
     displayShortcut();
@@ -46,7 +47,7 @@ void UIRender::displayRessources()
     const std::vector<int> resources = _world.getTotalRessources();
     const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"deraumere", "Deraumere : "}, {"sibur", "Sibur : "}, {"mendiane", "Mendiane : "}, {"phiras", "Phiras : "}, {"thystame", "Thystame : "}};
     const std::vector<float> sizes = {1.5f, 18.0f, 36.0f, 30.0f, 30.0f, 40.0f, 27.0f};
-    float y = 300.0f;
+    float y = 350.0f;
 
     for (size_t i = 0; i < items.size() && i < resources.size(); i++) {
         drawIcon(items[i].first, sizes[i], 50.0f, y + 40.0f);
@@ -289,7 +290,7 @@ void UIRender::displayGameOver()
     _window.draw(overlay);
     drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
     drawText("VICTORY !", sf::Color::White, 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
-    drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", sf::Color::White, 35, 610.0f + 60.0f, 340.0f + 180.0f);
+    drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", sf::Color::White, 35, 800.0f, 520.0f);
     drawText("Match Duration: " + _world.getGameOverTime(), sf::Color::White, 25, 610.0f + 200.0f, 340.0f + 250.0f);
 }
 
