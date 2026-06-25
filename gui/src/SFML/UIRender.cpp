@@ -24,12 +24,16 @@ void UIRender::displayUI()
         displayGameOver();
         return;
     }
+    if (_world.isPaused()) {
+        drawText("The simulation is currently in pause, to resume it, press space bar again", 25, 600.0f, 20.0f);
+    }
     drawPanel(10.0f, 200.0f, 360.0f, 800.0f);
     drawPanel(810.0f, 35.0f, 330.0f, 60.0f);
     drawText("Time : " + _world.getFormattedGameTime(), 50, 830.0f, 30.0f);
     drawText("Frequency : " + std::to_string(_world.getTime()), 50, 60.0f, 200.0f);
     displayRessources();
     displayTeams();
+    displayShortcut();
     if (_world.getDisplayLvl())
         displayLevelLegend();
     if (_activeDataTrantorianId != -1)
@@ -287,6 +291,7 @@ void UIRender::displayGameOver()
     drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
     drawText("VICTORY !", 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
     drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", 35, 610.0f + 60.0f, 340.0f + 180.0f);
+    drawText("Match Duration: " + _world.getGameOverTime(), 25, 610.0f + 200.0f, 340.0f + 250.0f);
 }
 
 void UIRender::displayLevelLegend()
@@ -310,4 +315,14 @@ void UIRender::displayLevelLegend()
         _window.draw(rect);
         drawText(std::to_string(i + 1), 30, currentX + 12.0f, startY - 1.0f);
     }
+}
+
+void UIRender::displayShortcut()
+{
+    std::string lvl = _world.getDisplayLvl() ? "ON" : "OFF";
+    std::string broadcast = _world.getDisplayBroadcast() ? "ON" : "OFF";
+
+    drawPanel(1460.0f, 900.0f, 150.0f, 150.0f);
+    drawText("L :" + lvl, 50, 1470.0f, 900.0f);
+    drawText("B :" + broadcast, 50, 1470.0f, 960.0f);
 }

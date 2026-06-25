@@ -193,6 +193,8 @@ std::map<std::string, std::map<int, int>> World::getTeamStats() const
 
 void World::updateGameTime(float deltaTime)
 {
+    if (_isGameOver || _isPaused)
+        return;
     _internalGameTime += deltaTime;
 }
 
@@ -203,11 +205,11 @@ std::string World::getFormattedGameTime() const
     int minutes = (totalSeconds % 3600) / 60;
     int seconds = totalSeconds % 60;
 
-    std::ostringstream oss;
-    oss << std::setfill('0') << std::setw(2) << hours << ":"
+    std::ostringstream fullTime;
+    fullTime << std::setfill('0') << std::setw(2) << hours << ":"
         << std::setfill('0') << std::setw(2) << minutes << ":"
         << std::setfill('0') << std::setw(2) << seconds;
-    return oss.str();
+    return fullTime.str();
 }
 
 void World::setSelectedTeam(const std::string teamName)
@@ -254,6 +256,7 @@ void World::setGameOver(const std::string &teamName)
 {
     _isGameOver = true;
     _winningTeam = teamName;
+    _gameOverTime = getFormattedGameTime();
 }
 
 bool World::isGameOver() const
@@ -261,9 +264,24 @@ bool World::isGameOver() const
     return _isGameOver;
 }
 
+void World::setPaused(bool isPaused)
+{
+    _isPaused = isPaused;
+}
+
+bool World::isPaused() const
+{
+    return _isPaused;
+}
+
 const std::string &World::getWinningTeam() const
 {
     return _winningTeam;
+}
+
+const std::string &World::getGameOverTime() const
+{
+    return _gameOverTime;
 }
 
 void World::setDisplayLvl(bool value)
@@ -274,4 +292,14 @@ void World::setDisplayLvl(bool value)
 bool World::getDisplayLvl()
 {
     return _displayLvl;
+}
+
+void World::setDisplayBroadcast(bool value)
+{
+    _displayBroadcast = value;
+}
+
+bool World::getDisplayBroadcast()
+{
+    return _displayBroadcast;
 }

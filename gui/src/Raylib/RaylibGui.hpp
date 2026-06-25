@@ -41,6 +41,7 @@ class RaylibGui : public IGui {
         bool isOpen() const override;
         void handleEvent() override;
         void displayWindow() override;
+        std::string getPendingCommand() override;
         
         void setTrantorianActionBubble(int id, const std::string &textureKey, float duration) override;
         void triggerTrantorianDeath(int id) override;
@@ -61,6 +62,7 @@ class RaylibGui : public IGui {
         int _selectedTileX = -1;
         int _selectedTileZ = -1;
         int _selectedTrantorianId = -1;
+        std::string _pendingCommand;
 
         void drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color);
         void drawTileContent(int x, int z);

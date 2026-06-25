@@ -49,6 +49,7 @@ class CommandHandler {
         void handle_plv(std::stringstream &ss);
         void handle_suc(std::stringstream &ss);
         void handle_sbp(std::stringstream &ss);
+        void handle_sps(std::stringstream &ss);
 };
 
 #endif

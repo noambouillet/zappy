@@ -39,6 +39,7 @@ class Sfml : public IGui {
         void setTrantorianIncanting(int id, bool state) override;
         void stopIncantationAt(int x, int y) override;
         void addBroadcast(int id) override;
+        std::string getPendingCommand() override;
         HandleTrantorians &getHandleTrantorians();
 
     private:

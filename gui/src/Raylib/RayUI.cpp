@@ -73,6 +73,11 @@ void RayUI::drawResourceLine(int x, int y, const std::string &iconKey, const std
 
 void RayUI::drawGlobalInfo()
 {
+    if (_world.isPaused()) {
+        std::string pauseText = "The simulation is currently in pause, to resume it, press space bar again";
+        int pauseTextWidth = MeasureText(pauseText.c_str(), 25);
+        DrawText(pauseText.c_str(), (GetScreenWidth() - pauseTextWidth) / 2, 20, 25, RED);
+    }
     int width = 300;
     const auto &teams = _world.getTeams();
     auto teamStats = _world.getTeamStats();
@@ -230,4 +235,8 @@ void RayUI::drawGameOverScreen(const std::string &winningTeam)
     std::string text = "Team " + winningTeam + " has won the game!";
     int textWidth = MeasureText(text.c_str(), 35);
     DrawText(text.c_str(), posX + (panelWidth - textWidth) / 2, posY + 180, 35, WHITE);
+
+    std::string timeText = "Match Duration: " + _world.getGameOverTime();
+    int timeTextWidth = MeasureText(timeText.c_str(), 25);
+    DrawText(timeText.c_str(), posX + (panelWidth - timeTextWidth) / 2, posY + 240, 25, GRAY);
 }
