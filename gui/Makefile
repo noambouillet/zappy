@@ -12,7 +12,7 @@ RESET   =   \033[0m
 BLUE    =   \033[38;2;80;160;255m
 GREEN   =   \033[38;2;80;220;120m
 
-GUI_FLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
+GUI_FLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lsfml-network
 
 GUI_SRC = src/Raylib/RaylibGui.cpp \
 		  src/Raylib/RayUI.cpp \

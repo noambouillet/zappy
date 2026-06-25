@@ -15,6 +15,13 @@ Sfml::Sfml(World &world): _window(sf::VideoMode({WIDTH, HEIGHT}), "trantor", sf:
 {
     _window.setFramerateLimit(60);
     _textureManager.loadAllTextures();
+    if (!_backgroundMusic.openFromFile("gui/assets/sounds/music.wav")) {
+        std::cerr << "fail to open music file" << std::endl;
+    } else {
+        _backgroundMusic.setLoop(true);
+        _backgroundMusic.setVolume(100.0f);
+        _backgroundMusic.play();
+    }
 }
 
 Sfml::~Sfml()
