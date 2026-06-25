@@ -41,17 +41,31 @@ jobs:
     if: needs.check_repo.outputs.is_mirror == 'false'
     runs-on: ubuntu-latest
     container: epitechcontent/epitest-docker
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Raylib
+        run: |
+          if command -v dnf >/dev/null 2>&1; then
+            dnf install -y git make gcc-c++ cmake libX11-devel libXrandr-devel libXi-devel libXcursor-devel libXinerama-devel mesa-libGL-devel alsa-lib-devel
+          elif command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y build-essential git cmake libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
+          fi
+          git clone --depth 1 https://github.com/raysan5/raylib.git raylib
+          cd raylib/src
+          make PLATFORM=PLATFORM_DESKTOP
+          make install
+          ldconfig || echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf && ldconfig
+
       - name: Full clean
         run: |
-          if make -n fclean >/dev/null 2>&1; then
-            make fclean
+          if make -n clean >/dev/null 2>&1; then
+            make clean
           else
-            echo "Skipping fclean: target not found"
+            echo "Skipping clean: target not found"
           fi
 
       - name: Compile
@@ -74,10 +88,10 @@ jobs:
 
       - name: Clean
         run: |
-          if make -n clean >/dev/null 2>&1; then
-            make clean
+          if make -n fclean >/dev/null 2>&1; then
+            make fclean
           else
-            echo "Skipping clean: target not found"
+            echo "Skipping fclean: target not found"
           fi
 
       - name: Check expected executables were cleaned
@@ -90,7 +104,7 @@ jobs:
           IFS="$OLD_IFS"
           for exec in "$@"; do
             if [ -e "$exec" ]; then
-              echo "::error file=$exec::Executable still exists after make clean"
+              echo "::error file=$exec::Executable still exists after make fclean"
               exit 1
             fi
           done
@@ -100,10 +114,24 @@ jobs:
     if: needs.check_repo.outputs.is_mirror == 'false'
     runs-on: ubuntu-latest
     container: epitechcontent/epitest-docker
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install Raylib
+        run: |
+          if command -v dnf >/dev/null 2>&1; then
+            dnf install -y git make gcc-c++ cmake libX11-devel libXrandr-devel libXi-devel libXcursor-devel libXinerama-devel mesa-libGL-devel alsa-lib-devel
+          elif command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y build-essential git cmake libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
+          fi
+          git clone --depth 1 https://github.com/raysan5/raylib.git raylib
+          cd raylib/src
+          make PLATFORM=PLATFORM_DESKTOP
+          make install
+          ldconfig || echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf && ldconfig
 
       - name: Run tests
         run: |

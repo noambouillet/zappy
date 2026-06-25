@@ -1,3 +1,5 @@
+test
+*.o
 *.log
 linux
 __pycache__
@@ -5,3 +7,4 @@ __pycache__
 zappy_ai
 zappy_gui
 zappy_server
+.vscode/
