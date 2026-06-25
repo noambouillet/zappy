@@ -27,7 +27,7 @@ void EventHandler::update(float windowWidth, float windowHeight, UIRender &uiRen
     else
         world.setHoveredTile(-1, -1);
     while (_window.pollEvent(_event)) {
-        if (_event.type == sf::Event::Closed)
+        if (_event.type == sf::Event::Closed || (_event.type == sf::Event::KeyPressed && _event.key.code == sf::Keyboard::Escape))
             _window.close();
         uiRender.handleEvent(_event);
         handleTrantorians.handleEvent(_event);

@@ -72,6 +72,8 @@ class World {
         const std::string &getGameOverTime() const;
         void setDisplayLvl(bool);
         bool getDisplayLvl();
+        void setDisplayBroadcast(bool);
+        bool getDisplayBroadcast();
 
     private:
         std::pair<size_t, size_t> _mapSize{0, 0};
@@ -88,8 +90,8 @@ class World {
         std::string _winningTeam = "";
         std::string _gameOverTime = "";
         bool _displayLvl = false;
+        bool _displayBroadcast = false;
         bool _isPaused = false;
-
 };
 
 #endif

@@ -293,3 +293,13 @@ bool World::getDisplayLvl()
 {
     return _displayLvl;
 }
+
+void World::setDisplayBroadcast(bool value)
+{
+    _displayBroadcast = value;
+}
+
+bool World::getDisplayBroadcast()
+{
+    return _displayBroadcast;
+}

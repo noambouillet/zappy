@@ -39,6 +39,7 @@ class UIRender {
         void displayTileData(int x, int y);
         void displayGameOver();
         void displayLevelLegend();
+        void displayShortcut();
 
 };
 #endif
