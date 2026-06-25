@@ -49,7 +49,7 @@ int main(int ac, char **av)
         while (gui->isOpen()) {
             gui->handleEvent();
             std::string pendingCmd = gui->getPendingCommand();
-            if (!pendingCmd.empty()) {
+            if (!pendingCmd.empty() && fd != -1) {
                 network.send_command(fd, pendingCmd);
             }
             if (netPoll.wait(0) < 0)
@@ -63,13 +63,20 @@ int main(int ac, char **av)
                     }
                 } catch (const MinorNetworkException &e) {
                     logger.warn("Server disconnected.");
-                    break;
+                    netPoll.removeFd(fd);
+                    fd = -1;
                 }
-                if (serverFdStruct.revents & POLLIN) {
-                    server_buffer += network.read_from_server(fd);
-                    std::string msg;
-                    while (network.extract_message(server_buffer, msg)) {
-                        handler.handle(msg);
+                if (fd != -1 && (serverFdStruct.revents & POLLIN)) {
+                    try {
+                        server_buffer += network.read_from_server(fd);
+                        std::string msg;
+                        while (network.extract_message(server_buffer, msg)) {
+                            handler.handle(msg);
+                        }
+                    } catch (const GuiException &e) {
+                        logger.warn("Server disconnected during read.");
+                        netPoll.removeFd(fd);
+                        fd = -1;
                     }
                 }
             }
