@@ -24,13 +24,12 @@ void UIRender::displayUI()
         displayGameOver();
         return;
     }
-    if (_world.isPaused()) {
-        drawText("The simulation is currently in pause, to resume it, press space bar again", 25, 600.0f, 20.0f);
-    }
+    if (_world.isPaused())
+        displayPauseMenu();
     drawPanel(10.0f, 200.0f, 360.0f, 800.0f);
     drawPanel(810.0f, 35.0f, 330.0f, 60.0f);
-    drawText("Time : " + _world.getFormattedGameTime(), 50, 830.0f, 30.0f);
-    drawText("Frequency : " + std::to_string(_world.getTime()), 50, 60.0f, 200.0f);
+    drawText("Time : " + _world.getFormattedGameTime(), sf::Color::White, 50, 830.0f, 30.0f);
+    drawText("Frequency : " + std::to_string(_world.getTime()), sf::Color::White, 50, 60.0f, 200.0f);
     displayRessources();
     displayTeams();
     displayShortcut();
@@ -51,7 +50,7 @@ void UIRender::displayRessources()
 
     for (size_t i = 0; i < items.size() && i < resources.size(); i++) {
         drawIcon(items[i].first, sizes[i], 50.0f, y + 40.0f);
-        drawText(items[i].second + std::to_string(resources[i]), 50, 100.0f, y);
+        drawText(items[i].second + std::to_string(resources[i]), sf::Color::White, 50, 100.0f, y);
         y += 100.0f;
     }
 }
@@ -72,28 +71,28 @@ void UIRender::displayTileData(int x, int y)
         else
             _buttonShape.setOutlineColor(sf::Color(150, 150, 150));
         drawButton("X", 25, closeX, closeY, closeW, closeH);
-        drawText("Tile X: " + std::to_string(x) + " Y: " + std::to_string(y), 35, boxX + 30.0f, boxY + 20.0f);
-        drawText("Resources details :", 40, boxX + 30.0f, boxY + 90.0f);
+        drawText("Tile X: " + std::to_string(x) + " Y: " + std::to_string(y), sf::Color::White, 35, boxX + 30.0f, boxY + 20.0f);
+        drawText("Resources details :", sf::Color::White, 40, boxX + 30.0f, boxY + 90.0f);
         const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"deraumere", "Deraumere : "}, {"sibur", "Sibur : "}, {"mendiane", "Mendiane : "}, {"phiras", "Phiras : "}, {"thystame", "Thystame : "}};
         const std::vector<float> sizes = {0.75f, 9.0f, 18.0f, 15.0f, 15.0f, 20.0f, 13.0f};
         float deltaY = 180.0f + boxY;
         for (size_t i = 0; i < items.size() && i < tile.ressources.size(); i++) {
             drawIcon(items[i].first, sizes[i], 50.0f + boxX, deltaY + 25.0f);
-            drawText(items[i].second + std::to_string(tile.ressources[i]), 30, 100.0f + boxX, deltaY);
+            drawText(items[i].second + std::to_string(tile.ressources[i]), sf::Color::White, 30, 100.0f + boxX, deltaY);
             deltaY += 50.0f;
         }
-        drawText("Trantorians on tile: " + std::to_string(tile.trantorians.size()), 30, boxX + 30.0f, deltaY + 20.0f);
-        drawText("Eggs on tile: " + std::to_string(tile.eggs.size()), 30, boxX + 30.0f, deltaY + 60.0f);
+        drawText("Trantorians on tile: " + std::to_string(tile.trantorians.size()), sf::Color::White, 30, boxX + 30.0f, deltaY + 20.0f);
+        drawText("Eggs on tile: " + std::to_string(tile.eggs.size()), sf::Color::White, 30, boxX + 30.0f, deltaY + 60.0f);
     } catch (const std::exception &e) {
         _world.setSelectedTile(-1, -1);
     }
 }
 
-void UIRender::drawText(std::string text, int size, float x, float y)
+void UIRender::drawText(std::string text, sf::Color color, int size, float x, float y)
 {
     _text.setString(text);
     _text.setCharacterSize(size);
-    _text.setFillColor(sf::Color::White);
+    _text.setFillColor(color);
     _text.setPosition(x, y);
     _window.draw(_text);
 }
@@ -131,7 +130,7 @@ void UIRender::displayTeams()
     float btnH = 65.0f;
     sf::Vector2f mousePos = _window.mapPixelToCoords(sf::Mouse::getPosition(_window));
 
-    drawText("Teams :", 50, 1500.0f, 80.0f);
+    drawText("Teams :", sf::Color::White, 50, 1500.0f, 80.0f);
     _hoveredTeam = "";
     int hoveredTrantorianId = -1;
     for (const auto &team : teams) {
@@ -251,20 +250,20 @@ void UIRender::displayTrantorianData(int trantorianId)
         drawButton("X", 25, closeX, closeY, closeW, closeH);
         std::string textOrientation[4] = {"North", "East", "South", "West"};
         std::string orientation = textOrientation[trantorian.orientation - 1];
-        drawText(trantorian.Name + "  #" + std::to_string(trantorian.id), 35, boxX + 80.0f, boxY + 20.0f);
+        drawText(trantorian.Name + "  #" + std::to_string(trantorian.id), sf::Color::White, 35, boxX + 80.0f, boxY + 20.0f);
         drawIcon("trantorian", 2.0f, boxX + 40.0f, boxY + 40.0f);
-        drawText("Team: " + trantorian.teamName, 40, boxX + 30.0f, boxY + 90.0f);
-        drawText("Level: " + std::to_string(trantorian.level), 40, boxX + 30.0f, boxY + 140.0f);
-        drawText("Position: X=" + std::to_string(trantorian.x) + " Y=" + std::to_string(trantorian.y), 40, boxX + 30.0f, boxY + 190.0f);
-        drawText("Orientation: " + orientation, 40, boxX + 30.0f, boxY + 240.0f);
-        drawText("Inventory: ", 40, boxX + 30.0f, boxY + 310.0f);
+        drawText("Team: " + trantorian.teamName, sf::Color::White, 40, boxX + 30.0f, boxY + 90.0f);
+        drawText("Level: " + std::to_string(trantorian.level), sf::Color::White, 40, boxX + 30.0f, boxY + 140.0f);
+        drawText("Position: X=" + std::to_string(trantorian.x) + " Y=" + std::to_string(trantorian.y), sf::Color::White, 40, boxX + 30.0f, boxY + 190.0f);
+        drawText("Orientation: " + orientation, sf::Color::White, 40, boxX + 30.0f, boxY + 240.0f);
+        drawText("Inventory: ", sf::Color::White, 40, boxX + 30.0f, boxY + 310.0f);
         const std::vector<std::pair<std::string, std::string>> items = {{"donut", "Food : "}, {"linemate", "Linemate : "}, {"deraumere", "Deraumere : "}, {"sibur", "Sibur : "}, {"mendiane", "Mendiane : "}, {"phiras", "Phiras : "}, {"thystame", "Thystame : "}};
         const std::vector<float> sizes = {0.75f, 9.0f, 18.0f, 15.0f, 15.0f, 20.0f, 13.0f};
         float yText = 400.0f + boxY;
         float yIcon = 425.0f + boxY;
         for (size_t i = 0; i < items.size() && i < trantorian.inventory.size(); i++) {
             drawIcon(items[i].first, sizes[i], 50.0f + boxX, yIcon);
-            drawText(items[i].second + std::to_string(trantorian.inventory[i]), 30, 100.0f + boxX, yText);
+            drawText(items[i].second + std::to_string(trantorian.inventory[i]), sf::Color::White, 30, 100.0f + boxX, yText);
             yText += 50.0f;
             yIcon += 50.0f;
         }
@@ -289,9 +288,9 @@ void UIRender::displayGameOver()
     overlay.setFillColor(sf::Color(0, 0, 0, 200));
     _window.draw(overlay);
     drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
-    drawText("VICTORY !", 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
-    drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", 35, 610.0f + 60.0f, 340.0f + 180.0f);
-    drawText("Match Duration: " + _world.getGameOverTime(), 25, 610.0f + 200.0f, 340.0f + 250.0f);
+    drawText("VICTORY !", sf::Color::White, 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
+    drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", sf::Color::White, 35, 610.0f + 60.0f, 340.0f + 180.0f);
+    drawText("Match Duration: " + _world.getGameOverTime(), sf::Color::White, 25, 610.0f + 200.0f, 340.0f + 250.0f);
 }
 
 void UIRender::displayLevelLegend()
@@ -304,7 +303,7 @@ void UIRender::displayLevelLegend()
     float startX = (1920.0f - totalWidth) / 2.0f;
     float startY = 1020.0f;
 
-    drawText("LEVELS : ", 25, startX - 100.0f, startY);
+    drawText("LEVELS : ", sf::Color::White, 25, startX - 100.0f, startY);
     sf::RectangleShape rect(sf::Vector2f(squareSize, squareSize));
     rect.setOutlineColor(sf::Color(40, 40, 40));
     rect.setOutlineThickness(1.5f);
@@ -313,7 +312,8 @@ void UIRender::displayLevelLegend()
         rect.setFillColor(levelColors[i]);
         rect.setPosition(currentX, startY);
         _window.draw(rect);
-        drawText(std::to_string(i + 1), 30, currentX + 12.0f, startY - 1.0f);
+        drawText(std::to_string(i + 1), sf::Color::Black, 36, currentX + 12.0f, startY - 4.0f);
+        drawText(std::to_string(i + 1), sf::Color::White, 30, currentX + 12.0f, startY - 4.0f);
     }
 }
 
@@ -323,6 +323,12 @@ void UIRender::displayShortcut()
     std::string broadcast = _world.getDisplayBroadcast() ? "ON" : "OFF";
 
     drawPanel(1460.0f, 900.0f, 150.0f, 150.0f);
-    drawText("L :" + lvl, 50, 1470.0f, 900.0f);
-    drawText("B :" + broadcast, 50, 1470.0f, 960.0f);
+    drawText("L :" + lvl, sf::Color::White, 50, 1470.0f, 900.0f);
+    drawText("B :" + broadcast, sf::Color::White, 50, 1470.0f, 960.0f);
+}
+
+void UIRender::displayPauseMenu()
+{
+    drawPanel(30.0f, 20.0f, 250.0f, 120.0f);
+    drawText("PAUSED", sf::Color::White, 70, 40.0f, 30.0f);
 }
