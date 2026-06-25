@@ -5,7 +5,7 @@
 ## fork
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_fork(agent, response_server):
     """This function is to fork a player
@@ -14,9 +14,8 @@ def do_fork(agent, response_server):
         response_server (str): the message send by the server for the response
     """
     if (response_server == "ok"):
-        logger.info("The Fork command was successful (received and completed).")
-        print("The Fork command was successfully executed, accompanied by the production of an egg.")
+        agent.unused_slots += 1
+        logger.info(f"{agent.agent_id}: A new egg of power has been laid; the mage's lineage is expanding.")
     else:
         logger.error("The response message from the server is not suitable for this command. response_server != ok (Fork)")
-        print("The response message from the server is not suitable for this command. (Fork)")
     return

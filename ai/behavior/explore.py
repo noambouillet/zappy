@@ -6,27 +6,76 @@
 ##
 
 from .class_behavior import Behavior
-from constant import requirement_for_progress
+from constant import Macro
+import math
+from logger import logger
 
 class Explore(Behavior):
     def execute(self, agent):
-        """This function is to execute explore class
+        logger.debug("\n========== EXPLORE ==========")
+        agent.tick += 1
+        agent.display_info()
+        if (self.define_leader(agent) == True):
+            agent.adapt_behavior()
+            return agent.behavior.execute(agent)
+        best_ressource, tile_index = self.find_first_ressource(agent)
+        command_list = self.get_command(agent, best_ressource, tile_index)
+        if command_list:
+            return command_list
+        return ["Forward\n"]
+
+    def find_first_ressource(self, agent):
+        """retrieve the nearest available resource in his view to advance to the next level
+
         Args:
-            agent (class): Agent IA
+            agent (Agent): agent
+
         Returns:
-            str: command for the agent
-        """ 
-        print("Explore")
-        info_level_up = requirement_for_progress[agent.level - 1]
-        name_stone = ""
-        for cle, valeur in info_level_up.items():
-            if (cle != "nb_players" and agent.inventory[cle] < valeur):
-                name_stone = cle
-                break
-        print("Stone", name_stone)
-        if (name_stone and name_stone in agent.vision[0]):
-            return [f"Take {name_stone}\n", "Look\n"]
-        elif (name_stone and name_stone not in agent.vision[0]):
-            return ["Forward\n", "Look\n"]
-        else:
-            return ["Forward\n"]
+            tuple(str, int): ressource and index of the tile from view
+        """
+        valid = {"food" : agent.get_macro_ratio(Macro.FOOD_TO_REACH), "linemate" : 9, "deraumere" : 8, "sibur" : 10, "mendiane" : 5, "phiras" : 6, "thystame" : 1}
+        for index, tile in enumerate(agent.vision):
+            for ressource in tile:
+                if ressource in valid and agent.inventory[ressource] < valid[ressource]:
+                    return ressource, index
+        return None, None
+
+    def get_command(self, agent, ressource, tile_index):
+        """return the list of command to move to the desired tile and take the desired ressource
+
+        Args:
+            agent (Agent): agent
+            ressource (str): ressource to take
+            tile_index (int): tile index from view where the ressource is located
+
+        Returns:
+            list: commands list
+        """
+        if ressource is None or tile_index is None:
+            return None
+        if tile_index == 0:
+            return [f"Take {ressource}\n"]
+        return agent.go_to(tile_index) + [f"Take {ressource}\n"]
+    
+    def define_leader(self, agent):
+        """This function is for see if we can help a leader
+        Args:
+            agent (class): Agent/IA
+        """
+        msg_leader = None
+        msg_leader_id = math.inf
+        for msg in agent.mailbox:
+            if msg["sender_id"] == agent.agent_id:
+                continue
+            if (msg["action"] == "INCANTATION" and msg["level"] == agent.level and msg["team"] == agent.team_name):
+                agent_sender_id = msg["sender_id"]
+                if (msg_leader is None or agent_sender_id < msg_leader_id):
+                    msg_leader = msg
+                    msg_leader_id = agent_sender_id
+        if (msg_leader):
+            agent.leader_id = msg_leader["sender_id"]
+            agent.direction_to_follow = msg_leader["direction"]
+            agent.joining_incantation = True
+            return True
+        agent.joining_incantation = False
+        return False

@@ -5,7 +5,7 @@
 ## look
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_look(agent, response_server):
     """This function is to get and change the vision of the agent with info from the server
@@ -13,7 +13,8 @@ def do_look(agent, response_server):
         agent (class): agent IA
         response_server (str): Response from the serv
     """
-    old_vision = agent.vision
+    if not response_server.startswith("["):
+        return  
     remove_bracket = response_server.strip()[1:-1]
     vision_split = remove_bracket.split(',')
     tab_vision = []
@@ -24,6 +25,4 @@ def do_look(agent, response_server):
         else:
             tab_vision.append([])
     agent.vision = tab_vision
-    print("La vision de l'agent à évoluer passant de", old_vision, "to", agent.vision)
-    logger.info("The Look command was successful (received and completed).")
-    return
+    logger.info(f"{agent.agent_id}: Thanks to a night vision spell, the wizard's vision is now as clear as crystal {agent.vision}")

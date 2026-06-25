@@ -5,7 +5,8 @@
 ## handle_commands
 ##
 
-from parsing import sys, logger, socket
+from parsing import sys, socket
+from constant import Macro, MAX_COMMANDS, MAX_BEHAVIOR_COMMANDS, INVENTORY_FREQUENCE
 from commands_ia.forward import do_forward
 from commands_ia.left import do_left
 from commands_ia.right import do_right
@@ -21,12 +22,15 @@ from commands_ia.incantation import do_incantation
 from commands_server.dead import receive_dead
 from commands_server.ejects import receive_eject
 from commands_server.messages import receive_message
-from agent import *
-    
+from agent import Agent
+import select
+from logger import logger
+
 def launch_commands(agent, command, response_server):
-    """This function allows you to determine which command to use to launch them.
+    """this function allows you to determine which command to use to launch them
+
     Args:
-        agent (class): Agent IA
+        agent (Agent): agent
         command (str): the command ask by the agent
         response_server (str): the response from the server
     """
@@ -51,78 +55,135 @@ def launch_commands(agent, command, response_server):
     elif (command.startswith("Set")):
         do_set(agent, response_server, command)
     else:
-        print(f"Command uknown : {command}")
-
-
+        logger.debug(f"Command unknown : {command}")
     
 def handle_commands(agent : Agent, all_responses_server):
-    """This function is to handle commands betwenn commands_ia and commands_server
+    """this function is to handle commands betwenn commands_ia and commands_server
+
     Args:
-        agent (class): agent IA
-        all_responses_server (str): all_responses_server
+        agent (Agent): agent
+        all_responses_server (str): all server responses
+
     Returns:
-        str: The remaining orders have not yet been processed.
+        str: the remaining orders have not yet been processed
     """
     while '\n' in all_responses_server:
         response_server, all_responses_server = all_responses_server.split('\n', 1)
-        print(f"This is the server's current response : {response_server}")
+        if (len(agent.list_commands) > 0):
+            command = agent.list_commands[0]
+        else:
+            command = None
+        logger.debug(f"This is the server's current response : {response_server}")
         if (response_server.startswith("dead")):
-            receive_dead()
+            receive_dead(agent, response_server)
         elif (response_server.startswith("eject:")):
             receive_eject(agent, response_server)
         elif (response_server.startswith("message")):
             receive_message(agent, response_server)
-        else:
-            command = agent.list_commands[0]
-            if (command == "Incantation\n" and response_server == "Elevation underway"):
+        elif (response_server == "Elevation underway"):
+            do_incantation(agent, response_server)
+        elif (response_server.startswith("Current level:")):
+            do_incantation(agent, response_server)
+        elif (response_server == "ko"):
+            if agent.is_incantation:
+                do_incantation(agent, response_server)
+            elif command is not None:
                 launch_commands(agent, command, response_server)
+                if (len(agent.list_commands) > 0):
+                    agent.list_commands.pop(0)
+        else:
+            if (command is None):
                 continue
             launch_commands(agent, command, response_server)
-            agent.list_commands.pop(0)    
-        print("List commands:", agent.list_commands)          
+            if (len(agent.list_commands) > 0):
+                agent.list_commands.pop(0)
+        logger.debug(f"List commands: {agent.list_commands}")
     return all_responses_server
 
+def check_inventory_regularly(agent, tab_commands):
+    """do inventory command by following a frequence
+
+    Args:
+        agent (Agent): agent
+        tab_commands (list): command list
+
+    Returns:
+        list: command list
+    """
+    if agent.is_incantation:
+        return tab_commands
+    if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE):
+        if "Inventory\n" not in tab_commands:
+            tab_commands.append("Inventory\n")
+    return tab_commands
+
 def send_commands(socket_connection : socket.socket, agent : Agent):
-    """Send the commands to server from the execute behavior (class)
+    """send the commands to server from the execute behavior
 
     Args:
         socket_connection (socket.socket): the socket connection between ia and server
-        agent (Agent): Agent IA
+        agent (Agent): agent
     """
-    if (len(agent.list_commands) == 0):
-        tab_commands = []
-        agent.adapt_behavior()
-        tab_commands.append("Inventory\n")
-        tab_commands += agent.behavior.execute(agent)
-        if not tab_commands:
-            return
+    need_look = ["Forward\n", "Left\n", "Right\n", "Eject\n"]
+    if agent.is_incantation == True:
+        return
+    if len(agent.list_commands) != 0:
+        return
+    agent.adapt_behavior()
+    tab_commands = []
+    if agent.vision == [[]]:
+        tab_commands.append("Look\n")
+    behavior_commands = agent.behavior.execute(agent)
+    tab_commands += behavior_commands[:MAX_BEHAVIOR_COMMANDS]
+    if not agent.joining_incantation:
         for command in tab_commands:
-            if (len(agent.list_commands) < 10):
-                agent.list_commands.append(command)
-                socket_connection.sendall((command).encode('utf-8'))
-        print(f"New lisf of commands {agent.list_commands}")
-        logger.info(f"New list of commands send by the client : {agent.list_commands}")
+            if (command in need_look or command.startswith("Set")):
+                tab_commands.append("Look\n")
+                break
+    tab_commands = check_inventory_regularly(agent, tab_commands)
+    if not tab_commands:
+        return
+    tab_commands = tab_commands[:MAX_COMMANDS]
+    for command in tab_commands:
+        agent.list_commands.append(command)
+        try:
+            socket_connection.sendall((command).encode('utf-8'))
+        except OSError:
+            logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+            socket_connection.close()
+            sys.exit(84)
+    logger.debug(f"New list of commands send by the client : {agent.list_commands}")
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
-    """This function is to juggle between send and receive commands (Ai/Server)
-    Args:
-        socket_connection (socket): the point of connection between server and ia
-        agent (class): Agent IA
-    """
-    all_responses_server = ""
-    socket_connection.setblocking(False)
-    while (True):
-        try:
-            response_server = socket_connection.recv(2048).decode('utf-8')
-            if (not response_server):
+        """This function is to juggle between send and receive commands (Ai/Server)
+
+        Args:
+            socket_connection (socket): the point of connection between server and ia
+            agent (class): Agent IA
+        """
+        all_responses_server = ""
+        socket_connection.setblocking(False)
+        while (True):
+            try:
+                result, _, exception = select.select([socket_connection], [], [socket_connection], 0.1)
+            except (select.error, OSError):
                 logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
-                sys.exit(0)
-            all_responses_server += response_server
-        except (BlockingIOError):
-            pass
-        except (socket.error, ConnectionError):
-            logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
-            sys.exit(84)
-        all_responses_server = handle_commands(agent, all_responses_server)
-        send_commands(socket_connection, agent)
-    return
+                sys.exit(84)
+            if exception:
+                logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                sys.exit(84)
+            if result:
+                try:
+                    response_server = socket_connection.recv(2048).decode('utf-8')
+                    if (not response_server):
+                        logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                        sys.exit(0)
+                    all_responses_server += response_server
+                except (BlockingIOError):
+                    pass
+                except (socket.error, ConnectionError):
+                    logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+                    sys.exit(84)
+            all_responses_server = handle_commands(agent, all_responses_server)
+            send_commands(socket_connection, agent)
+        return
