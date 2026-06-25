@@ -29,5 +29,6 @@ def do_inventory(agent, response_server):
             except ValueError:
                 return
         index += 2
+    agent.last_inventory = agent.tick
     agent.adapt_behavior()
     logger.info(f"{agent.agent_id}: The wizard consulted his satchel; he now knows what it contains {agent.inventory}")
