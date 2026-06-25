@@ -11,7 +11,7 @@
 UIRender::UIRender(World &world, sf::RenderWindow &window, TextureManager &textureManager): _world(world), _window(window), _textureManager(textureManager)
 {
     if (!_font.loadFromFile("gui/assets/fonts/magic.ttf"))
-        throw GuiException("can't load font");
+        throw GuiException("can't load font: gui/assets/fonts/magic.ttf");
     _text.setFont(_font);
     _text.setFillColor(sf::Color::White);
 }
@@ -23,6 +23,9 @@ void UIRender::displayUI()
     if (_world.isGameOver()) {
         displayGameOver();
         return;
+    }
+    if (_world.isPaused()) {
+        drawText("The simulation is currently in pause, to resume it, press space bar again", 25, 600.0f, 20.0f);
     }
     drawPanel(10.0f, 200.0f, 360.0f, 800.0f);
     drawPanel(810.0f, 35.0f, 330.0f, 60.0f);
@@ -288,6 +291,7 @@ void UIRender::displayGameOver()
     drawPanel(610.0f, 340.0f, 700.0f, 400.0f);
     drawText("VICTORY !", 60, 610.0f + (700.0f / 2.0f) - 140.0f, 340.0f + 50.0f);
     drawText("Team \"" + _world.getWinningTeam() + "\" has won the game!", 35, 610.0f + 60.0f, 340.0f + 180.0f);
+    drawText("Match Duration: " + _world.getGameOverTime(), 25, 610.0f + 200.0f, 340.0f + 250.0f);
 }
 
 void UIRender::displayLevelLegend()

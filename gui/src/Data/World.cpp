@@ -8,6 +8,8 @@
 #include "World.hpp"
 #include "GuiExceptions.hpp"
 #include <stdexcept>
+#include <iomanip>
+#include <sstream>
 
 void World::setMapSize(size_t width, size_t height)
 {
@@ -191,19 +193,23 @@ std::map<std::string, std::map<int, int>> World::getTeamStats() const
 
 void World::updateGameTime(float deltaTime)
 {
+    if (_isGameOver || _isPaused)
+        return;
     _internalGameTime += deltaTime;
 }
 
 std::string World::getFormattedGameTime() const
 {
-    long long totalSeconds = static_cast<long long>(_internalGameTime);
-    long long hours = totalSeconds / 3600;
-    long long minutes = (totalSeconds % 3600) / 60;
-    long long seconds = totalSeconds % 60;
-    char buffer[32];
+    int totalSeconds = static_cast<int>(_internalGameTime);
+    int hours = totalSeconds / 3600;
+    int minutes = (totalSeconds % 3600) / 60;
+    int seconds = totalSeconds % 60;
 
-    std::snprintf(buffer, sizeof(buffer), "%02lld:%02lld:%02lld", hours, minutes, seconds);
-    return std::string(buffer);
+    std::ostringstream fullTime;
+    fullTime << std::setfill('0') << std::setw(2) << hours << ":"
+        << std::setfill('0') << std::setw(2) << minutes << ":"
+        << std::setfill('0') << std::setw(2) << seconds;
+    return fullTime.str();
 }
 
 void World::setSelectedTeam(const std::string teamName)
@@ -248,7 +254,9 @@ std::pair<int, int> World::getSelectedTile() const
 
 void World::setGameOver(const std::string &teamName)
 {
-    _isGameOver = true; _winningTeam = teamName;
+    _isGameOver = true;
+    _winningTeam = teamName;
+    _gameOverTime = getFormattedGameTime();
 }
 
 bool World::isGameOver() const
@@ -256,9 +264,24 @@ bool World::isGameOver() const
     return _isGameOver;
 }
 
+void World::setPaused(bool isPaused)
+{
+    _isPaused = isPaused;
+}
+
+bool World::isPaused() const
+{
+    return _isPaused;
+}
+
 const std::string &World::getWinningTeam() const
 {
     return _winningTeam;
+}
+
+const std::string &World::getGameOverTime() const
+{
+    return _gameOverTime;
 }
 
 void World::setDisplayLvl(bool value)

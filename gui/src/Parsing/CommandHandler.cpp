@@ -7,6 +7,7 @@
 
 #include "CommandHandler.hpp"
 #include <random>
+#include "Logger.hpp"
 
 CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gui)
 {
@@ -34,6 +35,7 @@ CommandHandler::CommandHandler(World &world, IGui &gui) : _world(world), _gui(gu
     _commands["plv"] = &CommandHandler::handle_plv;
     _commands["suc"] = &CommandHandler::handle_suc;
     _commands["sbp"] = &CommandHandler::handle_sbp;
+    _commands["sps"] = &CommandHandler::handle_sps;
 }
 
 void CommandHandler::handle(const std::string &line)
@@ -48,7 +50,7 @@ void CommandHandler::handle(const std::string &line)
     if (it != _commands.end()) {
         (this->*(it->second))(ss);
     } else {
-        std::cout << "Unknown command : " << line << std::endl;
+        logger.warn("Unknown command : " + line);
     }
 }
 
@@ -60,7 +62,7 @@ void CommandHandler::handle_msz(std::stringstream &ss)
     if (!(ss >> width >> height))
         return;
     _world.setMapSize(width, height);
-    std::cout << "Map Size : " << width << "x" << height << std::endl;
+    logger.info("Map Size : " + std::to_string(width) + "x" + std::to_string(height));
 }
 
 void CommandHandler::handle_bct(std::stringstream &ss)
@@ -78,7 +80,7 @@ void CommandHandler::handle_bct(std::stringstream &ss)
     if (!(ss >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6))
         return;
     _world.setTile(x, y, {q0, q1, q2, q3, q4, q5, q6});
-    std::cout << "Tile " << x << ":" << y << " -> " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4 << " " << q5 << " " << q6 << std::endl;
+    logger.info("Tile " + std::to_string(x) + ":" + std::to_string(y) + " -> " + std::to_string(q0) + " " + std::to_string(q1) + " " + std::to_string(q2) + " " + std::to_string(q3) + " " + std::to_string(q4) + " " + std::to_string(q5) + " " + std::to_string(q6));
 }
 
 void CommandHandler::handle_sgt(std::stringstream &ss)
@@ -88,7 +90,7 @@ void CommandHandler::handle_sgt(std::stringstream &ss)
     if (!(ss >> timeUnit))
         return;
     _world.setTimeUnit(timeUnit);
-    std::cout << "Time unit : " << timeUnit << std::endl;
+    logger.info("Time unit : " + std::to_string(timeUnit));
 }
 
 void CommandHandler::handle_tna(std::stringstream &ss)
@@ -98,7 +100,7 @@ void CommandHandler::handle_tna(std::stringstream &ss)
     if (!(ss >> teamName))
         return;
     _world.addTeam(teamName);
-    std::cout << "Team : " << teamName << " was created." << std::endl;
+    logger.info("Team : " + teamName + " was created.");
 }
 
 void CommandHandler::handle_enw(std::stringstream &ss)
@@ -114,9 +116,9 @@ void CommandHandler::handle_enw(std::stringstream &ss)
         return;
     _world.addEgg(eggNb, trantorianNb, x, y);
     if (trantorianNb == -1)
-        std::cout << "An egg has spawn." << std::endl;
+        logger.info("An egg has spawn.");
     else
-        std::cout << "An egg was laid by trantorian #" << trantorianNb << std::endl;
+        logger.info("An egg was laid by trantorian #" + std::to_string(trantorianNb));
 }
 
 void CommandHandler::handle_pnw(std::stringstream &ss)
@@ -143,7 +145,7 @@ void CommandHandler::handle_pnw(std::stringstream &ss)
     if (!(ss >> sharp >> trantorian.id >> trantorian.x >> trantorian.y >> trantorian.orientation >> trantorian.level >> trantorian.teamName))
         return;
     _world.addTrantorian(trantorian);
-    std::cout << "Trantorian : " << trantorian.Name << " #" << trantorian.id << " was added." << std::endl;
+    logger.info("Trantorian : " + trantorian.Name + " #" + std::to_string(trantorian.id) + " was added.");
 }
 
 void CommandHandler::handle_ppo(std::stringstream &ss)
@@ -157,7 +159,7 @@ void CommandHandler::handle_ppo(std::stringstream &ss)
     if (!(ss >> sharp >> id >> x >> y >> orientation))
         return;
     _world.moveTrantorian(id, x, y, orientation);
-    std::cout << "Trantorian #" << id << " position -> " << x << ":" << y << std::endl;
+    logger.info("Trantorian #" + std::to_string(id) + " position -> " + std::to_string(x) + ":" + std::to_string(y));
 }
 
 void CommandHandler::handle_ebo(std::stringstream &ss)
@@ -168,7 +170,7 @@ void CommandHandler::handle_ebo(std::stringstream &ss)
     if (!(ss >> sharp >> eggNB))
         return;
     _world.removeEgg(eggNB);
-    std::cout << "A trantorian connect to the egg #" << eggNB << std::endl;
+    logger.info("A trantorian connect to the egg #" + std::to_string(eggNB));
 }
 
 void CommandHandler::handle_pin(std::stringstream &ss)
@@ -189,7 +191,7 @@ void CommandHandler::handle_pin(std::stringstream &ss)
         return;
     _world.setTrantorianInventory(x, y, id, {q0, q1, q2, q3, q4, q5, q6});
     _gui.setTrantorianActionBubble(id, "inventory", 5.0f * 1.0f / _world.getTime());
-    std::cout << "Trantorian #" << id << " check his inventory." << std::endl;
+    logger.info("Trantorian #" + std::to_string(id) + " check his inventory.");
 }
 
 void CommandHandler::handle_pex(std::stringstream &ss)
@@ -213,7 +215,7 @@ void CommandHandler::handle_pgt(std::stringstream &ss)
     if (!(ss >> sharp >> id >> resourceId))
         return;
     _gui.setTrantorianActionBubble(id, resourceTextures[resourceId], 5.0f * 7.0f / _world.getTime());
-    std::cout << "Trantorian #" << id << " collect " << resourceTextures[resourceId] << "." << std::endl;
+    logger.info("Trantorian #" + std::to_string(id) + " collect " + resourceTextures[resourceId] + ".");
 }
 
 void CommandHandler::handle_pdi(std::stringstream &ss)
@@ -224,7 +226,7 @@ void CommandHandler::handle_pdi(std::stringstream &ss)
     if (!(ss >> sharp >> id))
         return;
     _gui.triggerTrantorianDeath(id);
-    std::cout << "Trantorian #" << id << " is dead" << std::endl;
+    logger.info("Trantorian #" + std::to_string(id) + " is dead");
 }
 
 void CommandHandler::handle_pic(std::stringstream &ss)
@@ -240,7 +242,7 @@ void CommandHandler::handle_pic(std::stringstream &ss)
     while (ss >> sharp >> id) {
         _gui.setTrantorianIncanting(id, true);
     }
-    std::cout << "Incantation start at " << x << ":" << y << std::endl;
+    logger.info("Incantation start at " + std::to_string(x) + ":" + std::to_string(y));
 }
 
 void CommandHandler::handle_pie(std::stringstream &ss)
@@ -252,7 +254,7 @@ void CommandHandler::handle_pie(std::stringstream &ss)
     if (!(ss >> x >> y >> result))
         return;
     _gui.stopIncantationAt(x, y);
-    std::cout << "Incantation at " << x << ":" << y << " | result : " << result << std::endl;
+    logger.info("Incantation at " + std::to_string(x) + ":" + std::to_string(y) + " | result : " + std::to_string(result));
 }
 
 void CommandHandler::handle_pbc(std::stringstream &ss)
@@ -264,7 +266,7 @@ void CommandHandler::handle_pbc(std::stringstream &ss)
     if (!(ss >> sharp >> id >> message))
         return;
     _gui.addBroadcast(id);
-    std::cout << "trantorian #" << id << ": \"" << message << "\"" << std::endl;
+    logger.info("trantorian #" + std::to_string(id) + ": \"" + message + "\"");
 }
 
 void CommandHandler::handle_pfk(std::stringstream &ss)
@@ -275,7 +277,7 @@ void CommandHandler::handle_pfk(std::stringstream &ss)
     if (!(ss >> sharp >> id))
         return;
     _gui.setTrantorianActionBubble(id, "egg", 5.0f * 42.0f / _world.getTime()); 
-    std::cout << "Egg laying by the trantorian #" << id << std::endl;
+    logger.info("Egg laying by the trantorian #" + std::to_string(id));
 }
 
 void CommandHandler::handle_pdr(std::stringstream &ss)
@@ -298,7 +300,7 @@ void CommandHandler::handle_edi(std::stringstream &ss)
     if (!(ss >> sharp >> eggNB))
         return;
     _world.removeEgg(eggNB);
-    std::cout << "Egg #" << eggNB << " is dead" << std::endl;
+    logger.info("Egg #" + std::to_string(eggNB) + " is dead");
 
 }
 
@@ -309,7 +311,7 @@ void CommandHandler::handle_sst(std::stringstream &ss)
     if (!(ss >> timeUnit))
         return;
     _world.setTimeUnit(timeUnit);
-    std::cout << "Time unit : " << timeUnit << std::endl;
+    logger.info("Time unit : " + std::to_string(timeUnit));
 }
 
 void CommandHandler::handle_seg(std::stringstream &ss)
@@ -319,7 +321,7 @@ void CommandHandler::handle_seg(std::stringstream &ss)
     if (!(ss >> teamName))
         return;
     _world.setGameOver(teamName);
-    std::cout << "Team : " << teamName << " win.\nEnd of game" << std::endl;
+    logger.info("Team : " + teamName + " win.\nEnd of game");
 }
 
 void CommandHandler::handle_smg(std::stringstream &ss)
@@ -328,7 +330,7 @@ void CommandHandler::handle_smg(std::stringstream &ss)
 
     if (!(ss >> message))
         return;
-    std::cout << "Server : \"" << message << "\"" << std::endl;
+    logger.info("Server : \"" + message + "\"");
 }
 
 void CommandHandler::handle_plv(std::stringstream &ss)
@@ -340,15 +342,29 @@ void CommandHandler::handle_plv(std::stringstream &ss)
     if (!(ss >> sharp >> id >> lvl))
         return;
     _world.setTrantorianLvl(id, lvl);
-    std::cout << "Trantorian #" << id << " reach the level " << lvl << std::endl;
+    logger.info("Trantorian #" + std::to_string(id) + " reach the level " + std::to_string(lvl));
 }
 
 void CommandHandler::handle_suc(std::stringstream &)
 {
-    std::cout << "unknown command by the server" << std::endl;
+    logger.warn("unknown command by the server");
 }
 
 void CommandHandler::handle_sbp(std::stringstream &)
 {
-    std::cout << "wrong command parameter" << std::endl;
+    logger.warn("wrong command parameter");
+}
+
+void CommandHandler::handle_sps(std::stringstream &ss)
+{
+    int isPaused = 0;
+    if (!(ss >> isPaused))
+        return;
+    if (isPaused) {
+        logger.info("Game is paused.");
+        _world.setPaused(true);
+    } else {
+        logger.info("Game is running.");
+        _world.setPaused(false);
+    }
 }

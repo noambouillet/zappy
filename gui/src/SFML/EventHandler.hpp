@@ -16,6 +16,7 @@ class EventHandler {
         EventHandler(sf::RenderWindow &window, sf::View &camera);
         ~EventHandler() = default;
         void update(float windowWidth, float windowHeight, UIRender &uiRender, HandleTrantorians &handleTrantorians, World &world, float tileSize, float offsetX, float offsetY);
+        std::string getPendingCommand();
     private:
         void handleMove();
         void handleZoom();
@@ -25,6 +26,7 @@ class EventHandler {
         sf::View &_camera;
         float _windowWidth;
         float _windowHeight;
+        std::string _pendingCommand;
 };
 
 

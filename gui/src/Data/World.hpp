@@ -66,7 +66,10 @@ class World {
         std::pair<int, int> getSelectedTile() const;
         void setGameOver(const std::string &teamName);
         bool isGameOver() const;
+        void setPaused(bool isPaused);
+        bool isPaused() const;
         const std::string &getWinningTeam() const;
+        const std::string &getGameOverTime() const;
         void setDisplayLvl(bool);
         bool getDisplayLvl();
         void setDisplayBroadcast(bool);
@@ -76,7 +79,7 @@ class World {
         std::pair<size_t, size_t> _mapSize{0, 0};
         std::vector<std::vector<TileData_t>> _map;
         std::vector<std::string> _teams;
-        std::vector<int> _totalRessources = std::vector<int>(7, 0);
+        std::vector<int> _totalRessources = std::vector<int>(NB_RESSOURCE, 0);
         int _timeUnit = 0;
         float _internalGameTime = 0.0f;
         std::string _selectedTeamName = "";
@@ -85,8 +88,10 @@ class World {
         std::pair<int, int> _selectedTile = {-1, -1};
         bool _isGameOver = false;
         std::string _winningTeam = "";
+        std::string _gameOverTime = "";
         bool _displayLvl = false;
         bool _displayBroadcast = false;
+        bool _isPaused = false;
 };
 
 #endif

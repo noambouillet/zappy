@@ -15,6 +15,7 @@
 #include "NetworkHandler.hpp"
 #include "Poll.hpp"
 #include "GuiExceptions.hpp"
+#include "Logger.hpp"
 
 int main(int ac, char **av)
 {
@@ -47,13 +48,21 @@ int main(int ac, char **av)
         netPoll.addFd(fd, POLLIN);
         while (gui->isOpen()) {
             gui->handleEvent();
+            std::string pendingCmd = gui->getPendingCommand();
+            if (!pendingCmd.empty()) {
+                network.send_command(fd, pendingCmd);
+            }
             if (netPoll.wait(0) < 0)
                 throw GuiException("poll failed");
             const auto &fds = netPoll.getFds();
             if (!fds.empty()) {
                 const struct pollfd &serverFdStruct = fds[0];
-                if (serverFdStruct.revents & (POLLHUP | POLLERR | POLLNVAL)) {
-                    std::cout << "Server disconnected." << std::endl;
+                try {
+                    if (serverFdStruct.revents & (POLLHUP | POLLERR | POLLNVAL)) {
+                        throw MinorNetworkException("Server disconnected.");
+                    }
+                } catch (const MinorNetworkException &e) {
+                    logger.warn("Server disconnected.");
                     break;
                 }
                 if (serverFdStruct.revents & POLLIN) {
@@ -66,9 +75,11 @@ int main(int ac, char **av)
             }
             gui->displayWindow();
         }
-    }
-    catch (const std::exception& e) {
-        std::cout << "Error: " << e.what() << std::endl;
+    } catch (const MajorGuiException &e) {
+        logger.error(std::string("Error: ") + e.what());
+        return 84;
+    } catch (const std::exception &e) {
+        logger.error(std::string("Error: ") + e.what());
         return 84;
     }
     return 0;

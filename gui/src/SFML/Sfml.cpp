@@ -6,6 +6,7 @@
 */
 
 #include "Sfml.hpp"
+#include "Logger.hpp"
 #include <algorithm>
 #include <cmath>
 #include "GuiExceptions.hpp"
@@ -93,4 +94,9 @@ void Sfml::stopIncantationAt(int x, int y)
 void Sfml::addBroadcast(int id)
 {
     _renderMap.getHandleTrantorians().addBroadcast(id);
+}
+
+std::string Sfml::getPendingCommand()
+{
+    return _eventHandler.getPendingCommand();
 }
