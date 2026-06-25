@@ -28,15 +28,6 @@ int main(int ac, char **av)
         networkData_t data = parse.parse_args(ac, av);
         NetworkHandler network(data.port, data.ip);
 
-        std::unique_ptr<IGui> gui;
-        if (data.use3D) {
-            gui = std::make_unique<RaylibGui>(world);
-        } else {
-            gui = std::make_unique<Sfml>(world);
-        }
-
-        CommandHandler handler(world, *gui);
-        
         int fd = network.connect_to_server();
         server_buffer = network.read_from_server(fd);
         if (server_buffer == "WELCOME\n") {
@@ -45,6 +36,14 @@ int main(int ac, char **av)
             return 84;
         }
         server_buffer.clear(); 
+        std::unique_ptr<IGui> gui;
+        if (data.use3D) {
+            gui = std::make_unique<RaylibGui>(world);
+        } else {
+            gui = std::make_unique<Sfml>(world);
+        }
+        CommandHandler handler(world, *gui);
+
         netPoll.addFd(fd, POLLIN);
         while (gui->isOpen()) {
             gui->handleEvent();
