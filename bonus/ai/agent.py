@@ -5,7 +5,7 @@
 ## agent
 ##
 
-from constant import Direction, requirement_for_progress, Macro
+from constant import Direction, MIN_FOOD, requirement_for_progress, FOOD_TO_REACH
 from behavior.survive import Survive
 from behavior.explore import Explore
 from behavior.incantation import Incantation
@@ -32,7 +32,6 @@ class Agent:
         self.is_incantation = False
         self.send_available = False
         self.already_fork = False
-        self.need_fork = False
         self.direction = Direction.Up
         self.behavior = Survive()
         self.size_map = (0, 0)
@@ -40,7 +39,6 @@ class Agent:
         self.tick = 0
         self.last_inventory = 0
         self.last_send_leader = 0
-        self.last_slots_check = 0
         self.leader_id = 0
         self.direction_to_follow = 0
         self.level = 1
@@ -48,23 +46,17 @@ class Agent:
 
     def display_info(self):
         logger.debug("AGENT INFO:")
-        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")        
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         logger.debug(f"agent_id {self.agent_id}")
         logger.debug(f"team_name {self.team_name}")
         logger.debug(f"list_commands {self.list_commands}")
-        logger.debug(f"tab_id_teammate {self.tab_id_teammate}")
         logger.debug(f"mailbox {self.mailbox}")
         logger.debug(f"vision {self.vision}")
         logger.debug(f"inventory {self.inventory}")
-        logger.debug(f"start_game {self.start_game}")
-        logger.debug(f"survive {self.survive}")
         logger.debug(f"eject_players {self.eject_players}")
         logger.debug(f"joining_incantation {self.joining_incantation}")
         logger.debug(f"prepare_incantation {self.prepare_incantation}")
         logger.debug(f"is_incantation {self.is_incantation}")
-        logger.debug(f"send_available {self.send_available}")
-        logger.debug(f"already_fork {self.already_fork}")
-        logger.debug(f"need_fork {self.need_fork}")
         logger.debug(f"direction {self.direction}")
         logger.debug(f"behavior {self.behavior}")
         logger.debug(f"size_map {self.size_map}")
@@ -72,7 +64,6 @@ class Agent:
         logger.debug(f"tick {self.tick}")
         logger.debug(f"last_inventory {self.last_inventory}")
         logger.debug(f"last_send_leader {self.last_send_leader}")
-        logger.debug(f"last_slots_check {self.last_slots_check}")
         logger.debug(f"leader_id {self.leader_id}")
         logger.debug(f"direction_to_follow {self.direction_to_follow}")
         logger.debug(f"level {self.level}")
@@ -90,7 +81,7 @@ class Agent:
             return commands
         if len(self.vision) == 0:
             return commands
-        if self.inventory["food"] >= self.get_macro_ratio(Macro.TAKE_FOOD_ON_TILE):
+        if self.inventory["food"] >= FOOD_TO_REACH + 5:
             return commands
         for elem in self.vision[0]:
             if elem == "food":
@@ -204,7 +195,7 @@ class Agent:
         if self.is_incantation == True:
             self.behavior = Incantation()
             return
-        if (self.inventory["food"] <= self.get_macro_ratio(Macro.MIN_FOOD) or self.survive == True) and self.joining_incantation == False:
+        if (self.inventory["food"] <= MIN_FOOD or self.survive == True) and self.joining_incantation == False:
             self.survive = True
             self.joining_incantation = False
             self.prepare_incantation = False
@@ -221,20 +212,3 @@ class Agent:
         else:
             self.behavior = Incantation()
     
-    def get_macro_ratio(self, macro):
-        """return the macro value adapted to the map size
-
-        Args:
-            macro (Macro): macro
-
-        Returns:
-            int: macro with ratio applied
-        """
-        min_map_surface = 10 * 10
-        max_map_surface = 42 * 42
-        width, height = self.size_map
-        current_surface = (int)(width) * (int)(height)
-        ratio = ((current_surface - min_map_surface) / (max_map_surface - min_map_surface))
-        min_value, max_value = macro.value
-        value = min_value + ratio * (max_value - min_value)
-        return int(value + 0.5)

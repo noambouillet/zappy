@@ -5,7 +5,7 @@
 ## fork
 ##
 
-from logger import logger
+from logger import logger, add_info_streamlit
 
 def do_fork(agent, response_server):
     """This function is to fork a player
@@ -15,7 +15,7 @@ def do_fork(agent, response_server):
     """
     if (response_server == "ok"):
         agent.unused_slots += 1
-        agent.already_fork = True
+        add_info_streamlit(agent, "fork")
         logger.info(f"{agent.agent_id}: A new egg of power has been laid; the mage's lineage is expanding.")
     else:
         logger.error("The response message from the server is not suitable for this command. response_server != ok (Fork)")

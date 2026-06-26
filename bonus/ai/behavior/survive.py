@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import Macro
+from constant import FOOD_TO_REACH, FOOD_BEFORE_START
 from logger import logger
 
 class Survive(Behavior):
@@ -21,15 +21,16 @@ class Survive(Behavior):
         agent.tick += 1
         agent.display_info()
         if (agent.start_game == False):
-            if (agent.inventory["food"] >= agent.get_macro_ratio(Macro.FOOD_TO_REACH)):
+            if (agent.inventory["food"] >= FOOD_TO_REACH):
                 agent.survive = False
                 agent.adapt_behavior()
                 return agent.behavior.execute(agent)
             return self.take_food_vision(agent)
         else:
             if (agent.already_fork == False):
+                agent.already_fork = True
                 return ["Fork\n"]
-            if (agent.inventory["food"] >= agent.get_macro_ratio(Macro.FOOD_BEFORE_START)):
+            if (agent.inventory["food"] >= FOOD_BEFORE_START):
                 agent.survive = False
                 agent.start_game = False
                 return agent.behavior.execute(agent)
