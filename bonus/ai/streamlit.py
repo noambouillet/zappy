@@ -53,7 +53,7 @@ if (pages == "Home"):
         st.markdown("<div style='text-align: center;'>Max Level (by one player)<br><span style='font-size: 2em; font-weight: bold; color: #ffcc00;'>{}</span></div>".format(datatset["level"].max()), unsafe_allow_html=True)
     st.markdown("---")
     st.subheader("Match Result")
-    info = datatset[datatset["level"] == 8]
+    info = datatset[datatset["level"] == 7]
     if not info.empty:
         st.markdown("![Alt Text](https://www.image2url.com/r2/default/gifs/1782413309071-bab97c21-b7bf-4db5-b9ac-cce52bee1660.gif)")
         winner = info["team"].iloc[0]
