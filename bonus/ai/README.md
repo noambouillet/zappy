@@ -45,7 +45,7 @@ Several points:
 - Replace the server's hostname after -h with the server's hostname (localhost). This argument is not mandatory.
 
 ```bash
-./zappy_ai [-p port] -n name [-h machine]
+./zappy_ai_main [-p port] -n name [-h machine]
 ```
 
 ### 3.Bonus

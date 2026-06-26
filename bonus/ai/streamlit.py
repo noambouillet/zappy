@@ -64,10 +64,10 @@ if (pages == "Home"):
     st.markdown("---")
     st.subheader("Titles awarded to specific officials")
     look_actions = datatset[datatset["action"] == "look"]
-    st.markdown(f"**The Glutton**(Max Food) : {datatset.loc[datatset["food"].idxmax(), "id"]}")
+    st.markdown(f"**The Glutton**(Max ressources) : {datatset.loc[datatset["food"].idxmax(), "id"]}, Value : {(datatset[datatset["action"] == "take"]["id"].value_counts()).max()}")
     st.markdown(f"**The Survivalist**(Max survive) : {datatset.loc[datatset["time"].idxmax(), "id"]}")
-    st.markdown(f"**The Mad Mage**(Max fork/incantation) : {datatset["id"].value_counts().idxmax()}")
-    st.markdown(f"**The Stalker**(Max i see you) : {look_actions["id"].value_counts().idxmax()}")
+    st.markdown(f"**The Mad Mage**(Max fork/incantation) : {datatset["id"].value_counts().idxmax()}, Value : {(datatset[datatset["action"] == "fork"]["id"].value_counts()).max()}")
+    st.markdown(f"**The Stalker**(Max i see you) : {look_actions["id"].value_counts().idxmax()}, Value : {(datatset[datatset["action"] == "look"]["id"].value_counts()).max()}")
     st.markdown("---")
     st.caption("Navigation: Use the sidebar on the left to explore the detailed data.")
 elif (pages == "Data Analysis"):
