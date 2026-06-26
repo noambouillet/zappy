@@ -96,6 +96,7 @@ class Server {
         void stop();
         void pause();
         void resume();
+        bool isPaused() const;
         Socket &getSocket();
         unsigned int getWidth() const;
         unsigned int getHeight() const;

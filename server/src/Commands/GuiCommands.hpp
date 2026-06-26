@@ -13,7 +13,7 @@
 
 namespace ZappyServer {
 
-static constexpr unsigned int GUI_COMMANDS_NUMBER = 6;
+static constexpr unsigned int GUI_COMMANDS_NUMBER = 7;
 static constexpr unsigned int RESOURCES_NUMBER = 7;
 class Server;
 class Client;
@@ -34,6 +34,7 @@ namespace GuiCommands {
     void tna(Client &client, Server &server, const std::string &args);
     void sgt(Client &client, Server &server, const std::string &args);
     void sst(Client &client, Server &server, const std::string &args);
+    void sps(Client &client, Server &server, const std::string &args);
 
     // les events qu'on envoie
     void pnw(Server &server, int playerId);
@@ -55,6 +56,7 @@ namespace GuiCommands {
     void smg(Client &client, Server &server, const std::string &msg);
     void suc(Client &client, Server &server);
     void sbp(Client &client, Server &server);
+    void sps_broadcast(Server &server, bool isPaused);
 }
 
 }

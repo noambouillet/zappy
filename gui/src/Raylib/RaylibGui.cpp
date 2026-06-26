@@ -6,13 +6,13 @@
 */
 
 #include "RaylibGui.hpp"
-#include <iostream>
+#include "Logger.hpp"
 #include <algorithm>
 #include <rlgl.h>
 #include <filesystem>
 #include <cmath>
 
-RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D - Raylib")
+RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D - Raylib"), _pendingCommand("")
 {
     _backgroundTexture = std::make_unique<RayTexture>("gui/assets/3D/backgrounds/background.png");
 
@@ -21,9 +21,9 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
             std::string name = entry.path().stem().string();
             try {
                 _textures[name] = std::make_unique<RayTexture>(entry.path().string());
-                std::cout << "Loaded texture: " << name << " from " << entry.path() << std::endl;
+                logger.info("Loaded texture: " + name + " from " + entry.path().string());
             } catch (const std::exception &e) {
-                std::cerr << "Warning: " << e.what() << std::endl;
+                logger.warn("Warning: " + std::string(e.what()));
             }
         }
     }
@@ -36,9 +36,9 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
                 BoundingBox box = GetModelBoundingBox(_models[name]->getModel());
                 float maxSize = std::max({box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z});
                 _modelScales[name] = (maxSize > 0.0f) ? (0.20f / maxSize) : 0.20f;
-                std::cout << "Loaded model: " << name << " from " << entry.path() << std::endl;
+                logger.info("Loaded model: " + name + " from " + entry.path().string());
             } catch (const std::exception &e) {
-                std::cerr << "Warning: " << e.what() << std::endl;
+                logger.warn("Warning: " + std::string(e.what()));
             }
         }
     }
@@ -113,6 +113,17 @@ void RaylibGui::handleEvent()
             }
         }
     }
+
+    if (IsKeyPressed(KEY_SPACE)) {
+        _pendingCommand = "sps";
+    }
+}
+
+std::string RaylibGui::getPendingCommand()
+{
+    std::string cmd = _pendingCommand;
+    _pendingCommand.clear();
+    return cmd;
 }
 
 void RaylibGui::updateAnimations(float deltaTime)
@@ -217,7 +228,7 @@ void RaylibGui::displayWindow()
         return;
     }
 
-    DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, 1920, 1080}, Vector2{0, 0}, 0.0f, WHITE);
+    DrawTexturePro(_backgroundTexture->getTexture(), Rectangle{0, 0, static_cast<float>(_backgroundTexture->getTexture().width),static_cast<float>(_backgroundTexture->getTexture().height)}, Rectangle{0, 0, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())}, Vector2{0, 0}, 0.0f, WHITE);
     _camera.beginMode3D();
 
     auto mapSize = _world.getMapSize();

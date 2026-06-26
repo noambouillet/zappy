@@ -22,6 +22,7 @@ static const std::array<GuiCommandEntry, GUI_COMMANDS_NUMBER> guiDispatch = {{
     { "tna", GuiCommands::tna },
     { "sgt", GuiCommands::sgt },
     { "sst", GuiCommands::sst },
+    { "sps", GuiCommands::sps },
 }};
 
 void GuiCommands::dispatch(Client &client, Server &server, const std::string &line)
@@ -107,6 +108,14 @@ void GuiCommands::sst(Client &, Server &server, const std::string &args)
         if (!client.isDead() && client.getState() == ClientState::GUI)
             server.getSocket().sendMessage(client.getFd(), msg.c_str(), msg.size());
     }
+}
+
+void GuiCommands::sps(Client &, Server &server, const std::string &)
+{
+    if (server.isPaused())
+        server.resume();
+    else
+        server.pause();
 }
 
 void GuiCommands::suc(Client &client, Server &server)
@@ -267,6 +276,12 @@ void GuiCommands::edi(Server &server, int eggId)
 void GuiCommands::seg(Server &server, const std::string &teamName)
 {
     std::string msg = "seg " + teamName + "\n";
+    broadcastToGui(server, msg);
+}
+
+void GuiCommands::sps_broadcast(Server &server, bool isPaused)
+{
+    std::string msg = "sps " + std::to_string(isPaused ? 1 : 0) + "\n";
     broadcastToGui(server, msg);
 }
 

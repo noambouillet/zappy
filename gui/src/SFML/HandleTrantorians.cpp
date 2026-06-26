@@ -156,7 +156,7 @@ void HandleTrantorians::updateTrantorianIncantation(TrantorianAnim_t &anim, floa
     anim.incantTimer += deltaTime;
     if (anim.incantTimer >= 0.05f) {
         anim.incantTimer = 0.0f;
-        anim.incantFrame = (anim.incantFrame + 1) % 4;
+        anim.incantFrame = (anim.incantFrame + 1) % 21;
     }
 }
 
@@ -175,6 +175,9 @@ void HandleTrantorians::drawBaseIndicator(const sf::Vector2f &pos)
 const sf::Color HandleTrantorians::getColorWithLvl(int lvl)
 {
     static const sf::Color Colors[] = {sf::Color(255, 0, 0), sf::Color(255, 228, 0), sf::Color(165, 255, 0), sf::Color(0, 255, 106), sf::Color(0, 239, 255), sf::Color(0, 90, 255), sf::Color(69, 0, 255), sf::Color(228, 0, 255)};
+    
+    if (lvl < 1 || lvl > 8)
+        return sf::Color::White; 
     return Colors[lvl - 1];
 }
 
@@ -205,7 +208,7 @@ void HandleTrantorians::drawTrantorians(const TileData_t &tile)
             if (anim.isDying)
                 drawAnimation(anim, size * 1.5f, 32, "spritesheetDeath", anim.deathFrame);
             else if (anim.isIncanting)
-                drawAnimation(anim, size, 6, "incantation", anim.incantFrame);
+                drawAnimation(anim, size * 1.2f, 21, "incantation", anim.incantFrame);
             else {
                 sprite.setPosition(anim.visualPos);
                 sprite.setRotation((anim.isMoving) ? (15.0f * std::sin(anim.walkTimer * 18.0f)) : 0.0f);
@@ -300,8 +303,10 @@ void HandleTrantorians::updateAndDrawWaves(sf::RenderWindow &window)
 void HandleTrantorians::handleEvent(const sf::Event &event)
 {
     if (event.type == sf::Event::KeyPressed) {
-        if  (event.key.code == sf::Keyboard::B)
+        if  (event.key.code == sf::Keyboard::B) {
             _displayBroadcast = !_displayBroadcast;
+            _world.setDisplayBroadcast(_displayBroadcast);
+        }
         if  (event.key.code == sf::Keyboard::L)  {
             _displayLvl = !_displayLvl;
             _world.setDisplayLvl(_displayLvl);

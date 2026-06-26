@@ -90,6 +90,7 @@ void Server::pause()
 {
     _paused = true;
     logger.write("The world is now paused.");
+    GuiCommands::sps_broadcast(*this, true);
 }
 
 void Server::resume()
@@ -98,7 +99,13 @@ void Server::resume()
         _paused = false;
         _lastTick = std::chrono::steady_clock::now();
         logger.write("The world is now back running.");
+        GuiCommands::sps_broadcast(*this, false);
     }
+}
+
+bool Server::isPaused() const
+{
+    return _paused;
 }
 
 void Server::setup()
