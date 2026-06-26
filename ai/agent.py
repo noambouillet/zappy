@@ -5,7 +5,7 @@
 ## agent
 ##
 
-from constant import Direction, MIN_FOOD, requirement_for_progress, FOOD_TO_REACH
+from constant import Direction, requirement_for_progress, Macro
 from behavior.survive import Survive
 from behavior.explore import Explore
 from behavior.incantation import Incantation
@@ -81,7 +81,7 @@ class Agent:
             return commands
         if len(self.vision) == 0:
             return commands
-        if self.inventory["food"] >= FOOD_TO_REACH + 5:
+        if self.inventory["food"] >= self.get_macro_ratio(Macro.TAKE_FOOD_ON_TILE):
             return commands
         for elem in self.vision[0]:
             if elem == "food":
@@ -195,7 +195,7 @@ class Agent:
         if self.is_incantation == True:
             self.behavior = Incantation()
             return
-        if (self.inventory["food"] <= MIN_FOOD or self.survive == True) and self.joining_incantation == False:
+        if (self.inventory["food"] <= self.get_macro_ratio(Macro.MIN_FOOD) or self.survive == True) and self.joining_incantation == False:
             self.survive = True
             self.joining_incantation = False
             self.prepare_incantation = False
@@ -212,3 +212,20 @@ class Agent:
         else:
             self.behavior = Incantation()
     
+    def get_macro_ratio(self, macro):
+        """return the macro value adapted to the map size
+
+        Args:
+            macro (Macro): macro
+
+        Returns:
+            int: macro with ratio applied
+        """
+        min_map_surface = 10 * 10
+        max_map_surface = 42 * 42
+        width, height = self.size_map
+        current_surface = (int)(width) * (int)(height)
+        ratio = ((current_surface - min_map_surface) / (max_map_surface - min_map_surface))
+        min_value, max_value = macro.value
+        value = min_value + ratio * (max_value - min_value)
+        return int(value + 0.5)

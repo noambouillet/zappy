@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import FOOD_TO_REACH
+from constant import Macro
 import math
 from logger import logger
 
@@ -33,7 +33,7 @@ class Explore(Behavior):
         Returns:
             tuple(str, int): ressource and index of the tile from view
         """
-        valid = {"food" : FOOD_TO_REACH, "linemate" : 9, "deraumere" : 8, "sibur" : 10, "mendiane" : 5, "phiras" : 6, "thystame" : 1}
+        valid = {"food" : agent.get_macro_ratio(Macro.FOOD_TO_REACH), "linemate" : 9, "deraumere" : 8, "sibur" : 10, "mendiane" : 5, "phiras" : 6, "thystame" : 1}
         for index, tile in enumerate(agent.vision):
             for ressource in tile:
                 if ressource in valid and agent.inventory[ressource] < valid[ressource]:

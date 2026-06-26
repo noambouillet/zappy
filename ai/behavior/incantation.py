@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import MIN_FOOD, requirement_for_progress, NB_PLAYERS_REQUIRED
+from constant import requirement_for_progress, Macro, NB_PLAYERS_REQUIRED
 from logger import logger
 
 class Incantation(Behavior):
@@ -14,7 +14,7 @@ class Incantation(Behavior):
         logger.debug("\n========== INCANTATION ==========")
         agent.tick += 1
         agent.display_info()
-        if (agent.inventory["food"] < MIN_FOOD):
+        if (agent.inventory["food"] < agent.get_macro_ratio(Macro.MIN_FOOD)):
             agent.survive = True
             agent.prepare_incantation = False
             agent.joining_incantation = False
@@ -66,19 +66,15 @@ class Incantation(Behavior):
         for msg in mailbox_message:
             if (msg["sender_id"] == agent.agent_id):
                 continue
-            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] not in agent.tab_id_teammate):
-                direction = msg["direction"]
-                if (direction == 0):
-                    agent.tab_id_teammate.append(msg["sender_id"])
-                    agent.teammate_on_tile += 1
+            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] not in agent.tab_id_teammate and msg["direction"] == 0):
+                agent.tab_id_teammate.append(msg["sender_id"])
+                agent.teammate_on_tile += 1
             elif (msg["action"] == "LEAVING" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] in agent.tab_id_teammate):
                 agent.tab_id_teammate.remove(msg["sender_id"])
                 agent.teammate_on_tile -= 1
             elif (msg["team"] != agent.team_name and msg["direction"] == 0):
                 eject_players = True
-                agent.tab_id_teammate = []
-                agent.teammate_on_tile = 1
-        agent.mailbox = [msg for msg in agent.mailbox if msg.get("action") == "INCANTATION"]
+        agent.mailbox = [msg for msg in agent.mailbox if msg["action"] == "INCANTATION" and msg["team"] == agent.team_name and msg["level"] == agent.level]
         return eject_players
     
     def verif_incantation(self, agent):

@@ -6,7 +6,7 @@
 ##
 
 from parsing import sys, socket
-from constant import INVENTORY_FREQUENCE
+from constant import Macro, MAX_COMMANDS, MAX_BEHAVIOR_COMMANDS, INVENTORY_FREQUENCE
 from commands_ia.forward import do_forward
 from commands_ia.left import do_left
 from commands_ia.right import do_right
@@ -75,7 +75,7 @@ def handle_commands(agent : Agent, all_responses_server):
             command = None
         logger.debug(f"This is the server's current response : {response_server}")
         if (response_server.startswith("dead")):
-            receive_dead()
+            receive_dead(agent, response_server)
         elif (response_server.startswith("eject:")):
             receive_eject(agent, response_server)
         elif (response_server.startswith("message")):
@@ -110,9 +110,11 @@ def check_inventory_regularly(agent, tab_commands):
     Returns:
         list: command list
     """
-    if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE and agent.is_incantation != True):
-        agent.last_inventory = agent.tick
-        tab_commands.append("Inventory\n")
+    if agent.is_incantation:
+        return tab_commands
+    if ((agent.tick - agent.last_inventory) >= INVENTORY_FREQUENCE):
+        if "Inventory\n" not in tab_commands:
+            tab_commands.append("Inventory\n")
     return tab_commands
 
 def send_commands(socket_connection : socket.socket, agent : Agent):
@@ -125,29 +127,32 @@ def send_commands(socket_connection : socket.socket, agent : Agent):
     need_look = ["Forward\n", "Left\n", "Right\n", "Eject\n"]
     if agent.is_incantation == True:
         return
-    if (len(agent.list_commands) == 0):
-        agent.adapt_behavior()
-        tab_commands = []
-        if agent.vision == [[]]:
-            tab_commands.append("Look\n")
-        tab_commands += agent.behavior.execute(agent)
-        if not tab_commands:
-            return
+    if len(agent.list_commands) != 0:
+        return
+    agent.adapt_behavior()
+    tab_commands = []
+    if agent.vision == [[]]:
+        tab_commands.append("Look\n")
+    behavior_commands = agent.behavior.execute(agent)
+    tab_commands += behavior_commands[:MAX_BEHAVIOR_COMMANDS]
+    if not agent.joining_incantation:
         for command in tab_commands:
-            if (command in need_look or command.startswith("Set")) and agent.joining_incantation == False:
+            if (command in need_look or command.startswith("Set")):
                 tab_commands.append("Look\n")
                 break
-        tab_commands = check_inventory_regularly(agent, tab_commands)
-        for command in tab_commands:
-            if (len(agent.list_commands) < 10):
-                agent.list_commands.append(command)
-                try:
-                    socket_connection.sendall((command).encode('utf-8'))
-                except OSError:
-                    logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
-                    socket_connection.close()
-                    sys.exit(84)
-        logger.debug(f"New list of commands send by the client : {agent.list_commands}")
+    tab_commands = check_inventory_regularly(agent, tab_commands)
+    if not tab_commands:
+        return
+    tab_commands = tab_commands[:MAX_COMMANDS]
+    for command in tab_commands:
+        agent.list_commands.append(command)
+        try:
+            socket_connection.sendall((command).encode('utf-8'))
+        except OSError:
+            logger.critical("The connection between the server and the AI has been lost because the AI has therefore died in the game.")
+            socket_connection.close()
+            sys.exit(84)
+    logger.debug(f"New list of commands send by the client : {agent.list_commands}")
 
 def send_recv_command(socket_connection : socket.socket, agent : Agent):
         """This function is to juggle between send and receive commands (Ai/Server)

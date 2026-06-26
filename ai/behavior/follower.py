@@ -5,7 +5,7 @@
 ## Follower
 ##
 
-from constant import MIN_FOOD, WAIT_MSG
+from constant import Macro, WAIT_MSG
 from .class_behavior import Behavior
 from logger import logger
 
@@ -15,7 +15,7 @@ class Follower(Behavior):
         logger.debug("\n========== FOLLOWER ==========")
         agent.tick += 1
         agent.display_info()
-        if agent.inventory["food"] < MIN_FOOD:
+        if agent.inventory["food"] < agent.get_macro_ratio(Macro.MIN_FOOD):
             agent.survive = True
             agent.joining_incantation = False
             agent.leader_id = None
