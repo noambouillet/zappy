@@ -5,12 +5,13 @@
 ## Makefile
 ##
 
-RESET	=	\033[0m
-GREEN	=	\033[38;2;80;220;120m
+RESET = \033[0m
+GREEN = \033[38;2;80;220;120m
 
-NAME	=	zappy_ai_main
-SOURCE	=	$(NAME)
-TARGET	=	../$(NAME)
+NAME_MAIN = zappy_ai_main
+NAME_BINARY = zappy_ai
+SOURCE = $(NAME_MAIN)
+TARGET = ../$(NAME_BINARY)
 
 .PHONY: all re clean fclean
 
