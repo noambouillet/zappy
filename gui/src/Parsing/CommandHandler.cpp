@@ -126,7 +126,7 @@ void CommandHandler::handle_pnw(std::stringstream &ss)
     Trantorian_t trantorian;
     char sharp;
     std::vector<std::string> names = {
-        "trantorian le Cafouilleux", "Noam le Gâte Sauce", "Logan le Brise Assiette", "Gurtag le Mâche Pissenlit", 
+        "trantorian le Cafouilleux", "Noam le Gate Sauce", "Logan le Brise Assiette", "Gurtag le Mache", 
         "Louis le Poltron", "Paul le Pied Bot", "Poll le Sourd-Double", "Keryan le Glandu",
         "Godefroy le Mafflu", "Aldebert le Sec", "Anselme le Putois", "Barnabe Soupe au Lait",
         "Enguerrand le Pleutre", "Foulques le Gargouilleux", "Gontran le Morveux", "Hugues le Glandu",

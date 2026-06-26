@@ -7,6 +7,7 @@
 
 #include "UIRender.hpp"
 #include "GuiExceptions.hpp"
+#include <algorithm>
 
 UIRender::UIRender(World &world, sf::RenderWindow &window, TextureManager &textureManager): _world(world), _window(window), _textureManager(textureManager)
 {
@@ -130,7 +131,6 @@ void UIRender::displayTeams()
     float btnW = 300.0f;
     float btnH = 65.0f;
     sf::Vector2f mousePos = _window.mapPixelToCoords(sf::Mouse::getPosition(_window));
-
     drawText("Teams :", sf::Color::White, 50, 1500.0f, 80.0f);
     _hoveredTeam = "";
     int hoveredTrantorianId = -1;
@@ -148,20 +148,29 @@ void UIRender::displayTeams()
             _buttonShape.setOutlineColor(sf::Color::Magenta);
         }
         _text.setFillColor(textColor);
-        drawButton(team, 35, x, y, btnW, btnH);
+        auto currentTeamTrantorians = getTeamTrantorians(team);
+        std::string teamLabel = team + std::to_string(currentTeamTrantorians.size());
+        
+        drawButton(teamLabel, 35, x, y, btnW, btnH);
         y += btnH + 15.0f;
+
         if (team == _selectedTeam) {
-            for (const auto &trantorian : getTeamTrantorians(_selectedTeam)) {
+            std::sort(currentTeamTrantorians.begin(), currentTeamTrantorians.end(), [](const auto &a, const auto &b) {
+                return a.id < b.id;
+            });
+            for (const auto &trantorian : currentTeamTrantorians) {
                 float subX = x + 35.0f, subW = btnW - 35.0f, subH = 45.0f;
                 sf::FloatRect subBounds(subX, y, subW, subH);
                 sf::Color subColor = sf::Color::White;
                 _buttonShape.setOutlineColor(sf::Color(100, 100, 100));
+
                 if (subBounds.contains(mousePos)) {
                     _buttonShape.setOutlineColor(sf::Color(151, 26, 251));
                     hoveredTrantorianId = trantorian.id;
                 }
                 _text.setFillColor(subColor);
-                drawButton((trantorian.Name.find(' ') != std::string::npos ? trantorian.Name.substr(0, trantorian.Name.find(' ')) : trantorian.Name) + " Lvl:" + std::to_string(trantorian.level), 35, subX, y, subW, subH);
+                std::string displayName = (trantorian.Name.find(' ') != std::string::npos ? trantorian.Name.substr(0, trantorian.Name.find(' ')) : trantorian.Name);
+                drawButton(displayName + " Lvl:" + std::to_string(trantorian.level), 35, subX, y, subW, subH);
                 y += subH + 10.0f;
             }
         }
