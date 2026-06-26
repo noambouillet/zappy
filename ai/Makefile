@@ -8,7 +8,7 @@
 RESET	=	\033[0m
 GREEN	=	\033[38;2;80;220;120m
 
-NAME	=	zappy_ai
+NAME	=	zappy_ai_main
 SOURCE	=	$(NAME)
 TARGET	=	../$(NAME)
 
@@ -18,7 +18,7 @@ all: $(TARGET)
 
 $(TARGET): $(SOURCE)
 	@printf '%s\n' '#!/bin/sh' > $(TARGET)
-	@printf '%s\n' 'exec python3 "$$(dirname "$$0")/ai/zappy_ai" "$$@"' >> $(TARGET)
+	@printf '%s\n' 'exec python3 "$$(dirname "$$0")/ai/zappy_ai_main" "$$@"' >> $(TARGET)
 	@chmod +x $(TARGET)
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) AI compilation done."
 
