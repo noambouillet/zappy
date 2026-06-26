@@ -48,6 +48,27 @@ Several points:
 ./zappy_ai [-p port] -n name [-h machine]
 ```
 
+### 3.Bonus
+
+#### 3.1 Create an environnment
+```bash
+python -m venv .venv
+```
+```bash
+ source .venv/bin/activate 
+```
+
+
+#### 3.2 Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+#### 3.3 Launch streamlit
+```bash
+streamlit run streamlit.py
+```
+
 ---
 
 ## Project structure
