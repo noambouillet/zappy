@@ -31,6 +31,11 @@ struct RayPlayerAnim_t {
     float broadcastTimer = 0.0f;
     std::vector<std::pair<std::string, float>> bubbleQueue;
     float bubbleTimer = 0.0f;
+    int animFrameCounter = 0;
+    bool hasInitializedPos = false;
+    float renderX = 0.0f;
+    float renderZ = 0.0f;
+    bool isMoving = false;
 };
 
 class RaylibGui : public IGui {
