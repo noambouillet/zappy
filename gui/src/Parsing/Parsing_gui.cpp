@@ -20,6 +20,18 @@ void Parsing_gui::print_help()
     logger.info("USAGE: ./zappy_gui -p port -h machine [-3d]");
 }
 
+void Parsing_gui::isTTY(char **env) const
+{
+    if (!env)
+        throw ParsingGuiException("Env not found");
+    for (int i = 0; env[i]; i++) {
+        std::string current = env[i];
+        if (current.find("DISPLAY=") == 0)
+            return;
+    }
+    throw ParsingGuiException("Graphical env not found");
+}
+
 bool Parsing_gui::is_ipv4(const std::string &addr)
 {
     int a;
@@ -87,10 +99,10 @@ networkData_t Parsing_gui::parse_args(int ac, char **av)
         }
     }
     if (port.empty()) {
-        throw ParsingGuiException("Missing mandatory flag: -p <port>");
+        port = "4242";
     }
     if (addr.empty()) {
-        throw ParsingGuiException("Missing mandatory flag: -h <machine>");
+        addr = "localhost";
     }
     networkData_t data = check_args(addr, port);
     data.use3D = use3D;
