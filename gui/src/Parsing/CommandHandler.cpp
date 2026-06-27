@@ -115,10 +115,6 @@ void CommandHandler::handle_enw(std::stringstream &ss)
     if (!(ss >> sharp1 >> eggNb >> sharp2 >> trantorianNb >> x >> y))
         return;
     _world.addEgg(eggNb, trantorianNb, x, y);
-    if (trantorianNb == -1)
-        logger.info("An egg has spawn.");
-    else
-        logger.info("An egg was laid by trantorian #" + std::to_string(trantorianNb));
 }
 
 void CommandHandler::handle_pnw(std::stringstream &ss)

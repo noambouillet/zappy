@@ -44,6 +44,26 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
         }
     }
     _ui = std::make_unique<RayUI>(_world, _textures);
+
+    InitAudioDevice();
+    if (IsAudioDeviceReady()) {
+        _backgroundMusic = LoadMusicStream("gui/assets/sounds/music.wav");
+        if (_backgroundMusic.stream.buffer != nullptr) {
+            PlayMusicStream(_backgroundMusic);
+            SetMusicVolume(_backgroundMusic, 0.5f);
+            _isMusicLoaded = true;
+        }
+    }
+}
+
+RaylibGui::~RaylibGui()
+{
+    if (_isMusicLoaded) {
+        UnloadMusicStream(_backgroundMusic);
+    }
+    if (IsAudioDeviceReady()) {
+        CloseAudioDevice();
+    }
 }
 
 bool RaylibGui::isOpen() const
@@ -53,6 +73,10 @@ bool RaylibGui::isOpen() const
 
 void RaylibGui::handleEvent()
 {
+    if (_isMusicLoaded) {
+        UpdateMusicStream(_backgroundMusic);
+    }
+
     float dt = GetFrameTime();
     _camera.update(dt);
     updateAnimations(dt);
@@ -359,6 +383,23 @@ void RaylibGui::drawTileContent(int x, int z)
             if (_models.find(ressourceNames[i]) != _models.end()) {
                 DrawModel(_models[ressourceNames[i]]->getModel(), Vector3{static_cast<float>(x) + offsets[i].x, 0.15f, static_cast<float>(z) + offsets[i].z}, _modelScales[ressourceNames[i]], WHITE);
             }
+        }
+    }
+
+    int eggCount = 0;
+    for (const auto& [eggId, trantorianId] : tile.eggs) {
+        float offsetX = 0.25f * std::cos(eggCount * 2.0f);
+        float offsetZ = 0.25f * std::sin(eggCount * 2.0f);
+        
+        Color eggColor = WHITE;
+        try {
+            Trantorian_t t = _world.getTrantorian(trantorianId);
+            eggColor = RayUI::getTeamColor(t.teamName);
+        } catch (...) {}
+
+        if (_models.find("egg") != _models.end()) {
+            DrawModel(_models["egg"]->getModel(), Vector3{static_cast<float>(x) + offsetX, 0.10f, static_cast<float>(z) + offsetZ}, _modelScales["egg"] * 3.0f, eggColor);
+            eggCount++;
         }
     }
 

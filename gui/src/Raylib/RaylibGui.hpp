@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <raylib.h>
 
 struct RayPlayerAnim_t {
     int id;
@@ -41,7 +42,7 @@ struct RayPlayerAnim_t {
 class RaylibGui : public IGui {
     public:
         RaylibGui(World &world);
-        ~RaylibGui() override = default;
+        ~RaylibGui() override;
 
         bool isOpen() const override;
         void handleEvent() override;
@@ -68,6 +69,8 @@ class RaylibGui : public IGui {
         int _selectedTileZ = -1;
         int _selectedTrantorianId = -1;
         std::string _pendingCommand;
+        Music _backgroundMusic;
+        bool _isMusicLoaded = false;
 
         void drawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color);
         void drawTileContent(int x, int z);
