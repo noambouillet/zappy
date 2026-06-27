@@ -17,7 +17,7 @@
 #include "GuiExceptions.hpp"
 #include "Logger.hpp"
 
-int main(int ac, char **av)
+int main(int ac, char **av, char **env)
 {
     Parsing_gui parse;
     std::string server_buffer;
@@ -25,6 +25,7 @@ int main(int ac, char **av)
     Poll netPoll;
 
     try {
+        parse.isTTY(env);
         networkData_t data = parse.parse_args(ac, av);
         NetworkHandler network(data.port, data.ip);
 

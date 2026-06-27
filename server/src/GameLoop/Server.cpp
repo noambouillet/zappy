@@ -123,6 +123,15 @@ void Server::setup()
     _startTime = std::chrono::steady_clock::now();
     _lastTick = std::chrono::steady_clock::now();
 
+    std::uniform_int_distribution<unsigned int> distX(0, _width - 1);
+    std::uniform_int_distribution<unsigned int> distY(0, _height - 1);
+
+    for (const std::string &teamName : _teamNames) {
+        for (unsigned int i = 0; i < _clientsNb; i++) {
+            addEgg(teamName, distX(_rng), distY(_rng));
+        }
+    }
+
     signal(SIGPIPE, SIG_IGN);
 }
 
@@ -190,6 +199,16 @@ void Server::handleGuiHandshake(Client &client)
         std::string teamNameMessage = "tna " + teamName + "\n";
         _socket.sendMessage(client.getFd(), teamNameMessage.c_str(), teamNameMessage.size());
     }
+    for (const Client &c : _clients) {
+        if (!c.isDead() && c.getState() == ClientState::AI && c.getPlayerData().has_value()) {
+            std::string msg = "pnw #" + std::to_string(c.getFd()) + " " + std::to_string(c.getPlayerData()->getX()) + " " + std::to_string(c.getPlayerData()->getY()) + " " + std::to_string(c.getPlayerData()->getDirection()) + " " + std::to_string(c.getPlayerData()->getLevel()) + " " + c.getTeamName() + "\n";
+            _socket.sendMessage(client.getFd(), msg.c_str(), msg.size());
+        }
+    }
+    for (const Egg &egg : _eggs) {
+        std::string msg = "enw #" + std::to_string(egg.id) + " #-1 " + std::to_string(egg.x) + " " + std::to_string(egg.y) + "\n";
+        _socket.sendMessage(client.getFd(), msg.c_str(), msg.size());
+    }
     logger.write("The omniscient graphic team has entered the world.");
 }
 
@@ -204,16 +223,13 @@ unsigned int Server::countAlivePlayersInTeam(const std::string &teamName) const
     return aliveCount;
 }
 
-int Server::computeAvailableSlots(const std::string &teamName, unsigned int aliveCount) const
+int Server::computeAvailableSlots(const std::string &teamName, unsigned int) const
 {
-    unsigned int totalSlots = _clientsNb;
+    int remaining = 0;
     for (const Egg &egg : _eggs) {
         if (egg.teamName == teamName)
-            totalSlots++;
+            remaining++;
     }
-    int remaining = static_cast<int>(totalSlots) - static_cast<int>(aliveCount) - 1;
-    if (remaining < 0)
-        return 0;
     return remaining;
 }
 
@@ -233,37 +249,29 @@ void Server::handleAiHandshake(Client &client, const std::string &requestedTeamN
     finalizeAiHandshake(client, requestedTeamName, aliveCount);
 }
 
-bool Server::assignAiSpawnPosition(Client &client, const std::string &requestedTeamName, unsigned int aliveCount)
+bool Server::assignAiSpawnPosition(Client &client, const std::string &requestedTeamName, unsigned int)
 {
     PlayerData &player = client.getPlayerData().value();
+    std::vector<std::size_t> matchingEggs;
 
-    if (aliveCount >= _clientsNb) {
-        std::vector<std::size_t> matchingEggs;
-
-        for (std::size_t index = 0; index < _eggs.size(); index++) {
-            if (_eggs[index].teamName == requestedTeamName)
-                matchingEggs.push_back(index);
-        }
-        if (matchingEggs.empty()) {
-            _socket.sendMessage(client.getFd(), "ko\n", 3);
-            disconnectClient(client);
-            return false;
-        }
-        std::uniform_int_distribution<std::size_t> eggDist(0, matchingEggs.size() - 1);
-        std::size_t eggIndex = matchingEggs[eggDist(_rng)];
-        Egg egg = _eggs[eggIndex];
-
-        GuiCommands::ebo(*this, egg.id);
-        player.setX(egg.x);
-        player.setY(egg.y);
-        _eggs.erase(_eggs.begin() + eggIndex);
-    } else {
-        std::uniform_int_distribution<unsigned int> distX(0, _width - 1);
-        std::uniform_int_distribution<unsigned int> distY(0, _height - 1);
-
-        player.setX(distX(_rng));
-        player.setY(distY(_rng));
+    for (std::size_t index = 0; index < _eggs.size(); index++) {
+        if (_eggs[index].teamName == requestedTeamName)
+            matchingEggs.push_back(index);
     }
+    if (matchingEggs.empty()) {
+        _socket.sendMessage(client.getFd(), "ko\n", 3);
+        disconnectClient(client);
+        return false;
+    }
+    std::uniform_int_distribution<std::size_t> eggDist(0, matchingEggs.size() - 1);
+    std::size_t eggIndex = matchingEggs[eggDist(_rng)];
+    Egg egg = _eggs[eggIndex];
+
+    GuiCommands::ebo(*this, egg.id);
+    player.setX(egg.x);
+    player.setY(egg.y);
+    _eggs.erase(_eggs.begin() + eggIndex);
+
     return true;
 }
 
