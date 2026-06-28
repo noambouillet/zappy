@@ -54,6 +54,7 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
             _isMusicLoaded = true;
         }
     }
+    _window.show();
 }
 
 RaylibGui::~RaylibGui()
