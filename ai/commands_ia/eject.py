@@ -16,7 +16,7 @@ def do_eject(agent, response_server):
     if (response_server == "ok"):
         logger.info(f"{agent.agent_id}: The Eject spell struck the square, banishing anyone who was there")
     elif (response_server == "ko"):
-        logger.info(f"{agent.agent_id}: The Eject spell did not work; the person was driven from their lands.")  
+        logger.info(f"{agent.agent_id}: The Eject spell did not work; no player or egg was there")
     else:
         logger.error("The response message from the server is not suitable for this command, result_command != ok or ko. (Eject)")
     return

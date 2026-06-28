@@ -31,7 +31,7 @@ class UIRender {
         void displayRessources();
         void displayTeams();
         sf::FloatRect drawButton(std::string text, int fontSize, float x, float y, float width, float height);
-        void drawText(std::string text, int size, float x, float y);
+        void drawText(std::string text, sf::Color color, int size, float x, float y);
         void drawIcon(std::string textureKey, float size, float x, float y);
         std::vector<Trantorian_t> getTeamTrantorians(const std::string &teamName) const;
         void displayTrantorianData(int trantorianId);
@@ -40,6 +40,6 @@ class UIRender {
         void displayGameOver();
         void displayLevelLegend();
         void displayShortcut();
-
+        void displayPauseMenu();
 };
 #endif

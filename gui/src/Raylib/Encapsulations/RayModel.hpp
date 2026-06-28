@@ -13,13 +13,18 @@
 
 class RayModel {
     public:
-        RayModel(const std::string &filepath);
+        RayModel(const std::string &filepath, bool loadAnims = false);
         ~RayModel();
 
         Model &getModel();
+        void updateAnimation(int animIndex, int frame, bool loop = true);
+        int getAnimCount() const;
+        bool hasAnimations() const;
 
     private:
         Model _model;
+        ModelAnimation *_animations;
+        int _animCount;
 };
 
 #endif /* !RAYMODEL_HPP_ */

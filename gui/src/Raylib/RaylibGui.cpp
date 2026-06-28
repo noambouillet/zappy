@@ -32,7 +32,8 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
         if (entry.is_regular_file()) {
             std::string name = entry.path().stem().string();
             try {
-                _models[name] = std::make_unique<RayModel>(entry.path().string());
+                bool loadAnims = (name.find("wizzard") != std::string::npos);
+                _models[name] = std::make_unique<RayModel>(entry.path().string(), loadAnims);
                 BoundingBox box = GetModelBoundingBox(_models[name]->getModel());
                 float maxSize = std::max({box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z});
                 _modelScales[name] = (maxSize > 0.0f) ? (0.20f / maxSize) : 0.20f;
@@ -43,6 +44,26 @@ RaylibGui::RaylibGui(World &world) : _world(world), _window(1280, 720, "Zappy 3D
         }
     }
     _ui = std::make_unique<RayUI>(_world, _textures);
+
+    InitAudioDevice();
+    if (IsAudioDeviceReady()) {
+        _backgroundMusic = LoadMusicStream("gui/assets/sounds/music.wav");
+        if (_backgroundMusic.stream.buffer != nullptr) {
+            PlayMusicStream(_backgroundMusic);
+            SetMusicVolume(_backgroundMusic, 0.5f);
+            _isMusicLoaded = true;
+        }
+    }
+}
+
+RaylibGui::~RaylibGui()
+{
+    if (_isMusicLoaded) {
+        UnloadMusicStream(_backgroundMusic);
+    }
+    if (IsAudioDeviceReady()) {
+        CloseAudioDevice();
+    }
 }
 
 bool RaylibGui::isOpen() const
@@ -52,6 +73,10 @@ bool RaylibGui::isOpen() const
 
 void RaylibGui::handleEvent()
 {
+    if (_isMusicLoaded) {
+        UpdateMusicStream(_backgroundMusic);
+    }
+
     float dt = GetFrameTime();
     _camera.update(dt);
     updateAnimations(dt);
@@ -64,30 +89,15 @@ void RaylibGui::handleEvent()
         float closestDistance = 9999999.0f;
         auto mapSize = _world.getMapSize();
 
-        if (_models.find("wizard") != _models.end()) {
-            Model wizardModel = _models["wizard"]->getModel();
-            BoundingBox originalBox = GetModelBoundingBox(wizardModel);
-
-            for (int z = 0; z < static_cast<int>(mapSize.second); z++) {
-                for (int x = 0; x < static_cast<int>(mapSize.first); x++) {
-                    auto &tile = _world.getTileData(x, z);
-                    for (const auto &[id, trantorian] : tile.trantorians) {
-                        BoundingBox shiftedBox = originalBox;
-                        shiftedBox.min.x += x;
-                        shiftedBox.max.x += x;
-                        shiftedBox.min.y += 0.0f;
-                        shiftedBox.max.y += 0.0f;
-                        shiftedBox.min.z += z;
-                        shiftedBox.max.z += z;
-
-                        RayCollision collision = GetRayCollisionBox(ray, shiftedBox);
-                        if (collision.hit && collision.distance < closestDistance) {
-                            closestDistance = collision.distance;
-                            _selectedTrantorianId = id;
-                            hitTrantorian = true;
-                        }
-                    }
-                }
+        for (const auto &[id, anim] : _playerAnims) {
+            BoundingBox box;
+            box.min = { anim.renderX - 0.4f, 0.0f, anim.renderZ - 0.4f };
+            box.max = { anim.renderX + 0.4f, 2.0f, anim.renderZ + 0.4f };
+            RayCollision collision = GetRayCollisionBox(ray, box);
+            if (collision.hit && collision.distance < closestDistance) {
+                closestDistance = collision.distance;
+                _selectedTrantorianId = id;
+                hitTrantorian = true;
             }
         }
 
@@ -130,6 +140,18 @@ void RaylibGui::updateAnimations(float deltaTime)
 {
     for (auto it = _playerAnims.begin(); it != _playerAnims.end();) {
         RayPlayerAnim_t &anim = it->second;
+        anim.animFrameCounter++;
+
+        if (anim.bubbleTimer > 0.0f) {
+            anim.bubbleTimer -= deltaTime;
+            if (anim.bubbleTimer <= 0.0f && !anim.bubbleQueue.empty()) {
+                anim.bubbleQueue.erase(anim.bubbleQueue.begin());
+                if (!anim.bubbleQueue.empty()) {
+                    anim.bubbleTimer = anim.bubbleQueue.front().second;
+                    anim.animFrameCounter = 0;
+                }
+            }
+        }
 
         if (anim.isDying) {
             anim.deathTimer += deltaTime;
@@ -154,15 +176,6 @@ void RaylibGui::updateAnimations(float deltaTime)
             }
         }
 
-        if (anim.bubbleTimer > 0.0f) {
-            anim.bubbleTimer -= deltaTime;
-            if (anim.bubbleTimer <= 0.0f && !anim.bubbleQueue.empty()) {
-                anim.bubbleQueue.erase(anim.bubbleQueue.begin());
-                if (!anim.bubbleQueue.empty()) {
-                    anim.bubbleTimer = anim.bubbleQueue.front().second;
-                }
-            }
-        }
         it++;
     }
 }
@@ -255,8 +268,9 @@ void RaylibGui::displayWindow()
                 for (const auto &[id, trantorian] : tile.trantorians) {
                     if (_playerAnims.find(id) != _playerAnims.end()) {
                         RayPlayerAnim_t &anim = _playerAnims[id];
-                        float yOffset = anim.isIncanting ? std::sin(anim.incantTimer * 5.0f) * 0.2f : 0.0f;
-                        Vector3 pos3D = {static_cast<float>(x), yOffset + 1.1f, static_cast<float>(z)};
+                        float rX = anim.hasInitializedPos ? anim.renderX : static_cast<float>(x);
+                        float rZ = anim.hasInitializedPos ? anim.renderZ : static_cast<float>(z);
+                        Vector3 pos3D = {rX, 1.1f, rZ};
                         Vector2 pos2D = GetWorldToScreen(pos3D, _camera.getCamera());
 
                         Color lvlColor = RayUI::getLevelColor(trantorian.level);
@@ -289,8 +303,10 @@ void RaylibGui::setTrantorianActionBubble(int id, const std::string &textureKey,
     RayPlayerAnim_t &anim = _playerAnims[id];
     anim.id = id;
     anim.bubbleQueue.push_back({textureKey, duration});
-    if (anim.bubbleTimer <= 0.0f)
+    if (anim.bubbleTimer <= 0.0f) {
         anim.bubbleTimer = duration;
+        anim.animFrameCounter = 0;
+    }
 }
 
 void RaylibGui::triggerTrantorianDeath(int id)
@@ -299,6 +315,7 @@ void RaylibGui::triggerTrantorianDeath(int id)
     anim.id = id;
     anim.isDying = true;
     anim.deathTimer = 0.0f;
+    anim.animFrameCounter = 0;
 }
 
 void RaylibGui::setTrantorianIncanting(int id, bool state)
@@ -306,8 +323,10 @@ void RaylibGui::setTrantorianIncanting(int id, bool state)
     RayPlayerAnim_t &anim = _playerAnims[id];
     anim.id = id;
     anim.isIncanting = state;
-    if (state)
+    if (state) {
         anim.incantTimer = 0.0f;
+        anim.animFrameCounter = 0;
+    }
 }
 
 void RaylibGui::stopIncantationAt(int x, int y)
@@ -367,6 +386,23 @@ void RaylibGui::drawTileContent(int x, int z)
         }
     }
 
+    int eggCount = 0;
+    for (const auto& [eggId, trantorianId] : tile.eggs) {
+        float offsetX = 0.25f * std::cos(eggCount * 2.0f);
+        float offsetZ = 0.25f * std::sin(eggCount * 2.0f);
+        
+        Color eggColor = WHITE;
+        try {
+            Trantorian_t t = _world.getTrantorian(trantorianId);
+            eggColor = RayUI::getTeamColor(t.teamName);
+        } catch (...) {}
+
+        if (_models.find("egg") != _models.end()) {
+            DrawModel(_models["egg"]->getModel(), Vector3{static_cast<float>(x) + offsetX, 0.10f, static_cast<float>(z) + offsetZ}, _modelScales["egg"] * 3.0f, eggColor);
+            eggCount++;
+        }
+    }
+
     for (auto& [id, trantorian] : tile.trantorians) {
         float angle = 0.0f;
         switch (trantorian.orientation) {
@@ -384,19 +420,87 @@ void RaylibGui::drawTileContent(int x, int z)
         RayPlayerAnim_t &anim = _playerAnims[id];
         anim.id = id;
 
+        if (!anim.hasInitializedPos) {
+            anim.renderX = static_cast<float>(x);
+            anim.renderZ = static_cast<float>(z);
+            anim.hasInitializedPos = true;
+        }
+
+        float dt = GetFrameTime();
+        float speed = 7.0f;
+        float targetX = static_cast<float>(x);
+        float targetZ = static_cast<float>(z);
+        float diffX = targetX - anim.renderX;
+        float diffZ = targetZ - anim.renderZ;
+
+        if (std::abs(diffX) > 1.5f || std::abs(diffZ) > 1.5f) {
+            anim.renderX = targetX;
+            anim.renderZ = targetZ;
+            diffX = 0;
+            diffZ = 0;
+        }
+
+        if (std::abs(diffX) > 0.01f) {
+            if (std::abs(diffX) > speed * dt) {
+                anim.renderX += (diffX > 0 ? 1 : -1) * speed * dt;
+            } else {
+                anim.renderX = targetX;
+            }
+            anim.isMoving = true;
+        } else if (std::abs(diffZ) > 0.01f) {
+            if (std::abs(diffZ) > speed * dt) {
+                anim.renderZ += (diffZ > 0 ? 1 : -1) * speed * dt;
+            } else {
+                anim.renderZ = targetZ;
+            }
+            anim.isMoving = true;
+        } else {
+            anim.renderX = targetX;
+            anim.renderZ = targetZ;
+            anim.isMoving = false;
+        }
+
+        if (anim.isMoving) {
+            anim.bubbleTimer = 0.0f;
+            anim.bubbleQueue.clear();
+        }
+
         rlPushMatrix();
         float yOffset = 0.0f;
-        if (anim.isIncanting)
-            yOffset = std::sin(anim.incantTimer * 5.0f) * 0.2f;
-        rlTranslatef(static_cast<float>(x), yOffset, static_cast<float>(z));
+        rlTranslatef(anim.renderX, yOffset, anim.renderZ);
         rlRotatef(angle, 0.0f, 1.0f, 0.0f);
-        if (anim.isIncanting)
-            rlRotatef(anim.incantTimer * 180.0f, 0.0f, 1.0f, 0.0f);
         if (anim.isDying)
             rlRotatef(std::min(anim.deathTimer * 90.0f, 90.0f), 1.0f, 0.0f, 0.0f);
         rlScalef(0.5f, 0.5f, 0.5f);
         Color wizardColor = RayUI::getTeamColor(trantorian.teamName);
-        DrawModel(_models["wizard"]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 1.0f, wizardColor);
+        std::string modelName = "wizzard_walking";
+
+        if (anim.isDying)
+            modelName = "wizzard_dead";
+        else if (anim.isIncanting)
+            modelName = "wizzard_evolving";
+        else if (anim.isMoving)
+            modelName = "wizzard_walking";
+        else if (anim.bubbleTimer > 0.0f)
+            modelName = "wizzard_collecting";
+        else if (_models.find("wizzard_idle") != _models.end())
+            modelName = "wizzard_idle";
+
+        if (_models.find(modelName) != _models.end()) {
+            if (_models[modelName]->hasAnimations()) {
+                if (anim.isMoving || modelName != "wizzard_walking") {
+                    bool loopAnim = (modelName != "wizzard_evolving");
+                    int frame = anim.animFrameCounter;
+                    if (modelName == "wizzard_evolving" && frame > 200) {
+                        frame = 200;
+                    }
+                    _models[modelName]->updateAnimation(0, frame, loopAnim);
+                } else {
+                    _models[modelName]->updateAnimation(0, 0);
+                }
+            }
+            DrawModel(_models[modelName]->getModel(), Vector3{0.0f, 0.0f, 0.0f}, 0.010f, wizardColor);
+        }
         rlPopMatrix();
 
         if (anim.isBroadcasting) {
@@ -405,10 +509,10 @@ void RaylibGui::drawTileContent(int x, int z)
             if (alpha < 0.0f)
                 alpha = 0.0f;
             Color waveColor = Color{0, 121, 241, static_cast<unsigned char>(255 * alpha)};
-            DrawCircle3D(Vector3{static_cast<float>(x), 0.5f, static_cast<float>(z)}, radius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, waveColor);
+            DrawCircle3D(Vector3{anim.renderX, 0.5f, anim.renderZ}, radius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, waveColor);
         }
 
-        drawBubble(anim, Vector3{static_cast<float>(x), yOffset + 1.6f, static_cast<float>(z)});
+        drawBubble(anim, Vector3{anim.renderX, yOffset + 1.6f, anim.renderZ});
     }
 }
 

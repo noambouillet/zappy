@@ -19,5 +19,10 @@ def do_connection(agent, response_server):
     else:
         value = (int)(response_server)
         agent.unused_slots = value
+        agent.last_slots_check = agent.tick
+        if (agent.unused_slots == 0):
+            agent.need_fork = True
+        else:
+            agent.need_fork = False
         logger.info(f"{agent.agent_id}: The wizard always takes care of his family; looking at his family tree, they are now {value}")
         

@@ -26,6 +26,7 @@ class Parsing_gui
     public:
         Parsing_gui();
         networkData_t parse_args(int ac, char **av);
+        void isTTY(char **env) const;
         void print_help();
         networkData_t check_args(const std::string &addr, const std::string &port);
         bool is_ipv4(const std::string &addr);

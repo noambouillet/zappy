@@ -6,7 +6,7 @@
 ##
 
 from .class_behavior import Behavior
-from constant import requirement_for_progress, Macro, NB_PLAYERS_REQUIRED
+from constant import requirement_for_progress, Macro, NB_PLAYERS_REQUIRED, WAIT_CONNECT_NBR
 from logger import logger
 
 class Incantation(Behavior):
@@ -25,7 +25,10 @@ class Incantation(Behavior):
             agent.joining_incantation = True
             agent.prepare_incantation = False
             return []
-        agent.leader_id = agent.agent_id 
+        agent.leader_id = agent.agent_id
+        slot_command = self.keep_unused_slot_available(agent)
+        if slot_command:
+            return slot_command
         is_eject = self.count_follower(agent)
         if (is_eject == True):
             return ["Eject\n"]
@@ -66,19 +69,15 @@ class Incantation(Behavior):
         for msg in mailbox_message:
             if (msg["sender_id"] == agent.agent_id):
                 continue
-            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] not in agent.tab_id_teammate):
-                direction = msg["direction"]
-                if (direction == 0):
-                    agent.tab_id_teammate.append(msg["sender_id"])
-                    agent.teammate_on_tile += 1
+            if (msg["action"] == "AVAILABLE" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] not in agent.tab_id_teammate and msg["direction"] == 0):
+                agent.tab_id_teammate.append(msg["sender_id"])
+                agent.teammate_on_tile += 1
             elif (msg["action"] == "LEAVING" and msg["level"] == agent.level and msg["team"] == agent.team_name and msg["sender_id"] in agent.tab_id_teammate):
                 agent.tab_id_teammate.remove(msg["sender_id"])
                 agent.teammate_on_tile -= 1
             elif (msg["team"] != agent.team_name and msg["direction"] == 0):
                 eject_players = True
-                agent.tab_id_teammate = []
-                agent.teammate_on_tile = 1
-        agent.mailbox = [msg for msg in agent.mailbox if msg.get("action") == "INCANTATION"]
+        agent.mailbox = [msg for msg in agent.mailbox if msg["action"] == "INCANTATION" and msg["team"] == agent.team_name and msg["level"] == agent.level]
         return eject_players
     
     def verif_incantation(self, agent):
@@ -135,3 +134,19 @@ class Incantation(Behavior):
         if commands:
             return commands, False
         return [], True
+    
+    def keep_unused_slot_available(self, agent):
+        """check if the team already have an unused slot available
+
+        Args:
+            agent (Agent): agent
+
+        Returns:
+            list: command list
+        """
+        if agent.need_fork:
+            agent.need_fork = False
+            return ["Fork\n"]
+        if agent.tick - agent.last_slots_check >= WAIT_CONNECT_NBR:
+            return ["Connect_nbr\n"]
+        return []

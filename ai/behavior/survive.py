@@ -28,7 +28,6 @@ class Survive(Behavior):
             return self.take_food_vision(agent)
         else:
             if (agent.already_fork == False):
-                agent.already_fork = True
                 return ["Fork\n"]
             if (agent.inventory["food"] >= agent.get_macro_ratio(Macro.FOOD_BEFORE_START)):
                 agent.survive = False
