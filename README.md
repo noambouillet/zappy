@@ -1,43 +1,76 @@
-# Project Name
+# Zappy
 
-## Description
+**Zappy** is a project from the module ***(G4-Year-End-Project-Zappy)***. The goal of this project is to create a network game where several teams confront each other on a tile map
+containing resources. The winning team is the first one where at least 6 players reach the maximum elevation.
 
-Brief description of the project (en anglais svp).
+## Content
+
+- [Summary](#summary)
+- [Installation](#installation)
+- [CommitNorm](#commit-norm)
+- [Branching](#branching)
+- [Project structure](#project-structure)
+- [Authors](#authors)
 
 ---
 
-## Folder Structure
+## Summary
 
-```plaintext
-project-name
-├── src/
-│   └── ...                      # Source files
-├── .github/
-│   └── workflows/
-│       └── safety-checks.yml    # Pipeline to check build and tests before merge
-└── README.md
+Welcome to this README for the Zappy project. In this repository, you'll discover that our project has been divided into three main parts.
+
+Therefore, we've decided to provide READMEs for each of these parts of the project, so you can easily find the section you're interested in. Happy reading!
+
+### **GUI** (C++)
+#### - [Graphical](gui/README.md)
+
+### **SERVER** (C++)
+#### - [Communication](server/README.md)
+
+### **AI** (PYTHON)
+#### - [Algorithm](ai/README.md)
+
+### Features :
+
+
+---
+
+## Installation
+
+### 1. Git clone the repository.
+
+```bash
+git clone git@github.com:EpitechPGE2-2025/G-YEP-400-LIL-4-1-zappy-6.git
+cd G-YEP-400-LIL-4-1-zappy-6
+cd ai
 ```
 
-## Commit Norm
+### 2. Install the dependencies
 
-We use a clear and consistent commit norm inspired by [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) :
+We invite you to go and see the installation section of each README associated with the parts in order to be able to install and understand how to launch each part.
 
-```plaintext
-<type>: <description>
+If you want to see where the README files are:
+- [Summary](#summary)
+
+### 3. Example
+
+Once everything is installed and you understand the principle of each part, here is an example of how to launch all the elements:
+
+For this example, we decided to set the server port to 1025 and to use the team name RED, BLUE.
+
+- Server
+```bash
 ```
 
-### Types include:
-
-- feat: A new feature
-- fix: A bug fix
-- docs: Documentation only changes
-- refactor: Code changes that neither fix a bug nor add a feature
-- build: Changes that affect the build system or external dependencies
-
-Example:
-```plaintext
-feat: added a new feature
+- Gui
+```bash
 ```
+
+- AI
+```bash
+./zappy_ai -p 1025 -n RED
+```
+
+---
 
 ## Branching
 
@@ -72,30 +105,105 @@ Recommended flow:
 - validate on `dev`
 - merge `dev` into `main`
 
-### Issues and Labels
+---
 
-GitHub issues are not used in this workflow.
+## Commit Norm
 
-GitHub labels are not used in this workflow.
+We use a clear and consistent commit norm inspired by [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) :
 
-## Setup and Running
-
-### Install the dependencies
-
-```sh
-echo 'Our dependencies'
+```plaintext
+<type>: <description>
 ```
 
-### Running
+### Types include:
 
-```sh
-echo 'How to run it'
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- refactor: Code changes that neither fix a bug nor add a feature
+- build: Changes that affect the build system or external dependencies
+
+Example:
+```plaintext
+feat: added a new feature
 ```
 
-## Collaborators
+---
+
+## Project structure
+
+```bash
+zappy
+.
+├── ai
+│   ├── agent.py
+│   ├── behavior
+│   │   ├── class_behavior.py
+│   │   ├── explore.py
+│   │   ├── follower.py
+│   │   ├── incantation.py
+│   │   └── survive.py
+│   ├── commands_ia
+│   │   ├── broadcast.py
+│   │   ├── connect.py
+│   │   ├── eject.py
+│   │   ├── fork.py
+│   │   ├── forward.py
+│   │   ├── incantation.py
+│   │   ├── inventory.py
+│   │   ├── left.py
+│   │   ├── look.py
+│   │   ├── right.py
+│   │   ├── set.py
+│   │   └── take.py
+│   ├── commands_server
+│   │   ├── dead.py
+│   │   ├── ejects.py
+│   │   └── messages.py
+│   ├── connection.py
+│   ├── constant.py
+│   ├── handle_commands.py
+│   ├── logger.py
+│   ├── Makefile
+│   ├── parsing.py
+│   ├── README.md
+│   ├── zappy_ai
+│   └── zappy_ai.log
+├── gui
+│   ├── assets
+│   │   └── images
+│   │       ├── background.png
+│   │       ├── benoit.png
+│   │       ├── egg.png
+│   │       ├── food.png
+│   │       └── ground.png
+│   ├── Makefile
+│   └── zappy_gui
+├── Makefile
+├── README.md
+├── server
+│   └── Makefile
+└── zappy_ref-v3.0.1
+    ├── linux
+    │   ├── log6.txt
+    │   ├── zappy_gui.AppImage
+    │   └── zappy_server
+    ├── macos
+    │   └── zappy_server
+    ├── README.md
+    └── zappy_server
+
+12 directories, 46 files
+```
+
+---
+
+## Authors
 
 Thanks to everyone who contributed:
 
-[Collaborator's Name](https://github.com/name)  
-[Collaborator's Name](https://github.com/name)  
-[Collaborator's Name](https://github.com/name)  
+- [Paul Ammeloot](https://github.com/PaulAmmeloot)
+- [Louis Hector](https://github.com/MinFlag)
+- [Noam Bouillet](https://github.com/nomaisthere)
+- [Keryan Pollet-druelle](https://github.com/Keryan-pollet)
+- [Logan Capoen](https://github.com/logan-capoen)
