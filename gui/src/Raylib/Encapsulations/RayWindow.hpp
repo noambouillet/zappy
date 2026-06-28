@@ -20,6 +20,7 @@ class RayWindow {
         RayWindow &operator=(const RayWindow &) = delete;
 
         bool isOpen() const;
+        void show();
         void beginDrawing();
         void endDrawing();
         void clearBackground(Color color);

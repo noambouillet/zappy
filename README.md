@@ -21,10 +21,10 @@ Welcome to this README for the Zappy project. In this repository, you'll discove
 Therefore, we've decided to provide READMEs for each of these parts of the project, so you can easily find the section you're interested in. Happy reading!
 
 ### **GUI** (C++)
-#### - [Graphical]
+#### - [Graphical](gui/README.md)
 
 ### **SERVER** (C++)
-#### - [Communication]
+#### - [Communication](server/README.md)
 
 ### **AI** (PYTHON)
 #### - [Algorithm](ai/README.md)
