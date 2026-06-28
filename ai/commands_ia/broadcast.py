@@ -5,7 +5,7 @@
 ## broadcast
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_broadcast(agent, response_server):
     """This function is to confirm the Ok for broacast the message from server
@@ -14,9 +14,7 @@ def do_broadcast(agent, response_server):
         response_server (str): Response from the server
     """
     if (response_server == "ok"):
-        logger.info("The message was successfully sent to the other AI agents.")
-        logger.info("The Broadcast command was successful (received and completed).")
+        logger.info(f"{agent.agent_id}: The wizard used his telekinesis spell to warn everyone.")
     else:
         logger.error("The response message from the server is not suitable for this command, result_command != ok. (Broadcast)")
-        print("The response message from the server is not suitable for this command. (Broadcast)")
     return

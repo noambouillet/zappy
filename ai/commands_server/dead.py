@@ -5,11 +5,14 @@
 ## dead
 ##
 
-from parsing import logger, sys
+from logger import logger, sys
 
-def receive_dead():
-    """This function is to say the death of the player"""
-    logger.info("The connection has just ended because this client has just lost")
-    print("The player is now dead, you piece of shit. Next time, train your AI better.(Just do it 🙈)")
+def receive_dead(agent, response_server):
+    """This function is to say the death of the player
+    Args:
+        agent (class): Agent
+        response_server (str): response from the server
+    """
+    logger.info(f"{agent.agent_id}: The sorcerer felt his last breath approaching; he returns to rest in peace with the spirits.")
     sys.exit(0)
     

@@ -5,7 +5,7 @@
 ## inventory
 ##
 
-from parsing import logger
+from logger import logger
 
 def do_inventory(agent, response_server):
     """This function is to change the get and change the inventory for the ia with info from the server
@@ -13,16 +13,22 @@ def do_inventory(agent, response_server):
         agent (class): agent IA
         response_server (str): Response from the server
     """
-    old_inventory = agent.inventory
-    info_inventory = response_server.split(' ')
-    for i in range(1, len(info_inventory) - 1, 2):
-        ressource = info_inventory[i]
-        number_str = info_inventory[i + 1].replace(',', '')
-        number_str = number_str.strip()
-        key_exist = agent.inventory.get(ressource)
-        if (key_exist is not None):
-            agent.inventory[ressource] = (int)(number_str)
+    if not response_server.startswith("["):
+        return
+    clean_response = response_server.replace("[", "")
+    clean_response = clean_response.replace("]", "")
+    clean_response = clean_response.replace(",", "")
+    parts = clean_response.split()
+    index = 0
+    while index < len(parts) - 1:
+        ressource = parts[index]
+        number_str = parts[index + 1]
+        if ressource in agent.inventory:
+            try:
+                agent.inventory[ressource] = int(number_str)
+            except ValueError:
+                return
+        index += 2
+    agent.last_inventory = agent.tick
     agent.adapt_behavior()
-    print("The inventory change for the agent from", old_inventory, "to", agent.inventory)
-    logger.info("The Inventory command was successful (received and completed).")
-    return
+    logger.info(f"{agent.agent_id}: The wizard consulted his satchel; he now knows what it contains {agent.inventory}")

@@ -1,28 +1,34 @@
 ##
 ## EPITECH PROJECT, 2026
-## Zappy
+## zappy-mirror
 ## File description:
-## AI Makefile
+## Makefile
 ##
 
-RESET   =   \033[0m
-GREEN   =   \033[38;2;80;220;120m
+RESET = \033[0m
+GREEN = \033[38;2;80;220;120m
 
-BIN = ../zappy_ai
+NAME_MAIN = zappy_ai_main
+NAME_BINARY = zappy_ai
+SOURCE = $(NAME_MAIN)
+TARGET = ../$(NAME_BINARY)
 
-.PHONY: all clean fclean re
+.PHONY: all re clean fclean
 
-all: $(BIN)
+all: $(TARGET)
 
-$(BIN):
-	@printf '#!/bin/sh\nexit 0\n' > $(BIN)
-	@chmod +x $(BIN)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) AI compilation done"
+$(TARGET): $(SOURCE)
+	@printf '%s\n' '#!/bin/sh' > $(TARGET)
+	@printf '%s\n' 'exec python3 "$$(dirname "$$0")/ai/zappy_ai_main" "$$@"' >> $(TARGET)
+	@chmod +x $(TARGET)
+	@printf '%b\n' "$(GREEN)[OK]$(RESET) AI compilation done."
 
 clean:
-	@rm -f $(BIN)
-	@printf '%b\n' "$(GREEN)[OK]$(RESET) AI cleaning done"
+	@find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	@find . -type f \( -name "*.txt" -o -name "*.log" \) -delete
+	@printf '%b\n' "$(GREEN)[OK]$(RESET) AI cleaning done."
 
 fclean: clean
+	@rm -f $(TARGET)
 
 re: fclean all

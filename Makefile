@@ -42,6 +42,7 @@ fclean:
 	@$(MAKE) --no-print-directory -C $(SERVER_DIR) fclean
 	@$(MAKE) --no-print-directory -C $(GUI_DIR) fclean
 	@$(MAKE) --no-print-directory -C $(AI_DIR) fclean
+	@find . -type d -name "__pycache__" -prune -exec rm -rf {} +
 	@printf '%b\n' "$(GREEN)[OK]$(RESET) Full cleaning done."
 
 re: fclean all

@@ -4,5 +4,7 @@ test
 linux
 __pycache__
 *.txt
-*.pdf
+zappy_ai
+zappy_gui
+zappy_server
 .vscode/
