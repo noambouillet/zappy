@@ -1,22 +1,24 @@
 #!/bin/python3
 
-from parsing import parse_args, logger
+from parsing import parse_args
 from connection import connect_to_server, communication_server_client
 from handle_commands import send_recv_command
 from agent import Agent
+from logger import setup_logger
 
 def main():
     """The main function for launch all other functions (main logic)
     """
+    logger = setup_logger()
     port, team_name, machine_name = parse_args()
     socket_connection = connect_to_server(port, machine_name)
     info_client = communication_server_client(socket_connection, team_name)
     agent = Agent()
     agent.team_name = info_client["team_name"]
-    agent.unused_slots = info_client["client_num"]
+    agent.unused_slots = (int)(info_client["client_num"])
     agent.size_map = (info_client["X"], info_client["Y"])
     send_recv_command(socket_connection, agent)
-    logger.info("The program has just ended")
+    logger.debug("The program has just ended")
 
 if __name__ == '__main__':
     main()

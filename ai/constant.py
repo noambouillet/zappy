@@ -7,7 +7,22 @@
 
 from enum import Enum
 
-MIN_FOOD = 5
+MAX_COMMANDS = 10
+MAX_BEHAVIOR_COMMANDS = 7
+INVENTORY_FREQUENCE = 5
+AVAILABLE_FREQUENCE = 5
+INCANTATION_FREQUENCE = 5
+WAIT_MSG = 6
+NB_PLAYERS_REQUIRED = 6
+WAIT_CONNECT_NBR = 20
+
+class Macro(Enum):
+    MIN_FOOD = (7, 20)
+    FOOD_FOR_INCANTATION = (10, 20)
+    FOOD_FOR_FOLLOW = (8, 15)
+    FOOD_TO_REACH = (17, 40)
+    TAKE_FOOD_ON_TILE = (22, 40)
+    FOOD_BEFORE_START = (42, 70)
 
 class Direction(Enum):
     Up = 0
@@ -19,9 +34,9 @@ class Direction(Enum):
 requirement_for_progress = [
     {"nb_players" : 1, "linemate" : 1, "deraumere" : 0, "sibur" : 0, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
     {"nb_players" : 2, "linemate" : 1, "deraumere" : 1, "sibur" : 1, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 2, "linemate" : 2, "deraumere" : 0, "sibur" : 1, "mendiane" : 2, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 4, "linemate" : 1, "deraumere" : 1, "sibur" : 2, "mendiane" : 1, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 4, "linemate" : 1, "deraumere" : 2, "sibur" : 1, "mendiane" : 0, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 6, "linemate" : 1, "deraumere" : 2, "sibur" : 3, "mendiane" : 1, "phiras" : 0, "thystame" : 0},
-    {"nb_players" : 6, "linemate" : 2, "deraumere" : 2, "sibur" : 2, "mendiane" : 2, "phiras" : 0, "thystame" : 0}
+    {"nb_players" : 2, "linemate" : 2, "deraumere" : 0, "sibur" : 1, "mendiane" : 0, "phiras" : 2, "thystame" : 0},
+    {"nb_players" : 4, "linemate" : 1, "deraumere" : 1, "sibur" : 2, "mendiane" : 0, "phiras" : 1, "thystame" : 0},
+    {"nb_players" : 4, "linemate" : 1, "deraumere" : 2, "sibur" : 1, "mendiane" : 3, "phiras" : 0, "thystame" : 0},
+    {"nb_players" : 6, "linemate" : 1, "deraumere" : 2, "sibur" : 3, "mendiane" : 0, "phiras" : 1, "thystame" : 0},
+    {"nb_players" : 6, "linemate" : 2, "deraumere" : 2, "sibur" : 2, "mendiane" : 2, "phiras" : 2, "thystame" : 1}
 ]
