@@ -82,18 +82,21 @@ void RayUI::drawGlobalInfo()
     const auto &teams = _world.getTeams();
     auto teamStats = _world.getTeamStats();
 
-    int dynamicHeight = 325 + teams.size() * 20;
+    int dynamicHeight = 365 + teams.size() * 20;
     for (const auto &[team, levels] : teamStats)
         dynamicHeight += levels.size() * 18;
-    int height = (dynamicHeight > 400) ? dynamicHeight : 400;
+    int height = (dynamicHeight > 440) ? dynamicHeight : 440;
 
     DrawRectangle(10, 10, width, height, ColorAlpha(BLACK, 0.7f));
     DrawRectangleLines(10, 10, width, height, RAYWHITE);
     DrawText("GLOBAL INFO", 20, 20, 20, RAYWHITE);
     DrawText(TextFormat("Time: %s", _world.getFormattedGameTime().c_str()), 20, 50, 20, LIGHTGRAY);
-    DrawText("Teams:", 20, 80, 20, RAYWHITE);
+    DrawText(TextFormat("Frequency: %d", _world.getTime()), 20, 70, 20, LIGHTGRAY);
+    auto mapSize = _world.getMapSize();
+    DrawText(TextFormat("Map Size: %dx%d", mapSize.first, mapSize.second), 20, 90, 20, LIGHTGRAY);
+    DrawText("Teams:", 20, 120, 20, RAYWHITE);
 
-    int yOffset = 100;
+    int yOffset = 140;
     for (const auto &team : teams) {
         int totalPlayers = 0;
         for (const auto &[level, count] : teamStats[team])
