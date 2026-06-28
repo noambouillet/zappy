@@ -9,7 +9,7 @@
 
 RayWindow::RayWindow(int width, int height, const std::string &title)
 {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_WINDOW_HIDDEN);
     InitWindow(width, height, title.c_str());
     SetTargetFPS(60);
 }
@@ -24,6 +24,11 @@ RayWindow::~RayWindow()
 bool RayWindow::isOpen() const
 {
     return !WindowShouldClose();
+}
+
+void RayWindow::show()
+{
+    ClearWindowState(FLAG_WINDOW_HIDDEN);
 }
 
 void RayWindow::beginDrawing()
