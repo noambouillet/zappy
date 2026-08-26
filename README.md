@@ -59,10 +59,12 @@ For this example, we decided to set the server port to 1025 and to use the team 
 
 - Server
 ```bash
+./zappy_server -p 1025 -n RED BLUE
 ```
 
 - Gui
 ```bash
+./zappy_gui -p 1025
 ```
 
 - AI
